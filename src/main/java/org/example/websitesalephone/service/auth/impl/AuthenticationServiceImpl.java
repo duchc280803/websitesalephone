@@ -92,10 +92,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public void setTokenExpired(String token) {
+    public CommonResponse setTokenExpired(String token) {
         ExpiredToken entity = new ExpiredToken();
         entity.setAccessToken(token);
         tokenExpiredRepository.save(entity);
+        return CommonResponse.builder()
+                .code(CommonResponse.CODE_SUCCESS)
+                .build();
     }
 
     @Override

@@ -16,9 +16,7 @@ import OrderDetailPage from './pages/order/OrderDetailPage.vue'
 import HomePage from "./pages/home/HomePage.vue";
 import OrderOfUSer from "./pages/home/OrderOfUSer.vue";
 import OrderDetailByUser from "./pages/home/OrderDetailByUser.vue";
-import LoginPage from "./pages/LoginPageAdmin.vue";
 import LoginPageCustomer from "./pages/LoginPageCustomer.vue";
-import LoginPageAdmin from "./pages/LoginPageAdmin.vue";
 import RegisterPage from "./pages/RegisterPage.vue";
 
 const router = createRouter({
@@ -27,6 +25,18 @@ const router = createRouter({
         return savedPosition ? savedPosition : { left: 0, top: 0 }
     },
     routes: [
+        {
+            path: '/login',
+            name: 'LoginPageCustomer',
+            component: LoginPageCustomer,
+            meta: { requiresAuth: false, title: 'Login' }
+        },
+        {
+            path: '/register',
+            name: 'RegisterPage',
+            component: RegisterPage,
+            meta: { requiresAuth: false, title: 'Register' }
+        },
         {
             path: '/customer',
             redirect: '/customer/login',
@@ -66,18 +76,6 @@ const router = createRouter({
                     name: 'OrderDetailByUser',
                     component: OrderDetailByUser,
                     meta: { requiresAuth: false, title: 'Đơn hàng user' }
-                },
-                {
-                    path: 'login',
-                    name: 'LoginPageCustomer',
-                    component: LoginPageCustomer,
-                    meta: { requiresAuth: false, title: 'Login' }
-                },
-                {
-                    path: 'register',
-                    name: 'RegisterPage',
-                    component: RegisterPage,
-                    meta: { requiresAuth: false, title: 'Register' }
                 }
             ]
         },
@@ -121,12 +119,6 @@ const router = createRouter({
                     name: 'OrderDetailPage',
                     component: OrderDetailPage,
                     meta: { requiresAuth: true, title: 'Chi tiết đơn hàng' }
-                },
-                {
-                    path: 'login',
-                    name: 'LoginPageAdmin',
-                    component: LoginPageAdmin,
-                    meta: { requiresAuth: false, title: 'Đơn hàng user' }
                 }
             ]
         }

@@ -17,20 +17,12 @@
       <div class="success-message" id="successMessage"><span>✓</span> <span id="successText"></span>
       </div><!-- Signup Form -->
       <form class="signup-form" id="signupForm">
-        <div class="form-row">
-          <div class="form-group"><label for="firstName" class="form-label">Họ <span class="required">*</span></label>
+          <div class="form-group"><label for="firstName" class="form-label">Họ Và Tên <span class="required">*</span></label>
             <div class="input-wrapper"><span class="input-icon">👤</span> <input type="text" id="firstName"
-                                                                                class="form-input" placeholder="Nguyễn"
+                                                                                class="form-input" placeholder="Nguyễn Văn A"
                                                                                 required>
             </div>
           </div>
-          <div class="form-group"><label for="lastName" class="form-label">Tên <span class="required">*</span></label>
-            <div class="input-wrapper"><span class="input-icon">👤</span> <input type="text" id="lastName"
-                                                                                class="form-input" placeholder="Văn A"
-                                                                                required>
-            </div>
-          </div>
-        </div>
         <div class="form-group"><label for="email" class="form-label">Email <span class="required">*</span></label>
           <div class="input-wrapper"><span class="input-icon">✉️</span> <input type="email" id="email"
                                                                                class="form-input"
@@ -56,9 +48,6 @@
                                                                               placeholder="Tối thiểu 6 ký tự" required>
             <button type="button" class="password-toggle" id="togglePassword"> 👁️</button>
           </div>
-          <div class="password-strength">
-            <div class="password-strength-bar" id="strengthBar"></div>
-          </div>
           <div class="password-strength-text" id="strengthText"></div>
         </div>
         <div class="form-group"><label for="confirmPassword" class="form-label">Xác nhận mật khẩu <span
@@ -74,11 +63,8 @@
         </div>
         <button type="submit" class="signup-btn"> Đăng ký <span>→</span></button>
       </form><!-- Divider -->
-      <div class="divider">
-        Hoặc đăng ký với
-      </div><!-- Social Signup -->
       <div class="login-link">
-        Đã có tài khoản? <a href="#login">Đăng nhập ngay</a>
+        Đã có tài khoản? <router-link to="login">Đăng nhập ngay</router-link>
       </div>
     </div>
   </main>
@@ -112,10 +98,13 @@ body {
 }
 
 .signup-wrapper {
-  width: 100%;
-  max-width: 520px;
-  margin: 20px 0;
-  margin-left: 700px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
 }
 
 .signup-container {
@@ -124,6 +113,7 @@ body {
   padding: 45px 40px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.5s ease;
+  width: 550px;
 }
 
 @keyframes slideUp {

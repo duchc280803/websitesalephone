@@ -8,7 +8,7 @@ public interface AuthenticationService {
 
     CommonResponse authenticate(AuthUserDto request) throws Exception;
 
-    void setTokenExpired(String token);
+    CommonResponse setTokenExpired(String token);
 
     CommonResponse forgotPassword(String email, String tabletOrPc) throws Exception;
 

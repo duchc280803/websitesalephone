@@ -5,33 +5,37 @@ import org.example.websitesalephone.comon.CommonResponse;
 import org.example.websitesalephone.dto.user.CreateUserDto;
 import org.example.websitesalephone.dto.user.UserSearchForm;
 import org.example.websitesalephone.service.user.UserService;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/")
+@RequestMapping("/api/user/")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
-    public CommonResponse getUserByLoginId(String loginId) {
+    @PostMapping("get-user-by-login/{loginId}")
+    public CommonResponse getUserByLoginId(@PathVariable(name = "loginId") String loginId) {
         return userService.getUserByLoginId(loginId);
     }
 
-    public CommonResponse createUser(CreateUserDto createUserDto) {
+    @PostMapping("create")
+    public CommonResponse createUser(@RequestBody CreateUserDto createUserDto) {
         return userService.createUser(createUserDto);
     }
 
+    @PutMapping("update")
     public CommonResponse updateUser(CreateUserDto createUserDto) {
         return userService.updateUser(createUserDto);
     }
 
-    public CommonResponse deleteUser(String userId) {
+    @PutMapping("delete/{userId}")
+    public CommonResponse deleteUser(@PathVariable(name = "userId") String userId) {
         return userService.deleteUser(userId);
     }
 
-    public CommonResponse search(UserSearchForm searchForm) {
+    @PostMapping("search")
+    public CommonResponse search(@RequestBody UserSearchForm searchForm) {
         return userService.search(searchForm);
     }
 }

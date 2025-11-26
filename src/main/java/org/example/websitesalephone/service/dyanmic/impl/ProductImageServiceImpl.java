@@ -55,22 +55,35 @@ public class ProductImageServiceImpl implements ProductImageService {
 
             return CommonResponse
                     .builder()
+                    .code(CommonResponse.CODE_SUCCESS)
                     .message("Thành công")
                     .build();
         } else {
-            return CommonResponse.builder().message("Không tìm thấy sản phẩm").build();
+            return CommonResponse
+                    .builder()
+                    .code(CommonResponse.CODE_NOT_FOUND)
+                    .message("Không tìm thấy sản phẩm")
+                    .build();
         }
     }
 
     @Override
     public CommonResponse findByProductId(String id) {
         List<ProductImage> productImages = productImageRepository.findByProduct_id(id);
-        return CommonResponse.builder().data(productImages).build();
+        return CommonResponse
+                .builder()
+                .code(CommonResponse.CODE_SUCCESS)
+                .data(productImages)
+                .build();
     }
 
     @Override
-    public void removeImage(String id) {
+    public CommonResponse removeImage(String id) {
         productImageRepository.deleteById(id);
+        return CommonResponse
+                .builder()
+                .code(CommonResponse.CODE_SUCCESS)
+                .build();
     }
 
     @Override
@@ -85,6 +98,10 @@ public class ProductImageServiceImpl implements ProductImageService {
         Optional<ProductImage> image = productImageRepository.findById(idImage);
         image.get().setActive(true);
         productImageRepository.save(image.get());
-        return CommonResponse.builder().message("Update thành công").build();
+        return CommonResponse
+                .builder()
+                .code(CommonResponse.CODE_SUCCESS)
+                .message("Update thành công")
+                .build();
     }
 }

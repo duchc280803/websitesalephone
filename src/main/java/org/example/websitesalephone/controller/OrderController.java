@@ -1,4 +1,31 @@
 package org.example.websitesalephone.controller;
 
+import lombok.RequiredArgsConstructor;
+import org.example.websitesalephone.comon.CommonResponse;
+import org.example.websitesalephone.dto.order.OrderRequest;
+import org.example.websitesalephone.dto.order.OrderSearch;
+import org.example.websitesalephone.service.order.impl.OrderServiceImpl;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/order")
+@RequiredArgsConstructor
 public class OrderController {
+
+    private final OrderServiceImpl orderService;
+
+    @PostMapping("/search")
+    public CommonResponse search(@RequestBody OrderSearch orderSearch) {
+        return orderService.search(orderSearch);
+    }
+
+    @GetMapping("/detail/{id}")
+    public CommonResponse detail(@PathVariable String id) {
+        return orderService.detail(id);
+    }
+
+    @PutMapping("/update")
+    public CommonResponse update(@RequestBody OrderRequest orderRequest) {
+        return orderService.update(orderRequest);
+    }
 }

@@ -12,7 +12,7 @@ public interface ProductImageService {
 
     CommonResponse findByProductId(String id);
 
-    void removeImage(String id);
+    CommonResponse removeImage(String id);
 
     CommonResponse updateImage(String idImage, String idProduct);
 }

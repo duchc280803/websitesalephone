@@ -37,15 +37,8 @@
         </div>
         <button type="submit" class="login-btn"> Đăng nhập <span>→</span></button>
       </form><!-- Divider -->
-      <div class="divider">
-        Hoặc đăng nhập với
-      </div><!-- Social Login -->
-      <div class="social-login">
-        <button type="button" class="social-btn" id="googleLogin"><span>🔵</span> Google</button>
-        <button type="button" class="social-btn" id="facebookLogin"><span>📘</span> Facebook</button>
-      </div><!-- Signup Link -->
       <div class="signup-link">
-        Chưa có tài khoản? <a href="#">Đăng ký ngay</a>
+        Chưa có tài khoản? <router-link to="register">Đăng ký ngay</router-link>
       </div>
     </div>
   </main>
@@ -78,9 +71,13 @@ body {
 }
 
 .login-wrapper {
-  width: 100%;
-  max-width: 450px;
-  margin-left: 700px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
 }
 
 .login-container {
@@ -89,6 +86,7 @@ body {
   padding: 45px 40px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.5s ease;
+  width: 450px;
 }
 
 @keyframes slideUp {
