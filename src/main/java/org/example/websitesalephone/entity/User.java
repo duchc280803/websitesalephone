@@ -1,0 +1,62 @@
+package org.example.websitesalephone.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Entity
+@Table(name = "users")
+public class User extends BaseEntity{
+    @Id
+    @Column(length = 50)
+    private String id;
+
+    @Column(length = 150, nullable = false)
+    private String username;
+
+    @Column(length = 150, nullable = false)
+    private String email;
+
+    @Column(length = 255, nullable = false)
+    private String passwordHash;
+
+    @Column(length = 100)
+    private String fullName;
+
+    @Column(length = 100)
+    private String codeUser;
+
+    @Column(length = 20)
+    private String phone;
+
+    @Column(length = 255)
+    private String description;
+
+    @Basic
+    @Column(name = "password_expired_at")
+    private OffsetDateTime passwordExpiredAt;
+
+    @Column(length = 500)
+    private String avatar;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Address> addresses;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Order> orders;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Cart> carts;
+
+    @OneToOne
+    @JoinColumn(name = "role_id", referencedColumnName = "id")
+    private Role role;
+
+}

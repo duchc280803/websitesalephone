@@ -1,0 +1,727 @@
+<script setup lang="ts">
+
+</script>
+
+<template>
+  <section class="content-card" id="products">
+    <div class="card-header">
+      <h2 class="card-title">📱 Quản Lý Sản Phẩm</h2>
+      <div class="card-actions">
+        <button class="btn btn-secondary">📥 Import</button>
+        <button class="btn btn-primary">+ Thêm Sản Phẩm</button>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+        <tr>
+          <th>Sản Phẩm</th>
+          <th>Danh Mục</th>
+          <th>Giá</th>
+          <th>Tồn Kho</th>
+          <th>Đã Bán</th>
+          <th>Trạng Thái</th>
+          <th>Thao Tác</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>
+            <div class="product-cell">
+              <div class="product-image">
+                📱
+              </div>
+              <div class="product-info">
+                <div class="product-name">
+                  iPhone 15 Pro Max
+                </div>
+                <div class="product-sku">
+                  SKU: IP15PM-256-TT
+                </div>
+              </div>
+            </div>
+          </td>
+          <td>iPhone</td>
+          <td><span class="price">29.990.000₫</span></td>
+          <td>45</td>
+          <td>128</td>
+          <td><span class="status-badge status-active">Đang Bán</span></td>
+          <td>
+            <div class="action-buttons">
+              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
+              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
+              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="product-cell">
+              <div class="product-image">
+                📱
+              </div>
+              <div class="product-info">
+                <div class="product-name">
+                  Samsung S24 Ultra
+                </div>
+                <div class="product-sku">
+                  SKU: SS24U-512-BK
+                </div>
+              </div>
+            </div>
+          </td>
+          <td>Samsung</td>
+          <td><span class="price">26.990.000₫</span></td>
+          <td>32</td>
+          <td>95</td>
+          <td><span class="status-badge status-active">Đang Bán</span></td>
+          <td>
+            <div class="action-buttons">
+              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
+              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
+              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="product-cell">
+              <div class="product-image">
+                📱
+              </div>
+              <div class="product-info">
+                <div class="product-name">
+                  iPhone 14 Pro
+                </div>
+                <div class="product-sku">
+                  SKU: IP14P-256-PP
+                </div>
+              </div>
+            </div>
+          </td>
+          <td>iPhone</td>
+          <td><span class="price">23.990.000₫</span></td>
+          <td>18</td>
+          <td>156</td>
+          <td><span class="status-badge status-active">Đang Bán</span></td>
+          <td>
+            <div class="action-buttons">
+              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
+              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
+              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="product-cell">
+              <div class="product-image">
+                📱
+              </div>
+              <div class="product-info">
+                <div class="product-name">
+                  Xiaomi 13 Pro
+                </div>
+                <div class="product-sku">
+                  SKU: XI13P-256-WH
+                </div>
+              </div>
+            </div>
+          </td>
+          <td>Xiaomi</td>
+          <td><span class="price">15.990.000₫</span></td>
+          <td>52</td>
+          <td>87</td>
+          <td><span class="status-badge status-active">Đang Bán</span></td>
+          <td>
+            <div class="action-buttons">
+              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
+              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
+              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="product-cell">
+              <div class="product-image">
+                📱
+              </div>
+              <div class="product-info">
+                <div class="product-name">
+                  OPPO Find N3
+                </div>
+                <div class="product-sku">
+                  SKU: OP-FN3-512-GD
+                </div>
+              </div>
+            </div>
+          </td>
+          <td>OPPO</td>
+          <td><span class="price">19.990.000₫</span></td>
+          <td>8</td>
+          <td>23</td>
+          <td><span class="status-badge status-inactive">Hết Hàng</span></td>
+          <td>
+            <div class="action-buttons">
+              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
+              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
+              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="product-cell">
+              <div class="product-image">
+                📱
+              </div>
+              <div class="product-info">
+                <div class="product-name">
+                  Samsung Z Fold 5
+                </div>
+                <div class="product-sku">
+                  SKU: SS-ZF5-1TB-BK
+                </div>
+              </div>
+            </div>
+          </td>
+          <td>Samsung</td>
+          <td><span class="price">35.990.000₫</span></td>
+          <td>15</td>
+          <td>42</td>
+          <td><span class="status-badge status-active">Đang Bán</span></td>
+          <td>
+            <div class="action-buttons">
+              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
+              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
+              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <button class="page-btn">«</button>
+      <button class="page-btn active">1</button>
+      <button class="page-btn">2</button>
+      <button class="page-btn">3</button>
+      <button class="page-btn">»</button>
+    </div>
+  </section><!-- Users Table -->
+</template>
+
+<style scoped>
+body {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #1a1a2e;
+  line-height: 1.6;
+}
+
+.admin-wrapper {
+  display: flex;
+  min-height: 100%;
+}
+
+.nav-menu li {
+  margin-bottom: 5px;
+}
+
+.nav-menu a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  padding: 15px 30px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-weight: 600;
+  font-size: 1.05em;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.nav-menu a:hover,
+.nav-menu a.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-left-color: #fee140;
+}
+
+.nav-icon {
+  font-size: 1.4em;
+  width: 30px;
+  text-align: center;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  padding: 40px;
+  overflow-y: auto;
+}
+
+.page-title {
+  font-size: 2.5em;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin-bottom: 10px;
+}
+
+.breadcrumb {
+  color: #666;
+  font-size: 1.05em;
+}
+
+.breadcrumb a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* Stats Cards */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+.stat-card {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(30%, -30%);
+}
+
+.stat-icon {
+  font-size: 3em;
+  margin-bottom: 15px;
+  display: inline-block;
+}
+
+.stat-value {
+  font-size: 2.2em;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  color: #666;
+  font-size: 1.05em;
+  font-weight: 600;
+}
+
+.stat-trend {
+  margin-top: 10px;
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+.trend-up {
+  color: #43e97b;
+}
+
+.trend-down {
+  color: #ff6b6b;
+}
+
+/* Content Card */
+.content-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+  margin-bottom: 30px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 25px 30px;
+  border-bottom: 2px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  font-size: 1.6em;
+  font-weight: 700;
+  color: #1a1a2e;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  padding: 10px 25px;
+  border-radius: 25px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95em;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+  background: #f0f0f0;
+  color: #1a1a2e;
+}
+
+.btn-secondary:hover {
+  background: #e0e0e0;
+}
+
+/* Table */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+th {
+  padding: 20px 25px;
+  text-align: left;
+  font-weight: 700;
+  color: #1a1a2e;
+  font-size: 1em;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+td {
+  padding: 20px 25px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.98em;
+}
+
+tbody tr {
+  transition: all 0.3s ease;
+}
+
+tbody tr:hover {
+  background: #f9f9f9;
+  transform: scale(1.01);
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.85em;
+  font-weight: 700;
+  display: inline-block;
+}
+
+.status-pending {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  color: #d35400;
+}
+
+.status-processing {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: #0c5c7a;
+}
+
+.status-completed {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: #0d6e3e;
+}
+
+.status-cancelled {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  color: #7a0c0c;
+}
+
+.status-active {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: #0d6e3e;
+}
+
+.status-inactive {
+  background: linear-gradient(135deg, #c3cfe2 0%, #a8b8d8 100%);
+  color: #4a5568;
+}
+
+/* Product Image */
+.product-cell {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.product-image {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8em;
+  flex-shrink: 0;
+}
+
+.product-info {
+  flex: 1;
+}
+
+.product-name {
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 3px;
+}
+
+.product-sku {
+  font-size: 0.9em;
+  color: #666;
+}
+
+/* User Avatar */
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-avatar {
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5em;
+  color: white;
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.user-name {
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 3px;
+}
+
+.user-email {
+  font-size: 0.9em;
+  color: #666;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  width: 35px;
+  height: 35px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn:hover {
+  transform: scale(1.15);
+}
+
+.btn-view {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: white;
+}
+
+.btn-delete {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  color: white;
+}
+
+/* Price */
+.price {
+  font-weight: 700;
+  color: #667eea;
+  font-size: 1.05em;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 10px;
+  padding: 25px 30px 0;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.tab {
+  padding: 12px 30px;
+  background: transparent;
+  border: none;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  font-size: 1em;
+}
+
+.tab:hover,
+.tab.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 30px;
+}
+
+.page-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  background: #f0f0f0;
+  color: #1a1a2e;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.page-btn:hover,
+.page-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .sidebar {
+    width: 240px;
+  }
+}
+
+@media (max-width: 968px) {
+  .admin-wrapper {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    position: relative;
+    height: auto;
+  }
+
+  .main-content {
+    padding: 20px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .page-title {
+    font-size: 2em;
+  }
+
+  .table-wrapper {
+    overflow-x: scroll;
+  }
+
+  table {
+    min-width: 800px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 1.6em;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+}
+</style>

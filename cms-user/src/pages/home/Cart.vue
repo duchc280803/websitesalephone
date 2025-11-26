@@ -1,0 +1,749 @@
+<script setup lang="ts">
+
+import HomeLayout from "../../layout/Header.vue";
+import Footer from "../../layout/Footer.vue";
+</script>
+
+<template>
+  <HomeLayout/>
+  <div class="container"><!-- Header -->
+    <header class="cart-header">
+      <div class="header-left">
+        <h1>🛒 Giỏ Hàng Của Bạn</h1>
+        <div class="breadcrumb"><a href="#home">Trang chủ</a> / Giỏ hàng
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="cart-count">
+          4
+        </div>
+        <div class="cart-count-label">
+          Sản phẩm
+        </div>
+      </div>
+    </header><!-- Cart Grid -->
+    <div class="cart-grid"><!-- Cart Items -->
+      <section class="cart-items">
+        <div class="cart-items-header">
+          <h2 class="cart-items-title">📦 Sản Phẩm Trong Giỏ</h2><label class="select-all">
+          <div class="checkbox checked"></div> Chọn tất cả </label>
+        </div><!-- Item 1 -->
+        <article class="cart-item">
+          <div class="item-select">
+            <div class="checkbox checked"></div>
+          </div>
+          <div class="item-image">
+            📱
+          </div>
+          <div class="item-details">
+            <h3 class="item-name">iPhone 15 Pro Max</h3>
+            <div class="item-specs"><span class="spec-badge">256GB</span> <span class="spec-badge">Xanh Titan</span> <span class="spec-badge">8GB RAM</span>
+            </div>
+            <div class="item-price">
+              29.990.000₫
+            </div>
+            <div class="item-controls">
+              <div class="quantity-control"><button class="qty-btn">−</button> <input type="text" class="qty-input" value="1" readonly> <button class="qty-btn">+</button>
+              </div><button class="btn-remove">🗑️ Xóa</button>
+            </div>
+          </div>
+          <div class="item-actions">
+            <div class="item-total">
+              29.990.000₫
+            </div>
+          </div>
+        </article><!-- Item 2 -->
+        <article class="cart-item">
+          <div class="item-select">
+            <div class="checkbox checked"></div>
+          </div>
+          <div class="item-image">
+            📱
+          </div>
+          <div class="item-details">
+            <h3 class="item-name">Samsung S24 Ultra</h3>
+            <div class="item-specs"><span class="spec-badge">512GB</span> <span class="spec-badge">Đen Titanium</span> <span class="spec-badge">12GB RAM</span>
+            </div>
+            <div class="item-price">
+              26.990.000₫
+            </div>
+            <div class="item-controls">
+              <div class="quantity-control"><button class="qty-btn">−</button> <input type="text" class="qty-input" value="1" readonly> <button class="qty-btn">+</button>
+              </div><button class="btn-remove">🗑️ Xóa</button>
+            </div>
+          </div>
+          <div class="item-actions">
+            <div class="item-total">
+              26.990.000₫
+            </div>
+          </div>
+        </article><!-- Item 3 -->
+        <article class="cart-item">
+          <div class="item-select">
+            <div class="checkbox checked"></div>
+          </div>
+          <div class="item-image">
+            📱
+          </div>
+          <div class="item-details">
+            <h3 class="item-name">iPhone 14 Pro</h3>
+            <div class="item-specs"><span class="spec-badge">256GB</span> <span class="spec-badge">Tím Deep Purple</span> <span class="spec-badge">6GB RAM</span>
+            </div>
+            <div class="item-price">
+              23.990.000₫
+            </div>
+            <div class="item-controls">
+              <div class="quantity-control"><button class="qty-btn">−</button> <input type="text" class="qty-input" value="2" readonly> <button class="qty-btn">+</button>
+              </div><button class="btn-remove">🗑️ Xóa</button>
+            </div>
+          </div>
+          <div class="item-actions">
+            <div class="item-total">
+              47.980.000₫
+            </div>
+          </div>
+        </article><!-- Item 4 -->
+        <article class="cart-item">
+          <div class="item-select">
+            <div class="checkbox checked"></div>
+          </div>
+          <div class="item-image">
+            📱
+          </div>
+          <div class="item-details">
+            <h3 class="item-name">Xiaomi 13 Pro</h3>
+            <div class="item-specs"><span class="spec-badge">256GB</span> <span class="spec-badge">Trắng Ceramic</span> <span class="spec-badge">12GB RAM</span>
+            </div>
+            <div class="item-price">
+              15.990.000₫
+            </div>
+            <div class="item-controls">
+              <div class="quantity-control"><button class="qty-btn">−</button> <input type="text" class="qty-input" value="1" readonly> <button class="qty-btn">+</button>
+              </div><button class="btn-remove">🗑️ Xóa</button>
+            </div>
+          </div>
+          <div class="item-actions">
+            <div class="item-total">
+              15.990.000₫
+            </div>
+          </div>
+        </article>
+      </section><!-- Order Summary -->
+      <aside class="order-summary">
+        <h2 class="summary-title">📋 Tóm Tắt Đơn Hàng</h2>
+        <div class="summary-row"><span class="summary-label">Tạm tính (4 sản phẩm)</span> <span class="summary-value">120.950.000₫</span>
+        </div>
+        <div class="summary-row"><span class="summary-label">Phí vận chuyển</span> <span class="summary-value" style="color: #43e97b;">Miễn phí</span>
+        </div>
+        <div class="summary-row"><span class="summary-label">Giảm giá</span> <span class="summary-value" style="color: #ff6b6b;">-2.000.000₫</span>
+        </div>
+        <div class="summary-row summary-total"><span class="total-label">Tổng cộng</span> <span class="total-value">118.950.000₫</span>
+        </div><!-- Promo Code -->
+        <div class="promo-section">
+          <div class="promo-input-group"><input type="text" class="promo-input" placeholder="Nhập mã giảm giá"> <button class="btn-apply">Áp dụng</button>
+          </div>
+        </div><!-- Checkout Button --> <button class="btn-checkout"> 💳 Thanh Toán Ngay </button> <!-- Features -->
+        <div class="features">
+          <div class="feature">
+            <div class="feature-icon">
+              🚚
+            </div>
+            <div class="feature-text">
+              Giao hàng miễn phí
+            </div>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">
+              🔒
+            </div>
+            <div class="feature-text">
+              Thanh toán bảo mật
+            </div>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">
+              ↩️
+            </div>
+            <div class="feature-text">
+              Đổi trả 30 ngày
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div><!-- Continue Shopping -->
+    <div class="continue-shopping"><a href="#products" class="btn-continue"> ⬅️ Tiếp Tục Mua Sắm </a>
+    </div>
+  </div>
+  <Footer/>
+</template>
+
+<style scoped>
+body {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #1a1a2e;
+  line-height: 1.6;
+  padding: 40px 20px;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Header */
+.cart-header {
+  background: white;
+  padding: 30px 40px;
+  border-radius: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left h1 {
+  font-size: 2.5em;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin-bottom: 5px;
+}
+
+.breadcrumb {
+  color: #666;
+  font-size: 1em;
+}
+
+.breadcrumb a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.header-right {
+  text-align: right;
+}
+
+.cart-count {
+  font-size: 3em;
+  font-weight: 800;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.cart-count-label {
+  color: #666;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+/* Main Grid */
+.cart-grid {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 30px;
+  align-items: start;
+}
+
+/* Cart Items */
+.cart-items {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.cart-items-header {
+  padding: 25px 30px;
+  border-bottom: 2px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cart-items-title {
+  font-size: 1.6em;
+  font-weight: 700;
+  color: #1a1a2e;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.select-all {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.checkbox.checked {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  position: relative;
+}
+
+.checkbox.checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-weight: 800;
+  font-size: 0.9em;
+}
+
+/* Cart Item */
+.cart-item {
+  padding: 25px 30px;
+  border-bottom: 2px solid #f9f9f9;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.cart-item:hover {
+  background: #f9f9f9;
+}
+
+.item-select {
+  display: flex;
+  align-items: center;
+}
+
+.item-image {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 60px;
+  flex-shrink: 0;
+}
+
+.item-details {
+  flex: 1;
+}
+
+.item-name {
+  font-size: 1.3em;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+
+.item-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.spec-badge {
+  padding: 5px 12px;
+  background: #f0f0f0;
+  border-radius: 8px;
+  font-size: 0.85em;
+  color: #666;
+  font-weight: 600;
+}
+
+.item-price {
+  font-size: 1.4em;
+  font-weight: 800;
+  color: #667eea;
+  margin-bottom: 12px;
+}
+
+.item-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.quantity-control {
+  display: flex;
+  align-items: center;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.qty-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: white;
+  color: #666;
+  font-size: 1.3em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.qty-btn:hover {
+  background: #667eea;
+  color: white;
+}
+
+.qty-input {
+  width: 60px;
+  height: 40px;
+  border: none;
+  text-align: center;
+  font-size: 1.1em;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.btn-remove {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-remove:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+}
+
+.item-actions {
+  text-align: right;
+}
+
+.item-total {
+  font-size: 1.8em;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin-bottom: 15px;
+}
+
+/* Empty Cart */
+.empty-cart {
+  padding: 80px 30px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 120px;
+  margin-bottom: 20px;
+  opacity: 0.3;
+}
+
+.empty-title {
+  font-size: 1.8em;
+  font-weight: 700;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.empty-text {
+  color: #999;
+  font-size: 1.1em;
+  margin-bottom: 30px;
+}
+
+.btn-shop {
+  display: inline-block;
+  padding: 15px 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 15px;
+  font-weight: 700;
+  font-size: 1.1em;
+  transition: all 0.3s ease;
+}
+
+.btn-shop:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+}
+
+/* Order Summary */
+.order-summary {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+  padding: 30px;
+  position: sticky;
+  top: 20px;
+}
+
+.summary-title {
+  font-size: 1.6em;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.summary-label {
+  color: #666;
+  font-size: 1.05em;
+  font-weight: 600;
+}
+
+.summary-value {
+  font-weight: 700;
+  color: #1a1a2e;
+  font-size: 1.1em;
+}
+
+.summary-total {
+  padding: 20px 0;
+  margin-top: 10px;
+}
+
+.total-label {
+  font-size: 1.3em;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.total-value {
+  font-size: 1.8em;
+  font-weight: 800;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Promo Code */
+.promo-section {
+  margin: 25px 0;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 15px;
+}
+
+.promo-input-group {
+  display: flex;
+  gap: 10px;
+}
+
+.promo-input {
+  flex: 1;
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 1em;
+  font-weight: 600;
+}
+
+.promo-input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.btn-apply {
+  padding: 12px 25px;
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-apply:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(67, 233, 123, 0.4);
+}
+
+/* Checkout Button */
+.btn-checkout {
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 15px;
+  font-size: 1.2em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-checkout:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+}
+
+/* Features */
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.feature {
+  text-align: center;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 12px;
+}
+
+.feature-icon {
+  font-size: 2em;
+  margin-bottom: 8px;
+}
+
+.feature-text {
+  font-size: 0.85em;
+  color: #666;
+  font-weight: 600;
+}
+
+/* Continue Shopping */
+.continue-shopping {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.btn-continue {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 30px;
+  background: white;
+  color: #667eea;
+  text-decoration: none;
+  border-radius: 15px;
+  font-weight: 700;
+  font-size: 1.1em;
+  border: 2px solid #667eea;
+  transition: all 0.3s ease;
+}
+
+.btn-continue:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .cart-grid {
+    grid-template-columns: 1fr 350px;
+  }
+}
+
+@media (max-width: 968px) {
+  .cart-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .order-summary {
+    position: relative;
+  }
+
+  .cart-header {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .header-right {
+    text-align: center;
+  }
+
+  .cart-item {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .item-actions {
+    text-align: left;
+  }
+
+  .features {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 20px 10px;
+  }
+
+  .cart-header h1 {
+    font-size: 1.8em;
+  }
+
+  .cart-count {
+    font-size: 2em;
+  }
+
+  .item-image {
+    width: 80px;
+    height: 80px;
+    font-size: 40px;
+  }
+
+  .item-name {
+    font-size: 1.1em;
+  }
+
+  .item-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+</style>

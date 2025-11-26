@@ -1,0 +1,220 @@
+package org.example.websitesalephone.service.user.impl;
+
+import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
+import org.example.websitesalephone.auth.UserDetail;
+import org.example.websitesalephone.dto.user.UserDto;
+import org.example.websitesalephone.entity.Role;
+import org.example.websitesalephone.entity.User;
+import org.example.websitesalephone.enums.RoleEnums;
+import org.example.websitesalephone.repository.RoleRepository;
+import org.example.websitesalephone.repository.UserRepository;
+import org.example.websitesalephone.dto.user.CreateUserDto;
+import org.example.websitesalephone.dto.user.UserSearchForm;
+import org.example.websitesalephone.service.user.UserService;
+import org.example.websitesalephone.comon.CommonResponse;
+import org.example.websitesalephone.utils.Utils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class UserServiceImpl implements UserService {
+
+    private final UserRepository userRepository;
+
+    private final RoleRepository roleRepository;
+
+    @Override
+    public CommonResponse getUserByLoginId(String loginId) {
+        User user = userRepository.findByUsernameAndIsDeleted(loginId, false).orElse(null);
+        if (user == null) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_NOT_FOUND)
+                    .message("User not found")
+                    .build();
+        }
+
+        return CommonResponse.builder()
+                .code(CommonResponse.CODE_SUCCESS)
+                .data(UserDto.fromEntity(user))
+                .build();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResponse createUser(CreateUserDto userDto) {
+        User entity = CreateUserDto.toEntity(userDto);
+
+        User userMailCheck = userRepository.findFirstByEmailAndIsDeleted(userDto.getEmail(), false).orElse(null);
+
+        User userCheck = userRepository.findByUsernameAndIsDeleted(userDto.getLoginId(), false).orElse(null);
+
+        if (userCheck != null && userMailCheck != null && Strings.isNotEmpty(userDto.getEmail())) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_EMAIL_AND_ID_ALREADY_EXIST)
+                    .message("Mail and id already exists")
+                    .build();
+        } else if (userMailCheck != null && Strings.isNotEmpty(userDto.getEmail())) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_EMAIL_ALREADY_EXIST)
+                    .message("Mail already exists")
+                    .build();
+        } else if (userCheck != null) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_ALREADY_EXIST)
+                    .message("User already exists")
+                    .build();
+        }
+
+        Role userRole = roleRepository.findById(userDto.getRoleDto().getRole().getId()).orElse(null);
+        if (userRole == null) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_NOT_FOUND)
+                    .message("Role not found")
+                    .build();
+        }
+
+        entity.setRole(userRole);
+        entity.setId(UUID.randomUUID().toString());
+        entity.setPasswordExpiredAt(OffsetDateTime.now().minusDays(1));
+        userRepository.saveAndFlush(entity);
+
+        return CommonResponse.builder()
+                .code(CommonResponse.CODE_SUCCESS)
+                .build();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResponse updateUser(CreateUserDto userDto) {
+        User currentUser = userRepository.findByIdAndIsDeleted(userDto.getId(), false).orElse(null);
+        if (currentUser == null) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_NOT_FOUND)
+                    .message("User not found")
+                    .build();
+        }
+
+        User checkLoginId = userRepository.findByUsernameAndIsDeleted(userDto.getLoginId(), false)
+                .orElse(null);
+        User userMailCheck = userRepository.findFirstByEmailAndIsDeleted(userDto.getEmail(), false).orElse(null);
+
+        if (checkLoginId != null && userMailCheck != null
+                && Strings.isNotEmpty(userDto.getEmail())
+                && !checkLoginId.getId().equals(currentUser.getId())
+                && !userMailCheck.getId().equals(currentUser.getId())) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_EMAIL_AND_ID_ALREADY_EXIST)
+                    .message("Mail and id already exists")
+                    .build();
+        } else if (userMailCheck != null && Strings.isNotEmpty(userDto.getEmail())
+                && !userMailCheck.getId().equals(currentUser.getId())) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_EMAIL_ALREADY_EXIST)
+                    .message("Mail already exists")
+                    .build();
+        } else if (checkLoginId != null && !checkLoginId.getId().equals(currentUser.getId())) {
+            return CommonResponse
+                    .builder()
+                    .code(CommonResponse.CODE_ALREADY_EXIST)
+                    .build();
+        }
+
+        String roleId = userDto.getRoleDto().getRole().getId();
+        Role userRole = null;
+        if (Strings.isNotEmpty(roleId)) {
+            userRole = roleRepository.findById(roleId).orElse(null);
+            if (userRole == null) {
+                return CommonResponse.builder()
+                        .code(CommonResponse.CODE_NOT_FOUND)
+                        .message("Role not found")
+                        .build();
+            }
+        }
+
+        currentUser.setEmail(userDto.getEmail());
+        currentUser.setFullName(userDto.getFullName() == null ? null : userDto.getFullName().trim());
+        currentUser.setUsername(userDto.getLoginId());
+        currentUser.setDescription(userDto.getNote());
+        currentUser.setAvatar(userDto.getProfileImg());
+        currentUser.setPhone(userDto.getTelNo());
+        currentUser.setEmail(userDto.getEmail());
+        currentUser.setRole(userRole);
+
+        if (Strings.isNotEmpty(userDto.getPassword())) {
+            currentUser.setPasswordHash(BCrypt.hashpw(userDto.getPassword(), BCrypt.gensalt()));
+        }
+
+        userRepository.saveAndFlush(currentUser);
+
+
+        return CommonResponse.builder()
+                .code(CommonResponse.CODE_SUCCESS)
+                .data(UserDto.fromEntity(currentUser))
+                .build();
+    }
+
+    @Override
+    public CommonResponse deleteUser(String userId) {
+        User user = userRepository.findByIdAndIsDeleted(userId, false).orElse(null);
+        if (user == null) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_NOT_FOUND)
+                    .message("User not found")
+                    .build();
+        }
+        userRepository.saveAndFlush(user);
+        return CommonResponse.builder()
+                .code(CommonResponse.CODE_SUCCESS)
+                .data(true)
+                .build();
+    }
+
+    @Override
+    public CommonResponse search(UserSearchForm searchForm) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetail userDetail = (UserDetail) auth.getPrincipal();
+
+        User loginUser = userRepository.findByUsernameAndIsDeleted(userDetail.getLoginId(), false).orElse(null);
+        if (loginUser == null) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_NOT_FOUND)
+                    .message("User not found")
+                    .build();
+        }
+
+        if (Strings.isNotEmpty(searchForm.getSearchText())) {
+            searchForm.setSearchText("%" + searchForm.getSearchText() + "%");
+        } else {
+            searchForm.setSearchText(null);
+        }
+
+        PageRequest pageRequest = Utils.getPaging(searchForm);
+
+        Page<UserDto> result;
+
+        if (RoleEnums.STAFF.getValue().equalsIgnoreCase(searchForm.getRole())) {
+            result = userRepository
+                    .findByRoleAndIsDeleted(loginUser.getRole(), false, pageRequest)
+                    .map(UserDto::fromEntitySearch);
+
+        } else {
+            result = userRepository
+                    .findAllByIsDeleted(false, pageRequest)
+                    .map(UserDto::fromEntitySearch);
+        }
+        return CommonResponse.builder()
+                .code(CommonResponse.CODE_SUCCESS)
+                .data(result)
+                .build();
+    }
+}
