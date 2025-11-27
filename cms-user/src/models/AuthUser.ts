@@ -12,17 +12,14 @@ export class AuthUser {
         this.password = password.trim();
     }
 
-    // Lấy password (có thể encode nếu cần ở frontend, ví dụ Base64)
     getPassword(): string | null {
-        return this.password ? this.password : null;
+        return this.password || null;
     }
 
-    // Lấy password nguyên bản
     getPasswordLogin(): string | null {
-        return this.password ? this.password : null;
+        return this.password || null;
     }
 
-    // Chuyển sang object dùng cho login API
     toAuthPayload(): IAuthUser {
         return {
             loginId: this.loginId,

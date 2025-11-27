@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
-import type {DynamicSearch} from "../model/DynamicSearch.ts";
-import type {DynamicRequest} from "../model/DynamicRequest.ts";
+import type {DynamicSearch} from "../models/DynamicSearch.ts";
+import type {DynamicRequest} from "../models/DynamicRequest.ts";
 
 class DynamicService {
     private ROOT_API = process.env.VUE_APP_ROOT_API + '/api/dynamic/';

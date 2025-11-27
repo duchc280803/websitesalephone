@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
-import type {Search} from "../model/Search.ts";
-import type {ProductRequest} from "../model/ProductRequest.ts";
-import type {ProductDetailRequest} from "../model/ProductDetailRequest.ts";
+import type {Search} from "../models/Search.ts";
+import type {ProductRequest} from "../models/ProductRequest.ts";
+import type {ProductDetailRequest} from "../models/ProductDetailRequest.ts";
 
 class ProductService {
     private ROOT_API = process.env.VUE_APP_ROOT_API + '/api/product/';

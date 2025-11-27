@@ -1,5 +1,54 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { AuthUser } from '../models/AuthUser.ts'
+import { authService } from "../service/AuthService.ts"
+import { toast } from "vue3-toastify"
+import "vue3-toastify/dist/index.css"
 
+const router = useRouter()
+
+const email = ref('')
+const password = ref('')
+const remember = ref(false)
+const showPassword = ref(false)
+
+const togglePassword = () => {
+  showPassword.value = !showPassword.value
+}
+
+const handleLogin = async () => {
+  if (!email.value || !password.value) {
+    toast.error("Bạn chưa nhập đủ thông tin.")
+    return
+  }
+
+  try {
+    const request = new AuthUser(email.value, password.value)
+    const res = await authService.login(request)
+    if (res.data.code === 0) {
+      toast.success("Đăng nhập thành công! 🎉")
+
+      const token = res.data?.data?.accessToken ?? ''
+      const role = res.data?.data?.role ?? ''
+      authService.saveToken(token)
+      authService.saveRole(role)
+
+      setTimeout(() => {
+        if (role === 'CUSTOMER') {
+          router.push('/customer/home')
+        } else {
+          router.push('/admin/dashboard')
+        }
+      }, 800)
+    } else {
+      toast.error(res.data.message)
+    }
+
+  } catch (err: any) {
+    toast.error(err?.response?.data?.message || "Đăng nhập thất bại.")
+  }
+}
 </script>
 
 <template>
@@ -16,29 +65,51 @@
       </div>
       <div class="success-message" id="successMessage"><span>✓</span> <span id="successText"></span>
       </div><!-- Login Form -->
-      <form class="login-form" id="loginForm">
-        <div class="form-group"><label for="email" class="form-label">Email hoặc Số điện thoại</label>
-          <div class="input-wrapper"><span class="input-icon">👤</span> <input type="text" id="email" class="form-input"
-                                                                              placeholder="Nhập email hoặc số điện thoại"
-                                                                              required>
+      <form class="login-form" id="loginForm" @submit.prevent="handleLogin">
+        <div class="form-group">
+          <label for="email" class="form-label">Email hoặc Số điện thoại</label>
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input type="text" id="email" class="form-input"
+                   placeholder="Nhập email hoặc số điện thoại"
+                   v-model="email" required>
           </div>
         </div>
-        <div class="form-group"><label for="password" class="form-label">Mật khẩu</label>
-          <div class="input-wrapper"><span class="input-icon">🔒</span> <input type="password" id="password"
-                                                                              class="form-input"
-                                                                              placeholder="Nhập mật khẩu" required>
-            <button type="button" class="password-toggle" id="togglePassword"> 👁️</button>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Mật khẩu</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input :type="showPassword ? 'text' : 'password'"
+                   id="password"
+                   class="form-input"
+                   placeholder="Nhập mật khẩu"
+                   v-model="password"
+                   required>
+
+            <button type="button"
+                    class="password-toggle"
+                    @click="togglePassword"> 👁️
+            </button>
           </div>
         </div>
+
         <div class="form-options">
-          <div class="remember-me"><input type="checkbox" id="remember"> <label for="remember">Ghi nhớ đăng nhập</label>
+          <div class="remember-me">
+            <input type="checkbox" id="remember" v-model="remember">
+            <label for="remember">Ghi nhớ đăng nhập</label>
           </div>
           <a href="#" class="forgot-password">Quên mật khẩu?</a>
         </div>
-        <button type="submit" class="login-btn"> Đăng nhập <span>→</span></button>
-      </form><!-- Divider -->
+
+        <button type="submit" class="login-btn">
+          Đăng nhập <span>→</span>
+        </button>
+      </form>
+      <!-- Divider -->
       <div class="signup-link">
-        Chưa có tài khoản? <router-link to="register">Đăng ký ngay</router-link>
+        Chưa có tài khoản?
+        <router-link to="register">Đăng ký ngay</router-link>
       </div>
     </div>
   </main>

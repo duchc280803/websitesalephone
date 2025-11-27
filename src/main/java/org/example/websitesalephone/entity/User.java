@@ -10,7 +10,6 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Entity
 @Table(name = "users")
 public class User extends BaseEntity{
@@ -55,8 +54,8 @@ public class User extends BaseEntity{
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Cart> carts;
 
-    @OneToOne
-    @JoinColumn(name = "role_id", referencedColumnName = "id")
+    @ManyToOne
+    @JoinColumn(name = "role_id")
     private Role role;
 
 }

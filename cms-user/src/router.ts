@@ -16,8 +16,9 @@ import OrderDetailPage from './pages/order/OrderDetailPage.vue'
 import HomePage from "./pages/home/HomePage.vue";
 import OrderOfUSer from "./pages/home/OrderOfUSer.vue";
 import OrderDetailByUser from "./pages/home/OrderDetailByUser.vue";
-import LoginPageCustomer from "./pages/LoginPageCustomer.vue";
+import LoginPageCustomer from "./pages/LoginPage.vue";
 import RegisterPage from "./pages/RegisterPage.vue";
+import {authService} from "./service/AuthService.ts";
 
 const router = createRouter({
     history: createWebHistory(),
@@ -124,6 +125,24 @@ const router = createRouter({
         }
     ]
 })
+
+router.beforeEach((to, from, next) => {
+    const isAuth = authService.isAuthenticated();
+    if (isAuth) {
+        const role = authService.getRole();
+        console.log(role)
+        if (to.name === 'LoginPageCustomer' || to.name === 'RegisterPage') {
+            if (role === 'CUSTOMER') return next({ path: '/customer/home' });
+            else return next({ path: '/admin/dashboard' });
+        }
+    } else {
+        if (to.meta.requiresAuth) {
+            return next({ name: 'LoginPageCustomer' });
+        }
+    }
+
+    next();
+});
 
 router.afterEach((to) => {
     document.title = to.meta.title ?? 'App'

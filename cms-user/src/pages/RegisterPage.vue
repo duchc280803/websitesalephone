@@ -1,7 +1,90 @@
 <script setup lang="ts">
+import {ref} from "vue";
+import {authService} from "../service/AuthService.ts";
+import {RegisterRequest} from "../models/RegisterRequest.ts";
+
+// Input refs
+const fullName = ref("");
+const email = ref("");
+const phone = ref("");
+const password = ref("");
+const confirmPassword = ref("");
+
+// Error UI refs
+const emailError = ref(false);
+const phoneError = ref(false);
+const confirmPassError = ref(false);
+
+const errorMessage = ref("");
+const successMessage = ref("");
+
+// Regex truyền thống, không màu mè
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phoneRegex = /^(0[0-9]{9,10})$/;
+
+// Submit handler
+import { toast } from "vue3-toastify";
+
+const submitForm = async (e: Event) => {
+  e.preventDefault();
+
+  // Reset flags
+  emailError.value = false;
+  phoneError.value = false;
+  confirmPassError.value = false;
+
+  // Validations
+  if (!emailRegex.test(email.value)) {
+    emailError.value = true;
+    toast.error("Email không hợp lệ.");
+    return;
+  }
+
+  if (!phoneRegex.test(phone.value)) {
+    phoneError.value = true;
+    toast.error("Số điện thoại không hợp lệ.");
+    return;
+  }
+
+  if (password.value !== confirmPassword.value) {
+    confirmPassError.value = true;
+    toast.error("Mật khẩu xác nhận không khớp.");
+    return;
+  }
+
+  const req = new RegisterRequest(
+      fullName.value,
+      phone.value,
+      password.value,
+      email.value
+  );
+
+  try {
+    const res = await authService.register(req);
+
+    if (res.data?.code === 0) {
+      toast.success("Đăng ký thành công!");
+
+      // Clear input
+      fullName.value = "";
+      email.value = "";
+      phone.value = "";
+      password.value = "";
+      confirmPassword.value = "";
+
+      setTimeout(() => {
+        router.push("/login");
+      }, 1200);
+
+    } else {
+      toast.error(res.data?.message || "Có lỗi xảy ra.");
+    }
+  } catch (err) {
+    toast.error("Hệ thống bận, thử lại sau.");
+  }
+};
 
 </script>
-
 <template>
   <main class="signup-wrapper">
     <div class="signup-container"><!-- Logo Section -->
@@ -16,55 +99,60 @@
       </div>
       <div class="success-message" id="successMessage"><span>✓</span> <span id="successText"></span>
       </div><!-- Signup Form -->
-      <form class="signup-form" id="signupForm">
-          <div class="form-group"><label for="firstName" class="form-label">Họ Và Tên <span class="required">*</span></label>
-            <div class="input-wrapper"><span class="input-icon">👤</span> <input type="text" id="firstName"
-                                                                                class="form-input" placeholder="Nguyễn Văn A"
-                                                                                required>
-            </div>
-          </div>
-        <div class="form-group"><label for="email" class="form-label">Email <span class="required">*</span></label>
-          <div class="input-wrapper"><span class="input-icon">✉️</span> <input type="email" id="email"
-                                                                               class="form-input"
-                                                                               placeholder="example@email.com" required>
-          </div>
-          <div class="field-error" id="emailError">
-            Email không hợp lệ
+      <form class="signup-form" @submit="submitForm">
+        <div class="form-group">
+          <label for="firstName" class="form-label">Họ Và Tên <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input type="text" id="firstName"
+                   class="form-input"
+                   placeholder="Nguyễn Văn A"
+                   required v-model="fullName">
           </div>
         </div>
-        <div class="form-group"><label for="phone" class="form-label">Số điện thoại <span
-            class="required">*</span></label>
-          <div class="input-wrapper"><span class="input-icon">📞</span> <input type="tel" id="phone" class="form-input"
-                                                                              placeholder="0123456789" required>
-          </div>
-          <div class="field-error" id="phoneError">
-            Số điện thoại không hợp lệ
+        <div class="form-group">
+          <label for="email" class="form-label">Email <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <span class="input-icon">✉️</span>
+            <input type="email" id="email"
+                   class="form-input"
+                   placeholder="example@email.com" required v-model="email">
           </div>
         </div>
-        <div class="form-group"><label for="password" class="form-label">Mật khẩu <span
-            class="required">*</span></label>
-          <div class="input-wrapper"><span class="input-icon">🔒</span> <input type="password" id="password"
-                                                                              class="form-input"
-                                                                              placeholder="Tối thiểu 6 ký tự" required>
+        <div class="form-group">
+          <label for="phone" class="form-label">Số điện thoại <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <span class="input-icon">📞</span>
+            <input type="tel" id="phone" class="form-input"
+                   placeholder="0123456789" v-model="phone" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="password" class="form-label">Mật khẩu <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="password"
+                   class="form-input"
+                   placeholder="Tối thiểu 6 ký tự" v-model="password" required>
             <button type="button" class="password-toggle" id="togglePassword"> 👁️</button>
           </div>
           <div class="password-strength-text" id="strengthText"></div>
         </div>
-        <div class="form-group"><label for="confirmPassword" class="form-label">Xác nhận mật khẩu <span
-            class="required">*</span></label>
-          <div class="input-wrapper"><span class="input-icon">🔒</span> <input type="password" id="confirmPassword"
-                                                                              class="form-input"
-                                                                              placeholder="Nhập lại mật khẩu" required>
+        <div class="form-group">
+          <label for="confirmPassword" class="form-label">Xác nhận mật khẩu <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="confirmPassword"
+                   class="form-input"
+                   placeholder="Nhập lại mật khẩu" v-model="confirmPassword" required>
             <button type="button" class="password-toggle" id="toggleConfirmPassword"> 👁️</button>
-          </div>
-          <div class="field-error" id="confirmPasswordError">
-            Mật khẩu không khớp
           </div>
         </div>
         <button type="submit" class="signup-btn"> Đăng ký <span>→</span></button>
       </form><!-- Divider -->
       <div class="login-link">
-        Đã có tài khoản? <router-link to="login">Đăng nhập ngay</router-link>
+        Đã có tài khoản?
+        <router-link to="login">Đăng nhập ngay</router-link>
       </div>
     </div>
   </main>

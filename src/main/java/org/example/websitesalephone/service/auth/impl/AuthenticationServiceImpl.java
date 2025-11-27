@@ -6,15 +6,15 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.example.websitesalephone.auth.JwtService;
 import org.example.websitesalephone.auth.UserDetail;
-import org.example.websitesalephone.dto.auth.AuthTokenResponse;
-import org.example.websitesalephone.dto.auth.AuthUserDto;
-import org.example.websitesalephone.dto.auth.ResetPasswordRequest;
-import org.example.websitesalephone.dto.auth.ResetPasswordTokenDto;
+import org.example.websitesalephone.dto.auth.*;
 import org.example.websitesalephone.entity.ExpiredToken;
 import org.example.websitesalephone.entity.PasswordResetToken;
+import org.example.websitesalephone.entity.Role;
 import org.example.websitesalephone.entity.User;
+import org.example.websitesalephone.enums.RoleEnums;
 import org.example.websitesalephone.enums.RsTokenStatus;
 import org.example.websitesalephone.repository.PasswordResetTokenRepository;
+import org.example.websitesalephone.repository.RoleRepository;
 import org.example.websitesalephone.repository.TokenExpiredRepository;
 import org.example.websitesalephone.repository.UserRepository;
 import org.example.websitesalephone.service.auth.AuthenticationService;
@@ -25,10 +25,13 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Log4j2
@@ -47,47 +50,47 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final RoleRepository roleRepository;
+
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResponse authenticate(AuthUserDto request) throws Exception {
-        List<User> users = userRepository.findByUsername(request.getLoginId());
+        // Tìm user theo username hoặc email
+        List<User> users = userRepository.findByUsernameOrEmail(request.getLoginId(), request.getLoginId());
         if (users.isEmpty()) {
-           return CommonResponse.
-                   builder()
-                   .code(CommonResponse.CODE_NOT_FOUND)
-                   .build();
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_NOT_FOUND)
+                    .message("Bạn chưa có tài khoản")
+                    .build();
         }
 
-        User activeUser = users.stream().filter(u -> !u.isDeleted()).findFirst().get();
+        Optional<User> activeUserOpt = users.stream().filter(u -> !u.isDeleted()).findFirst();
+        if (activeUserOpt.isEmpty()) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_NOT_FOUND)
+                    .message("Bạn chưa có tài khoản")
+                    .build();
+        }
+
+        User activeUser = activeUserOpt.get();
 
         String rawPassword = request.getPasswordLogin().get();
-        String encodedPassword = users.getFirst().getPasswordHash();
-
+        String encodedPassword = activeUser.getPasswordHash();
         if (!BCrypt.checkpw(rawPassword, encodedPassword)) {
-            if (users.isEmpty()) {
-                return CommonResponse.
-                        builder()
-                        .code(CommonResponse.CODE_PASSWORD)
-                        .build();
-            }
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_PASSWORD)
+                    .message("Nhập sai password")
+                    .build();
         }
 
-        try {
-            this.authenticationManager.authenticate(request.toAuthenticationToken());
-        } catch (BadCredentialsException e) {
-            // increase fail login count
-            userRepository.save(activeUser);
-            if (users.isEmpty()) {
-                return CommonResponse.
-                        builder()
-                        .code(CommonResponse.CODE_PASSWORD)
-                        .build();
-            }
-        }
+        this.authenticationManager.authenticate(request.toAuthenticationToken());
 
         userRepository.save(activeUser);
+
+        // Sinh token
         String token = jwtService.generateToken(UserDetail.fromEntity(activeUser));
         return CommonResponse.builder()
-                .data(new AuthTokenResponse(token))
+                .data(new AuthTokenResponse(token, activeUser.getRole().getRoleEnums().name()))
                 .build();
     }
 
@@ -198,5 +201,41 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .code(CommonResponse.CODE_SUCCESS)
                 .data(resetPasswordTokenDto)
                 .build();
+    }
+
+    @Override
+    public CommonResponse register(RegisterRequest registerRequest) {
+        List<User> user = userRepository.findByUsername(registerRequest.getUsername());
+        Role role = roleRepository.findById(RoleEnums.CUSTOMER.getId()).orElse(null);
+        if (!user.isEmpty()) {
+            return CommonResponse
+                    .builder()
+                    .code(CommonResponse.CODE_NOT_FOUND)
+                    .message("Tài khoản đã tồn tại").build();
+        }
+
+        if (role == null) {
+            return CommonResponse
+                    .builder()
+                    .code(CommonResponse.CODE_NOT_FOUND)
+                    .message("Role not found").build();
+        }
+
+        User user1 = new User();
+
+        user1.setId(UUID.randomUUID().toString());
+        user1.setUsername(registerRequest.getUsername());
+        user1.setFullName(registerRequest.getFullName() == null ? null : registerRequest.getFullName().trim());
+        user1.setEmail(registerRequest.getEmail());
+        user1.setPasswordHash(BCrypt.hashpw(registerRequest.getPassword(), BCrypt.gensalt()));
+        user1.setPasswordExpiredAt(OffsetDateTime.now().plusDays(Constants.PASSWORD_EXPIRE_DAYS));
+        user1.setRole(role);
+
+        userRepository.saveAndFlush(user1);
+        return CommonResponse
+                .builder()
+                .code(CommonResponse.CODE_SUCCESS)
+                .message("Registered Successfully").build();
+
     }
 }

@@ -2,6 +2,7 @@ package org.example.websitesalephone.controller;
 
 import org.example.websitesalephone.comon.CommonResponse;
 import org.example.websitesalephone.dto.auth.AuthUserDto;
+import org.example.websitesalephone.dto.auth.RegisterRequest;
 import org.example.websitesalephone.dto.auth.ResetPasswordRequest;
 import org.example.websitesalephone.service.auth.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,5 +43,10 @@ public class AuthController {
     @GetMapping("/check-reset-token")
     public CommonResponse checkResetToken(@RequestParam String token) {
         return authService.getPasswordTokenReset(token);
+    }
+
+    @PostMapping("/register")
+    public CommonResponse register(@RequestBody RegisterRequest registerRequest) {
+        return authService.register(registerRequest);
     }
 }

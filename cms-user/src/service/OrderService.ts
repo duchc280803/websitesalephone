@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
-import type {Search} from "../model/Search.ts";
-import type {OrderRequest} from "../model/OrderRequest.ts";
+import type {Search} from "../models/Search.ts";
+import type {OrderRequest} from "../models/OrderRequest.ts";
 
 class OrderService {
     private ROOT_API = process.env.VUE_APP_ROOT_API + '/api/order/';

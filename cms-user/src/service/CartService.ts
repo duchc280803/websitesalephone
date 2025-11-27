@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
-import type {CartRequest} from "../model/CartRequest.ts";
-import type {CheckOutRequest} from "../model/CheckOutRequest.ts";
+import type {CartRequest} from "../models/CartRequest.ts";
+import type {CheckOutRequest} from "../models/CheckOutRequest.ts";
 
 class CartService {
     private ROOT_API = process.env.VUE_APP_ROOT_API + '/api/cart/';

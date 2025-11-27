@@ -33,16 +33,18 @@ public class CreateUserDto {
     private RoleDto roleDto;
 
     public static User toEntity(CreateUserDto dto) {
-        return User.builder()
-                .id(dto.getId())
-                .username(dto.getLoginId())
-                .fullName(dto.getFullName() == null ? null : dto.getFullName().trim())
-                .email(dto.getEmail())
-                .description(dto.getNote())
-                .passwordHash(BCrypt.hashpw(dto.getPassword(), BCrypt.gensalt()))
-                .passwordExpiredAt(OffsetDateTime.now().plusDays(Constants.PASSWORD_EXPIRE_DAYS))
-                .codeUser(dto.getUserCode())
-                .avatar(dto.getProfileImg())
-                .build();
+        User user = new User();
+
+        user.setId(dto.getId());
+        user.setUsername(dto.getLoginId());
+        user.setFullName(dto.getFullName() == null ? null : dto.getFullName().trim());
+        user.setEmail(dto.getEmail());
+        user.setDescription(dto.getNote());
+        user.setPasswordHash(BCrypt.hashpw(dto.getPassword(), BCrypt.gensalt()));
+        user.setPasswordExpiredAt(OffsetDateTime.now().plusDays(Constants.PASSWORD_EXPIRE_DAYS));
+        user.setCodeUser(dto.getUserCode());
+        user.setAvatar(dto.getProfileImg());
+
+        return user;
     }
 }

@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
-import {CreateUserDto} from "../model/CreateUserDto.ts";
-import type {UserSearchForm} from "../model/UserSearchForm.ts";
+import {CreateUserDto} from "../models/CreateUserDto.ts";
+import type {UserSearchForm} from "../models/UserSearchForm.ts";
 
 class UserService {
     private ROOT_API = process.env.VUE_APP_ROOT_API + '/api/user/';

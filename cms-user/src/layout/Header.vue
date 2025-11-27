@@ -1,4 +1,40 @@
 <script setup lang="ts">
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { authService } from "@/service/AuthService.ts";
+import {toast} from "vue3-toastify";
+
+const router = useRouter();
+const showMenu = ref(false);
+
+// computed reactive: tự cập nhật khi token thay đổi
+const isAuth = computed(() => authService.isAuthenticated());
+const role = computed(() => authService.getRole());
+
+// toggle menu user
+const toggleMenu = () => {
+  showMenu.value = !showMenu.value;
+};
+
+// logout
+const logout = () => {
+  authService.logout();
+  showMenu.value = false;
+  toast.success("Đăng xuất thành công!");
+  router.push("/login");
+};
+
+// đóng menu khi click ngoài
+const handleClickOutside = (event: MouseEvent) => {
+  const menu = document.querySelector(".user-menu-wrapper");
+  if (menu && !menu.contains(event.target as Node)) {
+    showMenu.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+});
 
 </script>
 
@@ -8,23 +44,44 @@
       <div class="logo">📱 Phone Store</div>
 
       <ul class="nav-menu">
-        <li><router-link to="home">Trang Chủ</router-link></li>
-        <li><router-link to="product-home">Sản Phẩm</router-link></li>
-        <li><router-link to="home">Liên Hệ</router-link></li>
+        <li><router-link to="/customer/home">Trang Chủ</router-link></li>
+        <li><router-link to="/customer/product-home">Sản Phẩm</router-link></li>
+        <li><router-link to="/customer/home">Liên Hệ</router-link></li>
       </ul>
 
       <div class="nav-actions">
-        <!-- Search -->
+        <!-- SEARCH -->
         <button class="icon-btn" aria-label="Tìm kiếm">🔍</button>
 
-        <!-- Cart -->
-        <router-link :to="{ name: 'cart' }" class="icon-btn cart-btn" aria-label="Giỏ hàng">
+        <!-- CART -->
+        <router-link :to="{ name: 'cart' }" class="icon-btn cart-btn">
           🛒
           <span class="cart-badge">3</span>
         </router-link>
 
-        <!-- Login -->
-        <router-link to="/login" class="login-btn">Đăng nhập</router-link>
+        <!-- LOGIN / USER MENU -->
+        <router-link
+            v-if="!isAuth"
+            to="/login"
+            class="login-btn"
+        >
+          Đăng nhập
+        </router-link>
+
+        <!-- USER MENU -->
+        <div v-else class="user-menu-wrapper">
+          <button class="icon-btn user-btn" @click.stop="toggleMenu">👤</button>
+
+          <ul v-if="showMenu" class="dropdown">
+            <li>
+              <router-link to="/profile">Thông tin cá nhân</router-link>
+            </li>
+            <li>
+              <router-link to="/customer/order-by-user">Đơn hàng của tôi</router-link>
+            </li>
+            <li @click="logout">Đăng xuất</li>
+          </ul>
+        </div>
       </div>
     </nav>
   </header>
@@ -75,7 +132,7 @@
 }
 
 .nav-menu a::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -5px;
   left: 0;
@@ -95,7 +152,7 @@
   align-items: center;
 }
 
-/* Icon Button (Search + Cart) */
+/* Icon Button */
 .icon-btn {
   background: rgba(255, 255, 255, 0.2);
   color: white;
@@ -109,8 +166,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
 }
+
 .icon-btn:hover {
   background: rgba(255, 255, 255, 0.28);
   transform: scale(1.1);
@@ -120,6 +177,7 @@
 .cart-btn {
   position: relative;
 }
+
 .cart-badge {
   position: absolute;
   top: -3px;
@@ -145,5 +203,51 @@
 
 .login-btn:hover {
   background: rgba(255, 255, 255, 0.35);
+}
+
+/* USER DROPDOWN */
+.user-menu-wrapper {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: 55px;
+  background: white;
+  color: #333;
+  list-style: none;
+  padding: 10px 0;
+  width: 180px;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.2s ease;
+}
+
+.dropdown li {
+  padding: 12px 18px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.dropdown li:hover {
+  background: #f2f2f2;
+}
+
+.dropdown a {
+  color: #333;
+  text-decoration: none;
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

@@ -27,10 +27,10 @@ public class JwtService {
     
     private static final int REFRESH_TOKEN_LENGTH = 64;
     
-    @Value("${tpp.jwt.privateKey}")
+    @Value("${jwt.privateKey}")
     private String privateKey;
     
-    @Value("${tpp.jwt.publicKey}")
+    @Value("${jwt.publicKey}")
     private String publicKey;
     
     private final TokenExpiredRepository tokenExpiredRepository;
