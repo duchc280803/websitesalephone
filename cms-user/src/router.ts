@@ -39,7 +39,7 @@ const router = createRouter({
         },
         {
             path: '/customer',
-            redirect: '/customer/login',
+            redirect: '/customer/home',
             children: [
                 {
                     path: 'home',
@@ -60,7 +60,7 @@ const router = createRouter({
                     meta: { requiresAuth: false, title: 'Giỏ hàng' }
                 },
                 {
-                    path: 'products',
+                    path: 'product-home',
                     name: 'HomeProduct',
                     component: HomeProduct,
                     meta: { requiresAuth: false, title: 'Sản phẩm' }
@@ -82,7 +82,7 @@ const router = createRouter({
         {
             path: '/admin',
             component: AdminLayout,
-            redirect: '/admin/login',
+            redirect: '/admin/dashboard',
             children: [
                 {
                     path: 'dashboard',
@@ -91,31 +91,31 @@ const router = createRouter({
                     meta: { requiresAuth: true, title: 'Dashboard' }
                 },
                 {
-                    path: 'users',
+                    path: 'user',
                     name: 'user',
                     component: User,
                     meta: { requiresAuth: true, title: 'Người dùng' }
                 },
                 {
-                    path: 'user/:id',
+                    path: 'user-detail/:id',
                     name: 'UserDetailPage',
                     component: UserDetailPage,
                     meta: { requiresAuth: true, title: 'Chi tiết người dùng' }
                 },
                 {
-                    path: 'products',
+                    path: 'product',
                     name: 'product',
                     component: Product,
                     meta: { requiresAuth: true, title: 'Sản phẩm' }
                 },
                 {
-                    path: 'orders',
+                    path: 'order',
                     name: 'order',
                     component: Order,
                     meta: { requiresAuth: true, title: 'Đơn hàng' }
                 },
                 {
-                    path: 'orders/:id',
+                    path: 'orders-detail/:id',
                     name: 'OrderDetailPage',
                     component: OrderDetailPage,
                     meta: { requiresAuth: true, title: 'Chi tiết đơn hàng' }
