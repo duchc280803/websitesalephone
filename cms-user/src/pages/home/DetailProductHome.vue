@@ -1,236 +1,296 @@
 <script setup lang="ts">
-
+import {ref, onMounted} from "vue";
+import {useRoute} from "vue-router";
 import HomeLayout from "../../layout/Header.vue";
 import Footer from "../../layout/Footer.vue";
+import {ProductDetailRequest} from "@/models/ProductDetailRequest.ts";
+import {productService} from "@/service/ProductService";
+import type {ProductDetailResponse} from "@/models/ProductDetailResponse.ts";
+import {CartRequest} from "@/models/CartRequest.ts";
+import {cartService} from "@/service/CartService.ts";
+import {toast} from "vue3-toastify";
+
+const route = useRoute();
+const productId = route.params.id as string;
+
+const product = ref<ProductDetailResponse | null>(null);
+
+// Selected single option for each spec
+const selectedRam = ref<string>("");
+const selectedCpu = ref<string>("");
+const selectedCamera = ref<string>("");
+const selectedScreen = ref<string>("");
+const selectedColor = ref<string>("");
+const selectedOrigin = ref<string>("");
+const selectedOp = ref<string>("");
+const selectedBattery = ref<string>("");
+const selectedStorage = ref<string>("");
+const availableQuantity = ref<number | null>(null);
+const productVariantId = ref<string | null>(null);
+
+// Format giá
+const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("vi-VN", {style: "currency", currency: "VND"}).format(value);
+
+const loadProductDetail = async () => {
+  try {
+    const response = await productService.detail(new ProductDetailRequest({idProduct: productId}));
+    product.value = response.data.data;
+
+    if (product.value) {
+      selectedRam.value = product.value.rams[0]?.id || "";
+      selectedCpu.value = product.value.cpus[0]?.id || "";
+      selectedCamera.value = product.value.cameras[0]?.id || "";
+      selectedScreen.value = product.value.screens[0]?.id || "";
+      selectedColor.value = product.value.colors[0]?.id || "";
+      selectedOrigin.value = product.value.origins[0]?.id || "";
+      selectedOp.value = product.value.operators[0]?.id || "";
+      selectedBattery.value = product.value.batterys[0]?.id || "";
+      selectedStorage.value = product.value.storages[0]?.id || "";
+      updateQuantity();
+    }
+  } catch (error) {
+    console.error("Lỗi khi lấy chi tiết sản phẩm", error);
+  }
+};
+
+onMounted(() => loadProductDetail());
+
+const quantity = ref(1);
+
+const increaseQty = () => quantity.value += 1;
+const decreaseQty = () => {
+  if (quantity.value > 1) quantity.value -= 1;
+};
+
+const updateQuantity = async () => {
+  // Kiểm tra đủ 3 option bắt buộc
+  if (!selectedRam.value || !selectedColor.value || !selectedOrigin.value) {
+    availableQuantity.value = null; // chưa đủ chọn thì ẩn số lượng
+    return;
+  }
+  if (!product.value) return;
+
+  const request: CreateCartRequest = {
+    idProduct: productId,
+    idRam: selectedRam.value,
+    idColor: selectedColor.value,
+    idOrigin: selectedOrigin.value,
+  };
+
+  try {
+    const response = await productService.getQuantity(request);
+    availableQuantity.value = response.data.data.quantity; // backend trả số lượng tồn
+    productVariantId.value = response.data.data.idProduct; // backend trả số lượng tồn
+  } catch (error) {
+    console.error("Lỗi khi lấy số lượng sản phẩm", error);
+    availableQuantity.value = null;
+  }
+};
+
+const selectOption = (
+    type: "ram" | "cpu" | "camera" | "screen" | "color" | "origin" | "op" | "battery" | "storage",
+    id: string
+) => {
+  switch (type) {
+    case "ram": selectedRam.value = id; break;
+    case "cpu": selectedCpu.value = id; break;
+    case "camera": selectedCamera.value = id; break;
+    case "screen": selectedScreen.value = id; break;
+    case "color": selectedColor.value = id; break;
+    case "origin": selectedOrigin.value = id; break;
+    case "op": selectedOp.value = id; break;
+    case "battery": selectedBattery.value = id; break;
+    case "storage": selectedStorage.value = id; break;
+  }
+
+  updateQuantity();
+};
+
+const addToCart = async () => {
+  if (!product.value || quantity.value < 1) return;
+
+  const cartRequest: CartRequest = {
+    productId: productVariantId.value,
+    quantity: quantity.value,
+  };
+
+  try {
+    await cartService.addToCart(cartRequest);
+    toast.info(`Đã thêm ${quantity.value} sản phẩm vào giỏ hàng`);
+  } catch (err) {
+    console.error(err);
+    toast.error("Thêm vào giỏ hàng thất bại!");
+  }
+};
+
+const colorMap: Record<string, string> = {
+  BLACK: "#000000",
+  WHITE: "#FFFFFF",
+  RED: "#FF0000",
+  GREEN: "#00FF00",
+  BLUE: "#0000FF",
+  YELLOW: "#FFFF00",
+  ORANGE: "#FFA500",
+  PURPLE: "#800080",
+  PINK: "#FFC0CB",
+  BROWN: "#A52A2A",
+  GREY: "#808080",
+  SILVER: "#C0C0C0",
+  GOLD: "#FFD700",
+  CYAN: "#00FFFF",
+  MAGENTA: "#FF00FF",
+  NAVY: "#000080",
+  LIME: "#00FF00",
+  TEAL: "#008080",
+  OLIVE: "#808000",
+  MAROON: "#800000",
+  CORAL: "#FF7F50",
+  TURQUOISE: "#40E0D0",
+  INDIGO: "#4B0082",
+  VIOLET: "#EE82EE",
+  BEIGE: "#F5F5DC",
+  TAN: "#D2B48C",
+  CHOCOLATE: "#D2691E",
+  SALMON: "#FA8072",
+  KHAKI: "#F0E68C",
+  MINT: "#98FF98",
+  PEACH: "#FFE5B4",
+  // Bạn có thể thêm các màu khác theo sản phẩm
+};
 </script>
 
 <template>
   <HomeLayout/>
-  <nav class="breadcrumb"><a href="#home">Trang chủ</a> <span>/</span> <a href="#products">Sản phẩm</a> <span>/</span>
-    <a href="#smartphones">Điện thoại</a> <span>/</span> <span>iPhone 15 Pro Max</span>
-  </nav><!-- Product Detail -->
+
+  <nav class="breadcrumb">
+    <a href="#home">Trang chủ</a> <span>/</span>
+    <a href="#products">Sản phẩm</a> <span>/</span>
+    <a href="#smartphones">Điện thoại</a> <span>/</span>
+    <span>{{ product?.productName || "Đang tải..." }}</span>
+  </nav>
+
   <article class="product-detail">
-    <div class="product-grid"><!-- Image Gallery -->
+    <div class="product-grid">
+      <!-- Image Gallery -->
       <section class="image-gallery">
         <div class="main-image">
-          📱
+          <!--          <img :src="product?.images[0]?.name" alt="main image" v-if="product?.images.length"/>-->
+          <!--          <span v-else>📱</span>-->
         </div>
         <div class="thumbnail-grid">
-          <div class="thumbnail active">
-            📱
+          <div v-for="img in product?.images" :key="img.id" class="thumbnail">
+            <img :src="img.name" alt="thumb"/>
           </div>
-          <div class="thumbnail">
-            📷
-          </div>
-          <div class="thumbnail">
-            🔋
-          </div>
-          <div class="thumbnail">
-            📐
-          </div>
-        </div>
-      </section><!-- Product Info -->
-      <section class="product-info"><span class="product-badge">🔥 HOT DEAL</span>
-        <h1 class="product-title">iPhone 15 Pro Max</h1>
-        <div class="rating">
-          <div class="stars">
-            ★★★★★
-          </div>
-          <span class="review-count">(1,234 đánh giá)</span>
-        </div>
-        <div class="stock-status"><span class="stock-dot"></span> Còn hàng - Giao hàng nhanh
-        </div>
-        <div class="price-section">
-          <div class="current-price">
-            29.990.000₫
-          </div>
-          <div><span class="original-price">34.990.000₫</span> <span class="discount-badge">-14%</span>
-          </div>
-        </div><!-- Brand Selection -->
-        <div class="spec-section">
-          <div class="spec-label"><span class="spec-icon">🏢</span> Thương Hiệu
-          </div>
-          <div class="spec-options">
-            <div class="spec-option selected">
-              Apple
-            </div>
-            <div class="spec-option">
-              Samsung
-            </div>
-            <div class="spec-option">
-              Xiaomi
-            </div>
-            <div class="spec-option">
-              OPPO
-            </div>
-            <div class="spec-option">
-              Vivo
-            </div>
-          </div>
-        </div><!-- RAM Selection -->
-        <div class="spec-section">
-          <div class="spec-label"><span class="spec-icon">💾</span> Dung Lượng RAM
-          </div>
-          <div class="spec-options">
-            <div class="spec-option">
-              6GB
-            </div>
-            <div class="spec-option selected">
-              8GB
-            </div>
-            <div class="spec-option">
-              12GB
-            </div>
-            <div class="spec-option">
-              16GB
-            </div>
-          </div>
-        </div><!-- CPU Selection -->
-        <div class="spec-section">
-          <div class="spec-label"><span class="spec-icon">⚡</span> Bộ Xử Lý (CPU)
-          </div>
-          <div class="spec-options">
-            <div class="spec-option selected">
-              Apple A17 Pro
-            </div>
-            <div class="spec-option">
-              Snapdragon 8 Gen 3
-            </div>
-            <div class="spec-option">
-              Dimensity 9300
-            </div>
-            <div class="spec-option">
-              Exynos 2400
-            </div>
-          </div>
-        </div><!-- Camera Selection -->
-        <div class="spec-section">
-          <div class="spec-label"><span class="spec-icon">📷</span> Camera Chính
-          </div>
-          <div class="spec-options">
-            <div class="spec-option">
-              48MP
-            </div>
-            <div class="spec-option">
-              64MP
-            </div>
-            <div class="spec-option selected">
-              108MP
-            </div>
-            <div class="spec-option">
-              200MP
-            </div>
-          </div>
-        </div><!-- Screen Selection -->
-        <div class="spec-section">
-          <div class="spec-label"><span class="spec-icon">📱</span> Kích Thước Màn Hình
-          </div>
-          <div class="spec-options">
-            <div class="spec-option">
-              6.1"
-            </div>
-            <div class="spec-option selected">
-              6.7"
-            </div>
-            <div class="spec-option">
-              6.8"
-            </div>
-            <div class="spec-option">
-              7.0"
-            </div>
-          </div>
-        </div><!-- Color Selection -->
-        <div class="spec-section">
-          <div class="spec-label"><span class="spec-icon">🎨</span> Màu Sắc
-          </div>
-          <div class="color-options">
-            <div class="color-option color-black" title="Đen"></div>
-            <div class="color-option color-white" title="Trắng"></div>
-            <div class="color-option color-blue selected" title="Xanh Dương"></div>
-            <div class="color-option color-purple" title="Tím"></div>
-            <div class="color-option color-gold" title="Vàng"></div>
-            <div class="color-option color-green" title="Xanh Lá"></div>
-            <div class="color-option color-red" title="Đỏ"></div>
-          </div>
-        </div><!-- Key Features -->
-        <div class="features-grid">
-          <div class="feature-item">
-            <div class="feature-icon">
-              📱
-            </div>
-            <div class="feature-text">
-              <div class="feature-label">
-                Màn hình
-              </div>
-              <div class="feature-value">
-                OLED 6.7" 120Hz
-              </div>
-            </div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">
-              🔋
-            </div>
-            <div class="feature-text">
-              <div class="feature-label">
-                Pin
-              </div>
-              <div class="feature-value">
-                4422 mAh
-              </div>
-            </div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">
-              💾
-            </div>
-            <div class="feature-text">
-              <div class="feature-label">
-                Bộ nhớ
-              </div>
-              <div class="feature-value">
-                256GB
-              </div>
-            </div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">
-              ⚡
-            </div>
-            <div class="feature-text">
-              <div class="feature-label">
-                Sạc nhanh
-              </div>
-              <div class="feature-value">
-                27W
-              </div>
-            </div>
-          </div>
-        </div><!-- Action Buttons -->
-        <div class="action-buttons">
-          <button class="btn btn-primary"> 🛒 Thêm Vào Giỏ Hàng</button>
-          <button class="btn btn-secondary"> ❤️ Yêu Thích</button>
         </div>
       </section>
-    </div><!-- Description -->
+
+      <!-- Product Info -->
+      <section class="product-info">
+        <span class="product-badge">🔥 HOT DEAL</span>
+        <h1 class="product-title">{{ product?.productName }}</h1>
+
+        <div class="current-price">{{ product?.price ? formatCurrency(product.price) : "" }}</div>
+
+        <!-- RAM Selection -->
+        <div class="spec-section">
+          <div class="spec-label"><span class="spec-icon">💾</span> Dung Lượng RAM</div>
+          <div class="spec-options">
+            <div v-for="ram in product?.rams" :key="ram.id" class="spec-option"
+                 :class="{ selected: selectedRam === ram.id }" @click="selectOption('ram', ram.id)">
+              {{ ram.name }}
+            </div>
+          </div>
+        </div>
+        <!-- Color Selection -->
+        <div class="spec-section" v-if="product?.colors?.length">
+          <div class="spec-label"><span class="spec-icon">🎨</span> Màu Sắc</div>
+          <div class="color-options">
+            <div v-for="color in product.colors" :key="color.id"
+                 class="color-option"
+                 :class="{ selected: selectedColor === color.id }"
+                 :title="color.name || 'Unknown'"
+                 @click="selectOption('color', color.id)">
+      <span
+          :style="{
+          backgroundColor: color.name && colorMap[color.name.toUpperCase()] ? colorMap[color.name.toUpperCase()] : '#ccc'
+        }"
+      >&nbsp;</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Origin Selection -->
+        <div class="spec-section" v-if="product?.origins?.length">
+          <div class="spec-label">Xuất xứ</div>
+          <div class="spec-options">
+            <div v-for="origin in product.origins" :key="origin.id" class="spec-option"
+                 :class="{ selected: selectedOrigin === origin.id }"
+                 @click="selectOption('origin', origin.id)">
+              {{ origin.name }}
+            </div>
+          </div>
+        </div>
+        <!-- Quantity Selection -->
+        <div class="spec-section" v-if="availableQuantity !== null">
+          <div class="spec-options quantity-options">
+            <!-- Giảm: disable khi quantity <= 1 -->
+            <button class="qty-btn" @click="decreaseQty" :disabled="quantity <= 1">-</button>
+
+            <input type="text" v-model.number="quantity" readonly />
+
+            <!-- Tăng: disable khi quantity >= availableQuantity -->
+            <button class="qty-btn" @click="increaseQty" :disabled="quantity >= availableQuantity">+</button>
+
+            <span class="stock-info">Còn lại: {{ availableQuantity }}</span>
+          </div>
+        </div>
+
+        <!-- Add to Cart -->
+        <div class="action-buttons">
+          <button class="btn btn-primary" @click="addToCart">🛒 Thêm Vào Giỏ Hàng</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Description -->
     <section class="description-section">
       <h2 class="description-title">📝 Mô Tả Sản Phẩm</h2>
-      <p class="description-text"><strong>iPhone 15 Pro Max</strong> là chiếc smartphone cao cấp nhất trong dòng iPhone
-        15 Series của Apple, mang đến trải nghiệm đỉnh cao với chip A17 Pro mạnh mẽ, hệ thống camera tiên tiến và thiết
-        kế titan cao cấp.</p>
-      <p class="description-text">Màn hình Super Retina XDR 6.7 inch với công nghệ ProMotion 120Hz cho hình ảnh mượt mà,
-        sống động với độ sáng tối đa lên đến 2000 nits. Chip A17 Pro được sản xuất trên tiến trình 3nm mang lại hiệu
-        năng vượt trội và tiết kiệm điện năng tối ưu.</p>
-      <p class="description-text">Hệ thống camera chuyên nghiệp với cảm biến chính 48MP, khả năng zoom quang học 5x, chế
-        độ chụp đêm nâng cao và quay video ProRes 4K. Pin 4422mAh đi kèm sạc nhanh 27W và sạc không dây MagSafe 15W.</p>
-      <p class="description-text">Thiết kế khung titan cao cấp, chống nước IP68, hỗ trợ 5G và Dynamic Island thông minh.
-        Sản phẩm đi kèm với hộp đựng, cáp sạc USB-C và các phụ kiện chính hãng Apple.</p>
+      <p class="description-text">{{ product?.description }}</p>
     </section>
   </article>
+
   <Footer/>
 </template>
 
 <style scoped>
+.color-option span {
+  display: block;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  transition: all 0.3s ease;
+}
+
+.color-option.selected {
+  border-color: #1a1a2e;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.color-option.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-weight: bold;
+  font-size: 1.3em;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+}
+
 body {
   box-sizing: border-box;
 }
@@ -741,4 +801,37 @@ body {
     padding: 30px 20px;
   }
 }
+
+.quantity-options {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.quantity-options input {
+  width: 50px;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 3px 0;
+  font-size: 14px;
+  background-color: #fff;
+}
+
+.quantity-options .qty-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.quantity-options .qty-btn:hover {
+  background-color: #e0e0e0;
+}
+
 </style>

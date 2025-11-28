@@ -49,7 +49,7 @@ const router = createRouter({
                     meta: { requiresAuth: false, title: 'Home' }
                 },
                 {
-                    path: 'detail-product',
+                    path: 'detail-product/:id',
                     name: 'DetailProductHome',
                     component: DetailProductHome,
                     meta: { requiresAuth: false, title: 'Chi tiết sản phẩm' }

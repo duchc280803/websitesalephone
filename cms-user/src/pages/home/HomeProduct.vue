@@ -1,287 +1,76 @@
 <script setup lang="ts">
-
+import { ref, onMounted } from "vue";
 import HomeLayout from "../../layout/Header.vue";
 import Footer from "../../layout/Footer.vue";
+import { productService } from "@/service/ProductService";
+import { Search } from "@/models/Search.ts";
+
+const products = ref<any[]>([]);
+const searchText = ref("");
+const page = ref(1);
+const size = ref(12);
+const totalItems = ref(0);
+
+const loadProducts = async () => {
+  const search = new Search(page.value, size.value, searchText.value);
+  const res = await productService.search(search);
+  products.value = res.data.data.content || [];
+  totalItems.value = res.data.total || 0;
+  console.log(products)
+};
+
+const onSearch = () => {
+  page.value = 1;
+  loadProducts();
+};
+
+const onPageChange = (newPage: number) => {
+  page.value = newPage;
+  loadProducts();
+};
+
+onMounted(loadProducts);
 </script>
 
 <template>
   <HomeLayout/>
-  <div class="container"><!-- Page Header -->
+  <div class="container">
     <header class="page-header">
       <h1>📱 Danh Sách Sản Phẩm</h1>
-      <div class="breadcrumb"><a href="#home">Trang chủ</a> / Sản phẩm
-      </div><!-- Search & Filter -->
+      <div class="breadcrumb"><a href="#home">Trang chủ</a> / Sản phẩm</div>
       <div class="search-section">
-        <div class="search-box"><input type="text" class="search-input" placeholder="Tìm kiếm sản phẩm..."> <span
-            class="search-icon">🔍</span>
-        </div>
-        <div class="filter-group"><select class="filter-select">
-          <option>Tất cả thương hiệu</option>
-          <option>Apple</option>
-          <option>Samsung</option>
-          <option>Xiaomi</option>
-          <option>OPPO</option>
-        </select> <select class="filter-select">
-          <option>Sắp xếp: Mới nhất</option>
-          <option>Giá: Thấp đến cao</option>
-          <option>Giá: Cao đến thấp</option>
-          <option>Tên: A-Z</option>
-          <option>Đánh giá cao nhất</option>
-        </select>
+        <div class="search-box">
+          <input v-model="searchText" type="text" class="search-input" placeholder="Tìm kiếm sản phẩm...">
+          <span class="search-icon" @click="onSearch">🔍</span>
         </div>
       </div>
-    </header><!-- Results Info -->
-    <div class="results-info">
-      <div class="results-count">
-        Hiển thị <strong>12</strong> trong tổng số <strong>48</strong> sản phẩm
-      </div>
-      <div class="view-toggle">
-        <button class="view-btn active">⊞</button>
-        <button class="view-btn">☰</button>
-      </div>
-    </div><!-- Products Grid -->
-    <div class="products-grid"><!-- Product 1 -->
-      <article class="product-card">
-        <div class="product-image">
-          📱
-        </div>
-        <div class="product-info"><span class="product-category">Apple</span>
-          <router-link :to="{ name: 'DetailProductHome' }">
-            <h3 class="product-name">iPhone 15 Pro Max</h3>
+    </header>
+
+    <div class="products-grid">
+      <article v-for="product in products" :key="product.id" class="product-card">
+        <div class="product-image">📱</div>
+        <div class="product-info">
+          <span class="product-category">{{ product.originName }}</span>
+          <router-link :to="`detail-product/${product.id}`">
+            <h3 class="product-name">{{ product.productName }}</h3>
           </router-link>
-          <div class="product-specs"><span class="spec-tag">256GB</span> <span class="spec-tag">8GB RAM</span> <span
-              class="spec-tag">A17 Pro</span>
-          </div>
-          <div class="product-rating"><span class="stars">⭐⭐⭐⭐⭐</span> <span class="rating-text">(128 đánh giá)</span>
+          <div class="product-specs">
+            <span class="spec-tag" v-for="spec in product.specs" :key="spec">{{ spec }}</span>
           </div>
           <div class="product-footer">
-            <div class="product-price">
-              29.990.000₫
-            </div>
-            <button class="btn-add-cart">🛒 Thêm</button>
-          </div>
-        </div>
-      </article><!-- Product 2 -->
-      <article class="product-card">
-        <div class="product-image">
-          📱 <span class="product-badge">-15%</span>
-        </div>
-        <div class="product-info"><span class="product-category">Samsung</span>
-          <h3 class="product-name">Samsung S24 Ultra</h3>
-          <div class="product-specs"><span class="spec-tag">512GB</span> <span class="spec-tag">12GB RAM</span> <span
-              class="spec-tag">Snapdragon 8 Gen 3</span>
-          </div>
-          <div class="product-rating"><span class="stars">⭐⭐⭐⭐⭐</span> <span class="rating-text">(95 đánh giá)</span>
-          </div>
-          <div class="product-footer">
-            <div class="product-price">
-              26.990.000₫
-            </div>
-            <button class="btn-add-cart">🛒 Thêm</button>
-          </div>
-        </div>
-      </article><!-- Product 3 -->
-      <article class="product-card">
-        <div class="product-image">
-          📱
-        </div>
-        <div class="product-info"><span class="product-category">Apple</span>
-          <h3 class="product-name">iPhone 14 Pro</h3>
-          <div class="product-specs"><span class="spec-tag">256GB</span> <span class="spec-tag">6GB RAM</span> <span
-              class="spec-tag">A16 Bionic</span>
-          </div>
-          <div class="product-rating"><span class="stars">⭐⭐⭐⭐⭐</span> <span class="rating-text">(203 đánh giá)</span>
-          </div>
-          <div class="product-footer">
-            <div class="product-price">
-              23.990.000₫
-            </div>
-            <button class="btn-add-cart">🛒 Thêm</button>
-          </div>
-        </div>
-      </article><!-- Product 4 -->
-      <article class="product-card">
-        <div class="product-image">
-          📱 <span class="product-badge new">Mới</span>
-        </div>
-        <div class="product-info"><span class="product-category">Xiaomi</span>
-          <h3 class="product-name">Xiaomi 14 Pro</h3>
-          <div class="product-specs"><span class="spec-tag">512GB</span> <span class="spec-tag">16GB RAM</span> <span
-              class="spec-tag">Snapdragon 8 Gen 3</span>
-          </div>
-          <div class="product-rating"><span class="stars">⭐⭐⭐⭐⭐</span> <span class="rating-text">(67 đánh giá)</span>
-          </div>
-          <div class="product-footer">
-            <div class="product-price">
-              19.990.000₫
-            </div>
-            <button class="btn-add-cart">🛒 Thêm</button>
-          </div>
-        </div>
-      </article><!-- Product 5 -->
-      <article class="product-card">
-        <div class="product-image">
-          📱
-        </div>
-        <div class="product-info"><span class="product-category">Samsung</span>
-          <h3 class="product-name">Samsung Galaxy Z Fold 5</h3>
-          <div class="product-specs"><span class="spec-tag">256GB</span> <span class="spec-tag">12GB RAM</span> <span
-              class="spec-tag">Gập</span>
-          </div>
-          <div class="product-rating"><span class="stars">⭐⭐⭐⭐⭐</span> <span class="rating-text">(54 đánh giá)</span>
-          </div>
-          <div class="product-footer">
-            <div class="product-price">
-              41.990.000₫
-            </div>
-            <button class="btn-add-cart">🛒 Thêm</button>
-          </div>
-        </div>
-      </article><!-- Product 6 -->
-      <article class="product-card">
-        <div class="product-image">
-          📱 <span class="product-badge">-20%</span>
-        </div>
-        <div class="product-info"><span class="product-category">OPPO</span>
-          <h3 class="product-name">OPPO Find N3</h3>
-          <div class="product-specs"><span class="spec-tag">512GB</span> <span class="spec-tag">16GB RAM</span> <span
-              class="spec-tag">Gập</span>
-          </div>
-          <div class="product-rating"><span class="stars">⭐⭐⭐⭐</span> <span class="rating-text">(42 đánh giá)</span>
-          </div>
-          <div class="product-footer">
-            <div class="product-price">
-              35.990.000₫
-            </div>
-            <button class="btn-add-cart">🛒 Thêm</button>
-          </div>
-        </div>
-      </article><!-- Product 7 -->
-      <article class="product-card">
-        <div class="product-image">
-          📱
-        </div>
-        <div class="product-info"><span class="product-category">Apple</span>
-          <h3 class="product-name">iPhone 13</h3>
-          <div class="product-specs"><span class="spec-tag">128GB</span> <span class="spec-tag">4GB RAM</span> <span
-              class="spec-tag">A15 Bionic</span>
-          </div>
-          <div class="product-rating"><span class="stars">⭐⭐⭐⭐⭐</span> <span class="rating-text">(457 đánh giá)</span>
-          </div>
-          <div class="product-footer">
-            <div class="product-price">
-              16.990.000₫
-            </div>
-            <button class="btn-add-cart">🛒 Thêm</button>
-          </div>
-        </div>
-      </article><!-- Product 8 -->
-      <article class="product-card">
-        <div class="product-image">
-          📱 <span class="product-badge new">Mới</span>
-        </div>
-        <div class="product-info"><span class="product-category">Xiaomi</span>
-          <h3 class="product-name">Xiaomi 13T Pro</h3>
-          <div class="product-specs"><span class="spec-tag">256GB</span> <span class="spec-tag">12GB RAM</span> <span
-              class="spec-tag">Dimensity 9200+</span>
-          </div>
-          <div class="product-rating"><span class="stars">⭐⭐⭐⭐</span> <span class="rating-text">(89 đánh giá)</span>
-          </div>
-          <div class="product-footer">
-            <div class="product-price">
-              12.990.000₫
-            </div>
-            <button class="btn-add-cart">🛒 Thêm</button>
-          </div>
-        </div>
-      </article><!-- Product 9 -->
-      <article class="product-card">
-        <div class="product-image">
-          📱
-        </div>
-        <div class="product-info"><span class="product-category">Samsung</span>
-          <h3 class="product-name">Samsung Galaxy A54</h3>
-          <div class="product-specs"><span class="spec-tag">128GB</span> <span class="spec-tag">8GB RAM</span> <span
-              class="spec-tag">Exynos 1380</span>
-          </div>
-          <div class="product-rating"><span class="stars">⭐⭐⭐⭐</span> <span class="rating-text">(234 đánh giá)</span>
-          </div>
-          <div class="product-footer">
-            <div class="product-price">
-              9.990.000₫
-            </div>
-            <button class="btn-add-cart">🛒 Thêm</button>
-          </div>
-        </div>
-      </article><!-- Product 10 -->
-      <article class="product-card">
-        <div class="product-image">
-          📱 <span class="product-badge">-10%</span>
-        </div>
-        <div class="product-info"><span class="product-category">OPPO</span>
-          <h3 class="product-name">OPPO Reno 10 Pro</h3>
-          <div class="product-specs"><span class="spec-tag">256GB</span> <span class="spec-tag">12GB RAM</span> <span
-              class="spec-tag">Snapdragon 778G</span>
-          </div>
-          <div class="product-rating"><span class="stars">⭐⭐⭐⭐</span> <span class="rating-text">(156 đánh giá)</span>
-          </div>
-          <div class="product-footer">
-            <div class="product-price">
-              11.990.000₫
-            </div>
-            <button class="btn-add-cart">🛒 Thêm</button>
-          </div>
-        </div>
-      </article><!-- Product 11 -->
-      <article class="product-card">
-        <div class="product-image">
-          📱
-        </div>
-        <div class="product-info"><span class="product-category">Xiaomi</span>
-          <h3 class="product-name">Redmi Note 13 Pro</h3>
-          <div class="product-specs"><span class="spec-tag">256GB</span> <span class="spec-tag">8GB RAM</span> <span
-              class="spec-tag">Snapdragon 7s Gen 2</span>
-          </div>
-          <div class="product-rating"><span class="stars">⭐⭐⭐⭐</span> <span class="rating-text">(312 đánh giá)</span>
-          </div>
-          <div class="product-footer">
-            <div class="product-price">
-              7.990.000₫
-            </div>
-            <button class="btn-add-cart">🛒 Thêm</button>
-          </div>
-        </div>
-      </article><!-- Product 12 -->
-      <article class="product-card">
-        <div class="product-image">
-          📱 <span class="product-badge new">Mới</span>
-        </div>
-        <div class="product-info"><span class="product-category">Samsung</span>
-          <h3 class="product-name">Samsung Galaxy S23</h3>
-          <div class="product-specs"><span class="spec-tag">256GB</span> <span class="spec-tag">8GB RAM</span> <span
-              class="spec-tag">Snapdragon 8 Gen 2</span>
-          </div>
-          <div class="product-rating"><span class="stars">⭐⭐⭐⭐⭐</span> <span class="rating-text">(178 đánh giá)</span>
-          </div>
-          <div class="product-footer">
-            <div class="product-price">
-              18.990.000₫
-            </div>
+            <div class="product-price">{{ product.price | currency }}₫</div>
             <button class="btn-add-cart">🛒 Thêm</button>
           </div>
         </div>
       </article>
-    </div><!-- Pagination -->
+    </div>
+
     <div class="pagination">
-      <button class="page-btn" disabled>⟨⟨ Đầu</button>
-      <button class="page-btn" disabled>⟨ Trước</button>
-      <button class="page-btn active">1</button>
-      <button class="page-btn">2</button>
-      <button class="page-btn">3</button>
-      <button class="page-btn">4</button>
-      <span class="page-info">Trang 1 / 4</span>
-      <button class="page-btn">Sau ⟩</button>
-      <button class="page-btn">Cuối ⟩⟩</button>
+      <button class="page-btn" :disabled="page === 1" @click="onPageChange(1)">⟨⟨ Đầu</button>
+      <button class="page-btn" :disabled="page === 1" @click="onPageChange(page - 1)">⟨ Trước</button>
+      <span class="page-info">Trang {{ page }} / {{ Math.ceil(totalItems / size) }}</span>
+      <button class="page-btn" :disabled="page === Math.ceil(totalItems / size)" @click="onPageChange(page + 1)">Sau ⟩</button>
+      <button class="page-btn" :disabled="page === Math.ceil(totalItems / size)" @click="onPageChange(Math.ceil(totalItems / size))">Cuối ⟩⟩</button>
     </div>
   </div>
   <Footer/>

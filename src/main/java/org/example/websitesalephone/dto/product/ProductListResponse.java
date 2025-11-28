@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 @FieldNameConstants
 public class ProductListResponse {
 
+    private String id;
+
     private String productName;
 
     private String originName;
@@ -29,6 +31,7 @@ public class ProductListResponse {
     public static ProductListResponse fromEntity(ProductVariant entity) {
         return ProductListResponse
                 .builder()
+                .id(entity.getProduct().getId())
                 .productName(entity.getProduct().getName())
                 .originName(entity.getOrigin().getName())
                 .price(entity.getPrice())

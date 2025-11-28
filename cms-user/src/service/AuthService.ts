@@ -1,8 +1,6 @@
-import axios from "axios";
-import type {AxiosResponse} from "axios";
-import {AuthUser, IAuthUser} from "@/models/AuthUser";
+import api from '../api/api.ts';
+import type {apiResponse} from "api";
 import {ResetPasswordRequest, IResetPasswordRequest} from '../models/ResetPasswordRequest';
-import {LoginDetail} from "../models/LoginDetail.ts";
 
 class AuthService {
     private ROOT_API = import.meta.env.VITE_ROOT_API + '/api/auth/';
@@ -12,7 +10,6 @@ class AuthService {
 
     public isAuthenticated(): boolean {
         const t = localStorage.getItem(this.tokenKey);
-        console.log(t)
         return t !== null && t !== undefined && t !== '' && t !== 'null';
     }
 
@@ -32,8 +29,8 @@ class AuthService {
         return null;
     }
 
-    public async login(request: any): Promise<AxiosResponse> {
-        return axios.post(`${this.ROOT_API}login`, request);
+    public async login(request: any): Promise<apiResponse> {
+        return api.post(`${this.ROOT_API}login`, request);
     }
 
     public saveToken(token: string) {
@@ -52,31 +49,31 @@ class AuthService {
 
 
     // Logout
-    public logout(token: string): Promise<AxiosResponse> {
+    public logout(token: string): Promise<apiResponse> {
         this.removeTokenAndRole()
-        return axios.post(`${this.ROOT_API}logout`, null, {params: {token}});
+        return api.post(`${this.ROOT_API}logout`, null, {params: {token}});
     }
 
     // Quên mật khẩu
-    public forgotPassword(email: string, tabletOrPc: string): Promise<AxiosResponse> {
-        return axios.post(`${this.ROOT_API}forgot-password`, null, {
+    public forgotPassword(email: string, tabletOrPc: string): Promise<apiResponse> {
+        return api.post(`${this.ROOT_API}forgot-password`, null, {
             params: {email, tabletOrPc}
         });
     }
 
     // Reset mật khẩu
-    public resetPassword(request: ResetPasswordRequest | IResetPasswordRequest): Promise<AxiosResponse> {
+    public resetPassword(request: ResetPasswordRequest | IResetPasswordRequest): Promise<apiResponse> {
         const payload = request instanceof ResetPasswordRequest ? request.toPayload() : request;
-        return axios.post(`${this.ROOT_API}reset-password`, payload);
+        return api.post(`${this.ROOT_API}reset-password`, payload);
     }
 
     // Kiểm tra token reset mật khẩu
-    public checkResetToken(token: string): Promise<AxiosResponse> {
-        return axios.get(`${this.ROOT_API}check-reset-token`, {params: {token}});
+    public checkResetToken(token: string): Promise<apiResponse> {
+        return api.get(`${this.ROOT_API}check-reset-token`, {params: {token}});
     }
 
-    public register(request: RegisterRequest): Promise<AxiosResponse> {
-        return axios.post(`${this.ROOT_API}register`, request.toPayload());
+    public register(request: RegisterRequest): Promise<apiResponse> {
+        return api.post(`${this.ROOT_API}register`, request.toPayload());
     }
 }
 

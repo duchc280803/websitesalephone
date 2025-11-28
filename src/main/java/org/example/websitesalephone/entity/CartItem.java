@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "cart_items")
 @Data
@@ -26,7 +28,7 @@ public class CartItem extends BaseEntity{
 
     private Integer quantity;
 
-    private Double amount;
+    private BigDecimal amount;
 
     private String status;
 }

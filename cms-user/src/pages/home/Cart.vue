@@ -1,182 +1,189 @@
 <script setup lang="ts">
-
+import { ref, onMounted, computed } from "vue";
 import HomeLayout from "../../layout/Header.vue";
 import Footer from "../../layout/Footer.vue";
+import { cartService } from "@/service/CartService.ts";
+import type { CartResponse, ProductInCart } from "@/models/Cart.ts";
+import { CartRequest } from "@/models/CartRequest.ts";
+import type { CheckOutRequest } from "@/models/CheckOutRequest.ts";
+
+type CartItemWithSelect = ProductInCart & { selected: boolean };
+const cartItems = ref<CartItemWithSelect[]>([]);
+const loading = ref(false);
+const search = {};
+
+const fetchCartItems = async () => {
+  loading.value = true;
+  try {
+    const response = await cartService.getCartItems(search);
+    const cart: CartResponse = response.data.data;
+    cartItems.value = cart.products.map(item => ({ ...item, selected: true }));
+  } catch (err) {
+    console.error("Fetch cart error", err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(fetchCartItems);
+
+const totalQuantity = computed(() =>
+    cartItems.value.filter(i => i.selected).reduce((sum, i) => sum + i.quantity, 0)
+);
+
+const subtotal = computed(() =>
+    cartItems.value.filter(i => i.selected).reduce((sum, i) => sum + i.quantity * Number(i.price), 0)
+);
+
+const allSelected = computed({
+  get: () => cartItems.value.length > 0 && cartItems.value.every(i => i.selected),
+  set: (val: boolean) => {
+    cartItems.value.forEach(i => (i.selected = val));
+  }
+});
+
+const increaseQty = async (item: CartItemWithSelect) => {
+  item.quantity++;
+  try {
+    await cartService.updateCartItem(new CartRequest(item.productId, item.quantity).toPayload());
+  } catch (err) {
+    console.error("Update cart error", err);
+  }
+};
+
+const decreaseQty = async (item: CartItemWithSelect) => {
+  if (item.quantity > 1) {
+    item.quantity--;
+    try {
+      await cartService.updateCartItem(new CartRequest(item.productId, item.quantity).toPayload());
+    } catch (err) {
+      console.error("Update cart error", err);
+    }
+  }
+};
+
+const removeItem = async (item: CartItemWithSelect) => {
+  try {
+    await cartService.updateCartItem(new CartRequest(item.productId, 0).toPayload());
+    cartItems.value = cartItems.value.filter(i => i.productId !== item.productId);
+  } catch (err) {
+    console.error("Remove cart item error", err);
+  }
+};
+
+const checkout = async () => {
+  const payload: CheckOutRequest = {
+    items: cartItems.value
+        .filter(i => i.selected)
+        .map(i => new CartRequest(i.productId, i.quantity).toPayload())
+  };
+  try {
+    await cartService.checkoutCart(payload);
+    alert("Thanh toán thành công!");
+    await fetchCartItems();
+  } catch (err) {
+    console.error("Checkout error", err);
+  }
+};
+
+function getContrastColor(hex: string): string {
+  if (!hex) return "#000";
+  // Loại bỏ #
+  const c = hex.startsWith("#") ? hex.substring(1) : hex;
+  // Chuyển sang RGB
+  const r = parseInt(c.substr(0, 2), 16);
+  const g = parseInt(c.substr(2, 2), 16);
+  const b = parseInt(c.substr(4, 2), 16);
+  // Tính độ sáng
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness > 125 ? "#000" : "#fff";
+}
+
 </script>
 
 <template>
-  <HomeLayout/>
-  <div class="container"><!-- Header -->
+  <HomeLayout />
+  <div class="container">
     <header class="cart-header">
       <div class="header-left">
         <h1>🛒 Giỏ Hàng Của Bạn</h1>
-        <div class="breadcrumb"><a href="#home">Trang chủ</a> / Giỏ hàng
-        </div>
+        <div class="breadcrumb"><a href="#home">Trang chủ</a> / Giỏ hàng</div>
       </div>
       <div class="header-right">
-        <div class="cart-count">
-          4
-        </div>
-        <div class="cart-count-label">
-          Sản phẩm
-        </div>
+        <div class="cart-count">{{ totalQuantity }}</div>
+        <div class="cart-count-label">Sản phẩm</div>
       </div>
-    </header><!-- Cart Grid -->
-    <div class="cart-grid"><!-- Cart Items -->
+    </header>
+
+    <div class="cart-grid">
       <section class="cart-items">
         <div class="cart-items-header">
-          <h2 class="cart-items-title">📦 Sản Phẩm Trong Giỏ</h2><label class="select-all">
-          <div class="checkbox checked"></div> Chọn tất cả </label>
-        </div><!-- Item 1 -->
-        <article class="cart-item">
+          <h2 class="cart-items-title">📦 Sản Phẩm Trong Giỏ</h2>
+          <label class="select-all">
+            <input type="checkbox" v-model="allSelected" /> Chọn tất cả
+          </label>
+        </div>
+
+        <article class="cart-item" v-for="item in cartItems" :key="item.productId">
           <div class="item-select">
-            <div class="checkbox checked"></div>
+            <input type="checkbox" v-model="item.selected" />
           </div>
           <div class="item-image">
-            📱
+            <img :src="item.image || '/placeholder.png'" alt="product" />
           </div>
           <div class="item-details">
-            <h3 class="item-name">iPhone 15 Pro Max</h3>
-            <div class="item-specs"><span class="spec-badge">256GB</span> <span class="spec-badge">Xanh Titan</span> <span class="spec-badge">8GB RAM</span>
+            <h3 class="item-name">{{ item.productName }}</h3>
+            <div class="item-specs">
+              <span class="spec-badge">{{ item.ram }}</span>
+              <span
+                  class="spec-badge"
+                  :style="{ backgroundColor: item.color, color: getContrastColor(item.color) }"
+              ></span>
+              <span class="spec-badge">{{ item.ops }}</span>
             </div>
-            <div class="item-price">
-              29.990.000₫
-            </div>
+            <div class="item-price">{{ Number(item.price).toLocaleString('vi-VN') }}₫</div>
             <div class="item-controls">
-              <div class="quantity-control"><button class="qty-btn">−</button> <input type="text" class="qty-input" value="1" readonly> <button class="qty-btn">+</button>
-              </div><button class="btn-remove">🗑️ Xóa</button>
-            </div>
-          </div>
-          <div class="item-actions">
-            <div class="item-total">
-              29.990.000₫
-            </div>
-          </div>
-        </article><!-- Item 2 -->
-        <article class="cart-item">
-          <div class="item-select">
-            <div class="checkbox checked"></div>
-          </div>
-          <div class="item-image">
-            📱
-          </div>
-          <div class="item-details">
-            <h3 class="item-name">Samsung S24 Ultra</h3>
-            <div class="item-specs"><span class="spec-badge">512GB</span> <span class="spec-badge">Đen Titanium</span> <span class="spec-badge">12GB RAM</span>
-            </div>
-            <div class="item-price">
-              26.990.000₫
-            </div>
-            <div class="item-controls">
-              <div class="quantity-control"><button class="qty-btn">−</button> <input type="text" class="qty-input" value="1" readonly> <button class="qty-btn">+</button>
-              </div><button class="btn-remove">🗑️ Xóa</button>
-            </div>
-          </div>
-          <div class="item-actions">
-            <div class="item-total">
-              26.990.000₫
-            </div>
-          </div>
-        </article><!-- Item 3 -->
-        <article class="cart-item">
-          <div class="item-select">
-            <div class="checkbox checked"></div>
-          </div>
-          <div class="item-image">
-            📱
-          </div>
-          <div class="item-details">
-            <h3 class="item-name">iPhone 14 Pro</h3>
-            <div class="item-specs"><span class="spec-badge">256GB</span> <span class="spec-badge">Tím Deep Purple</span> <span class="spec-badge">6GB RAM</span>
-            </div>
-            <div class="item-price">
-              23.990.000₫
-            </div>
-            <div class="item-controls">
-              <div class="quantity-control"><button class="qty-btn">−</button> <input type="text" class="qty-input" value="2" readonly> <button class="qty-btn">+</button>
-              </div><button class="btn-remove">🗑️ Xóa</button>
-            </div>
-          </div>
-          <div class="item-actions">
-            <div class="item-total">
-              47.980.000₫
-            </div>
-          </div>
-        </article><!-- Item 4 -->
-        <article class="cart-item">
-          <div class="item-select">
-            <div class="checkbox checked"></div>
-          </div>
-          <div class="item-image">
-            📱
-          </div>
-          <div class="item-details">
-            <h3 class="item-name">Xiaomi 13 Pro</h3>
-            <div class="item-specs"><span class="spec-badge">256GB</span> <span class="spec-badge">Trắng Ceramic</span> <span class="spec-badge">12GB RAM</span>
-            </div>
-            <div class="item-price">
-              15.990.000₫
-            </div>
-            <div class="item-controls">
-              <div class="quantity-control"><button class="qty-btn">−</button> <input type="text" class="qty-input" value="1" readonly> <button class="qty-btn">+</button>
-              </div><button class="btn-remove">🗑️ Xóa</button>
-            </div>
-          </div>
-          <div class="item-actions">
-            <div class="item-total">
-              15.990.000₫
+              <div class="quantity-control">
+                <button class="qty-btn" @click="decreaseQty(item)">−</button>
+                <input type="text" class="qty-input" :value="item.quantity" readonly />
+                <button class="qty-btn" @click="increaseQty(item)">+</button>
+              </div>
+              <button class="btn-remove" @click="removeItem(item)">🗑️ Xóa</button>
             </div>
           </div>
         </article>
-      </section><!-- Order Summary -->
+      </section>
+
       <aside class="order-summary">
         <h2 class="summary-title">📋 Tóm Tắt Đơn Hàng</h2>
-        <div class="summary-row"><span class="summary-label">Tạm tính (4 sản phẩm)</span> <span class="summary-value">120.950.000₫</span>
+        <div class="summary-row">
+          <span class="summary-label">Tạm tính ({{ totalQuantity }} sản phẩm)</span>
+          <span class="summary-value">{{ subtotal.toLocaleString('vi-VN') }}₫</span>
         </div>
-        <div class="summary-row"><span class="summary-label">Phí vận chuyển</span> <span class="summary-value" style="color: #43e97b;">Miễn phí</span>
+        <div class="summary-row">
+          <span class="summary-label">Phí vận chuyển</span>
+          <span class="summary-value" style="color: #43e97b;">Chờ admin duyệt đơn</span>
         </div>
-        <div class="summary-row"><span class="summary-label">Giảm giá</span> <span class="summary-value" style="color: #ff6b6b;">-2.000.000₫</span>
+        <div class="summary-row summary-total">
+          <span class="total-label">Tổng cộng</span>
+          <span class="total-value">{{ subtotal.toLocaleString('vi-VN') }}₫</span>
         </div>
-        <div class="summary-row summary-total"><span class="total-label">Tổng cộng</span> <span class="total-value">118.950.000₫</span>
-        </div><!-- Promo Code -->
-        <div class="promo-section">
-          <div class="promo-input-group"><input type="text" class="promo-input" placeholder="Nhập mã giảm giá"> <button class="btn-apply">Áp dụng</button>
-          </div>
-        </div><!-- Checkout Button --> <button class="btn-checkout"> 💳 Thanh Toán Ngay </button> <!-- Features -->
+        <button class="btn-checkout" @click="checkout">💳 Thanh Toán Ngay</button>
+
         <div class="features">
-          <div class="feature">
-            <div class="feature-icon">
-              🚚
-            </div>
-            <div class="feature-text">
-              Giao hàng miễn phí
-            </div>
-          </div>
-          <div class="feature">
-            <div class="feature-icon">
-              🔒
-            </div>
-            <div class="feature-text">
-              Thanh toán bảo mật
-            </div>
-          </div>
-          <div class="feature">
-            <div class="feature-icon">
-              ↩️
-            </div>
-            <div class="feature-text">
-              Đổi trả 30 ngày
-            </div>
-          </div>
+          <div class="feature"><div class="feature-icon">🚚</div><div class="feature-text">Giao hàng miễn phí</div></div>
+          <div class="feature"><div class="feature-icon">🔒</div><div class="feature-text">Thanh toán bảo mật</div></div>
+          <div class="feature"><div class="feature-icon">↩️</div><div class="feature-text">Đổi trả 30 ngày</div></div>
         </div>
       </aside>
-    </div><!-- Continue Shopping -->
-    <div class="continue-shopping"><a href="#products" class="btn-continue"> ⬅️ Tiếp Tục Mua Sắm </a>
+    </div>
+
+    <div class="continue-shopping">
+      <a href="#products" class="btn-continue">⬅️ Tiếp Tục Mua Sắm</a>
     </div>
   </div>
-  <Footer/>
+  <Footer />
 </template>
-
 <style scoped>
 body {
   box-sizing: border-box;

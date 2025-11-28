@@ -2,6 +2,7 @@ package org.example.websitesalephone.service.product.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
+import org.example.websitesalephone.dto.dynamic.CreateCartRequest;
 import org.example.websitesalephone.dto.product.*;
 import org.example.websitesalephone.entity.*;
 import org.example.websitesalephone.repository.*;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -44,17 +46,21 @@ public class ProductServiceImpl implements ProductService {
     private final ProductVariantRepository productVariantRepository;
 
     @Override
-    public CommonResponse getALl(ProductSearch searchForm) {
+    public CommonResponse getALl(ProductSearch productSearch) {
 
-        if (Strings.isNotEmpty(searchForm.getSearchText())) {
-            searchForm.setSearchText("%" + searchForm.getSearchText() + "%");
+        PageRequest pageRequest = Utils.getPaging(productSearch);
+        Page<ProductListResponse> result;
+
+        if (Strings.isNotEmpty(productSearch.getSearchText())) {
+            String searchText = "%" + productSearch.getSearchText().trim() + "%";
+            result = productVariantRepository
+                    .findByProduct_NameLikeIgnoreCase(searchText, pageRequest)
+                    .map(ProductListResponse::fromEntity);
         } else {
-            searchForm.setSearchText(null);
+            result = productVariantRepository
+                    .findAll(pageRequest)
+                    .map(ProductListResponse::fromEntity);
         }
-
-        PageRequest pageRequest = Utils.getPaging(searchForm);
-
-        Page<ProductListResponse> result = productVariantRepository.findAll(pageRequest).map(ProductListResponse::fromEntity);
 
         return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)
@@ -287,25 +293,25 @@ public class ProductServiceImpl implements ProductService {
                     .build();
         }
 
-        ProductVariant productVariant = productVariantRepository.findById(productDetailRequest.getIdProductVariant()).orElse(null);
+        List<ProductVariant> productVariants = productVariantRepository.findByProduct_Id(product.getId());
 
-        if (productVariant == null) {
+        if (productVariants == null) {
             return CommonResponse.builder()
                     .code(CommonResponse.CODE_NOT_FOUND)
                     .message("Product variant is not found")
                     .build();
         }
 
-        ProductImage productImage = productImageRepository.findById(productDetailRequest.getProductImageId()).orElse(null);
+        List<ProductImage> productImages = productImageRepository.findByProduct_id(product.getId());
 
-        if (productImage == null) {
+        if (productImages == null) {
             return CommonResponse.builder()
                     .code(CommonResponse.CODE_NOT_FOUND)
                     .message("ProductImage variant is not found")
                     .build();
         }
 
-        ProductDetailResponse productDetailResponse = ProductDetailResponse.fromEntity(product, productVariant, productImage);
+        ProductDetailResponse productDetailResponse = ProductDetailResponse.fromEntity(product, productVariants, productImages);
 
         return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)
@@ -329,6 +335,29 @@ public class ProductServiceImpl implements ProductService {
         productRepository.saveAndFlush(product);
         return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)
+                .build();
+    }
+
+    @Override
+    public CommonResponse getQuantity(CreateCartRequest createCartRequest) {
+        ProductVariant productVariant = productVariantRepository
+                .findByProduct_IdAndOrigin_IdAndColor_IdAndRam_Id(
+                        createCartRequest.getIdProduct(),
+                        createCartRequest.getIdOrigin(),
+                        createCartRequest.getIdColor(),
+                        createCartRequest.getIdRam()
+                );
+
+        if (productVariant == null) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_NOT_FOUND)
+                    .message("Product variant not found")
+                    .build();
+        }
+
+        return CommonResponse.builder()
+                .code(CommonResponse.CODE_SUCCESS)
+                .data(ProductVariantResponse.from(productVariant))
                 .build();
     }
 

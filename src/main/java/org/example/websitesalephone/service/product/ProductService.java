@@ -1,5 +1,6 @@
 package org.example.websitesalephone.service.product;
 
+import org.example.websitesalephone.dto.dynamic.CreateCartRequest;
 import org.example.websitesalephone.dto.product.ProductDetailRequest;
 import org.example.websitesalephone.dto.product.ProductRequest;
 import org.example.websitesalephone.dto.product.ProductSearch;
@@ -17,4 +18,5 @@ public interface ProductService {
 
     CommonResponse deleted(String id);
 
+    CommonResponse getQuantity(CreateCartRequest createCartRequest);
 }

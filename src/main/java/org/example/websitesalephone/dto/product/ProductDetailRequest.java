@@ -7,9 +7,4 @@ public class ProductDetailRequest {
 
     private String idProduct;
 
-    private String idProductVariant;
-
-    private String productImageId;
-
-    private String inventoryId;
 }

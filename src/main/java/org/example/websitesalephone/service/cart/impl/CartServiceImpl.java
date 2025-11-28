@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -43,20 +44,33 @@ public class CartServiceImpl implements CartService {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetail userDetail = (UserDetail) auth.getPrincipal();
-        User user = userRepository.findByUsernameAndIsDeleted(userDetail.getLoginId(), false)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findByUsernameAndIsDeleted(userDetail.getLoginId(), false).orElse(null);
+
+        if (user == null) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_SUCCESS)
+                    .message("Thêm sản phẩm vào giỏ hàng không thành công")
+                    .build();
+        }
 
         ProductVariant product = productVariantRepository.findById(request.getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElse(null);
 
-        Cart cart = cartRepository.findByUserId(user.getId())
-                .orElseGet(() -> {
-                    Cart newCart = new Cart();
-                    newCart.setUser(user);
-                    return cartRepository.save(newCart);
-                });
+        if (product == null) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_SUCCESS)
+                    .message("Thêm sản phẩm vào giỏ hàng không thành công")
+                    .build();
+        }
 
-        cartRepository.saveAndFlush(cart);
+        Cart cart = cartRepository.findByUserId(user.getId()).orElse(null);
+
+        if (cart == null) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_SUCCESS)
+                    .message("Thêm sản phẩm vào giỏ hàng không thành công")
+                    .build();
+        }
 
         Optional<CartItem> existingItemOpt = cart.getCartItems().stream()
                 .filter(i -> i.getProductVariant().getId().equals(request.getProductId()))
@@ -67,12 +81,21 @@ public class CartServiceImpl implements CartService {
             existingItem.setQuantity(existingItem.getQuantity() + request.getQuantity());
         } else {
             CartItem newItem = new CartItem();
+            newItem.setId(UUID.randomUUID().toString());
             newItem.setCart(cart);
             newItem.setProductVariant(product);
             newItem.setQuantity(request.getQuantity());
+            newItem.setStatus(CartStatus.ACTIVE.getCode());
+
+            BigDecimal price = product.getPrice();
+            BigDecimal quantity = BigDecimal.valueOf(request.getQuantity());
+            newItem.setAmount(price.multiply(quantity));
             cart.getCartItems().add(newItem);
             cartItemRepository.saveAndFlush(newItem);
         }
+
+        product.setQuantity(product.getQuantity() - request.getQuantity());
+        productVariantRepository.saveAndFlush(product);
 
         return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)
@@ -98,6 +121,15 @@ public class CartServiceImpl implements CartService {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Product not found in cart"));
 
+        ProductVariant product = productVariantRepository.findById(item.getProductVariant().getId())
+                .orElse(null);
+
+        if (product == null) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_SUCCESS)
+                    .build();
+        }
+
         if (request.getQuantity() <= 0) {
             cart.getCartItems().remove(item);
             cartRepository.saveAndFlush(cart);
@@ -105,6 +137,8 @@ public class CartServiceImpl implements CartService {
             item.setQuantity(request.getQuantity());
             cartItemRepository.saveAndFlush(item);
         }
+        product.setQuantity(product.getQuantity() - request.getQuantity());
+        productVariantRepository.saveAndFlush(product);
 
         return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)
@@ -168,6 +202,7 @@ public class CartServiceImpl implements CartService {
         }
 
         Order order = new Order();
+        order.setId(UUID.randomUUID().toString());
         order.setUser(user);
         order.setTotalAmount(cart.getCartItems().stream()
                 .map(i -> i.getProductVariant().getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
@@ -183,13 +218,14 @@ public class CartServiceImpl implements CartService {
             productVariantRepository.saveAndFlush(p);
 
             OrderItem orderItem = new OrderItem();
+            orderItem.setId(UUID.randomUUID().toString());
             orderItem.setOrder(order);
             orderItem.setProductVariant(item.getProductVariant());
             orderItem.setQuantity(item.getQuantity());
             orderItem.setUnitPrice(item.getProductVariant().getPrice());
             orderItemRepository.saveAndFlush(orderItem);
 
-            item.setStatus(CartStatus.ACTIVE.getCode());
+            item.setStatus(CartStatus.CHECKED_OUT.getCode());
             cartItemRepository.saveAndFlush(item);
         }
         cartRepository.saveAndFlush(cart);

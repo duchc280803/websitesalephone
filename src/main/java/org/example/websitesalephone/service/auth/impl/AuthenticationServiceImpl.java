@@ -7,16 +7,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.example.websitesalephone.auth.JwtService;
 import org.example.websitesalephone.auth.UserDetail;
 import org.example.websitesalephone.dto.auth.*;
-import org.example.websitesalephone.entity.ExpiredToken;
-import org.example.websitesalephone.entity.PasswordResetToken;
-import org.example.websitesalephone.entity.Role;
-import org.example.websitesalephone.entity.User;
+import org.example.websitesalephone.entity.*;
 import org.example.websitesalephone.enums.RoleEnums;
 import org.example.websitesalephone.enums.RsTokenStatus;
-import org.example.websitesalephone.repository.PasswordResetTokenRepository;
-import org.example.websitesalephone.repository.RoleRepository;
-import org.example.websitesalephone.repository.TokenExpiredRepository;
-import org.example.websitesalephone.repository.UserRepository;
+import org.example.websitesalephone.repository.*;
 import org.example.websitesalephone.service.auth.AuthenticationService;
 import org.example.websitesalephone.comon.CommonResponse;
 import org.example.websitesalephone.utils.Constants;
@@ -51,6 +45,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
 
     private final RoleRepository roleRepository;
+
+    private final CartRepository cartRepository;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -232,6 +228,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user1.setRole(role);
 
         userRepository.saveAndFlush(user1);
+
+        Cart cart = new Cart();
+
+        cart.setUser(user1);
+        cart.setId(UUID.randomUUID().toString());
+        cartRepository.saveAndFlush(cart);
+
         return CommonResponse
                 .builder()
                 .code(CommonResponse.CODE_SUCCESS)

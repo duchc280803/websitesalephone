@@ -2,11 +2,14 @@ package org.example.websitesalephone.dto.cart;
 
 import lombok.Builder;
 import lombok.Getter;
-import org.example.websitesalephone.entity.Cart;
-import org.example.websitesalephone.entity.CartItem;
+import org.example.websitesalephone.entity.*;
+import org.example.websitesalephone.enums.CartStatus;
 
+import java.awt.*;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Getter
 @Builder
@@ -19,18 +22,29 @@ public class CartResponse {
     private BigDecimal total;
 
     public static CartResponse fromCart(Cart cart) {
-
         List<ProductInCart> productList = cart.getCartItems().stream()
-                .map(item -> ProductInCart.builder()
-                        .productId(item.getProductVariant().getId())
-                        .productName(item.getProductVariant().getProduct().getName())
-                        .quantity(item.getQuantity())
-                        .ram(item.getProductVariant().getRam().getName())
-                        .color(item.getProductVariant().getColor().getName())
-                        .ops(item.getProductVariant().getOperatingSystem().getName())
-                        .image(item.getProductVariant().getProduct().getImages().getFirst().getUrl())
-                        .price(item.getProductVariant().getPrice())
-                        .build())
+                .filter(item -> !item.isDeleted() && item.getStatus().equalsIgnoreCase(CartStatus.ACTIVE.getCode()))
+                .map(item -> {
+                    ProductVariant variant = item.getProductVariant();
+                    Product product = variant.getProduct();
+                    String imageUrl = Optional.ofNullable(product)
+                            .map(Product::getImages)
+                            .filter(list -> !list.isEmpty())
+                            .map(list -> list.get(0))
+                            .map(ProductImage::getUrl)
+                            .orElse("");
+
+                    return ProductInCart.builder()
+                            .productId(variant.getId())
+                            .productName(Objects.requireNonNull(product).getName())
+                            .quantity(item.getQuantity())
+                            .ram(variant.getRam().getName())
+                            .color(variant.getColor().getName())
+                            .ops(variant.getOperatingSystem().getName())
+                            .image(imageUrl)
+                            .price(variant.getPrice())
+                            .build();
+                })
                 .toList();
 
         int totalQuantity = cart.getCartItems().stream()
@@ -38,7 +52,8 @@ public class CartResponse {
                 .sum();
 
         BigDecimal total = cart.getCartItems().stream()
-                .map(item -> item.getProductVariant().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .map(item -> item.getProductVariant().getPrice()
+                        .multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return CartResponse.builder()

@@ -5,5 +5,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 public interface ProductVariantRepository extends JpaRepository<ProductVariant, String> {
+
+    Page<ProductVariant> findByProduct_NameLikeIgnoreCase(String nameProduct, Pageable pageable);
+
+    List<ProductVariant> findByProduct_Id(String id);
+
+    ProductVariant findByProduct_IdAndOrigin_IdAndColor_IdAndRam_Id(
+            String productId,
+            String originId,
+            String colorId,
+            String ramId
+    );
+
 }

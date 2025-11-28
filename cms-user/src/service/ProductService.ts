@@ -2,30 +2,34 @@ import axios, { AxiosResponse } from 'axios';
 import type {Search} from "../models/Search.ts";
 import type {ProductRequest} from "../models/ProductRequest.ts";
 import type {ProductDetailRequest} from "../models/ProductDetailRequest.ts";
+import type {CreateCartRequest} from "../models/CreateCartRequest.ts";
+import api from "../api/api.ts";
 
 class ProductService {
-    private ROOT_API = process.env.VUE_APP_ROOT_API + '/api/product/';
+    private ROOT_API = import.meta.env.VITE_ROOT_API + '/api/product/';
 
     public search(productSearch: Search): Promise<AxiosResponse> {
-        return axios.post(`${this.ROOT_API}search`, productSearch);
+        return api.post(`${this.ROOT_API}search`, productSearch);
     }
 
     public create(productRequest: ProductRequest): Promise<AxiosResponse> {
-        return axios.post(`${this.ROOT_API}create`, productRequest);
+        return api.post(`${this.ROOT_API}create`, productRequest);
     }
 
     public update(productRequest: ProductRequest): Promise<AxiosResponse> {
-        return axios.put(`${this.ROOT_API}update`, productRequest);
+        return api.put(`${this.ROOT_API}update`, productRequest);
     }
 
     public delete(id: string): Promise<AxiosResponse> {
-        return axios.put(`${this.ROOT_API}deleted/${id}`);
+        return api.put(`${this.ROOT_API}deleted/${id}`);
     }
 
     public detail(productDetailRequest: ProductDetailRequest): Promise<AxiosResponse> {
-        return axios.get(`${this.ROOT_API}detail`, {
-            params: productDetailRequest,
-        });
+        return api.post(`${this.ROOT_API}detail`,productDetailRequest);
+    }
+
+    public getQuantity(cartRequest: CreateCartRequest): Promise<AxiosResponse> {
+        return api.post(`${this.ROOT_API}get-quantity`,cartRequest);
     }
 }
 

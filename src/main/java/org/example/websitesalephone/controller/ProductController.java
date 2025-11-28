@@ -2,6 +2,7 @@ package org.example.websitesalephone.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.websitesalephone.comon.CommonResponse;
+import org.example.websitesalephone.dto.dynamic.CreateCartRequest;
 import org.example.websitesalephone.dto.product.ProductDetailRequest;
 import org.example.websitesalephone.dto.product.ProductRequest;
 import org.example.websitesalephone.dto.product.ProductSearch;
@@ -35,8 +36,13 @@ public class ProductController {
         return productService.deleted(id);
     }
 
-    @GetMapping("detail")
+    @PostMapping("detail")
     public CommonResponse detail(@RequestBody ProductDetailRequest productDetailRequest) {
         return productService.detail(productDetailRequest);
+    }
+
+    @PostMapping("get-quantity")
+    public CommonResponse getQuantity(@RequestBody CreateCartRequest createCartRequest) {
+        return productService.getQuantity(createCartRequest);
     }
 }
