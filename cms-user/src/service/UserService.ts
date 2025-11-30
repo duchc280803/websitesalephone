@@ -4,7 +4,7 @@ import type {UserSearchForm} from "../models/UserSearchForm.ts";
 import api from "../api/api.ts";
 
 class UserService {
-    private ROOT_API = process.env.VUE_APP_ROOT_API + '/api/user/';
+    private ROOT_API = import.meta.env.VITE_ROOT_API + '/api/user/';
 
     public getUserByLoginId(loginId: string): Promise<AxiosResponse> {
         return api.post(`${this.ROOT_API}get-user-by-login/${loginId}`);
@@ -14,7 +14,7 @@ class UserService {
         return api.post(`${this.ROOT_API}create`, createUserDto);
     }
 
-    public updateUser(updateUserDto: CreateUserDto): Promise<AxiosResponse> {
+    public updateUser(updateUserDto: ICreateUserDto): Promise<AxiosResponse> {
         return api.put(`${this.ROOT_API}update`, updateUserDto);
     }
 

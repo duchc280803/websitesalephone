@@ -1,214 +1,206 @@
 <script setup lang="ts">
-// Toggle Switch
-// const statusToggle = document.getElementById('statusToggle');
-// const statusLabel = document.getElementById('statusLabel');
-// let isActive = true;
-//
-// statusToggle.addEventListener('click', function () {
-//   isActive = !isActive;
-//
-//   if (isActive) {
-//     statusToggle.classList.add('active');
-//     statusLabel.textContent = '✓ Hoạt động';
-//     statusLabel.classList.remove('inactive');
-//     statusLabel.classList.add('active');
-//   } else {
-//     statusToggle.classList.remove('active');
-//     statusLabel.textContent = '✕ Vô hiệu hóa';
-//     statusLabel.classList.remove('active');
-//     statusLabel.classList.add('inactive');
-//   }
-// });
-//
-// // Form Submit
-// const form = document.getElementById('createUserForm');
-// const successMessage = document.getElementById('successMessage');
-//
-// form.addEventListener('submit', function (e) {
-//   e.preventDefault();
-//
-//   // Get form data
-//   const formData = new FormData(form);
-//   const userData = {
-//     fullName: formData.get('fullName'),
-//     phone: formData.get('phone'),
-//     email: formData.get('email'),
-//     gender: formData.get('gender'),
-//     username: formData.get('username'),
-//     role: formData.get('role'),
-//     status: isActive ? 'active' : 'inactive',
-//     address: formData.get('address'),
-//     notes: formData.get('notes')
-//   };
-//
-//   console.log('User Data:', userData);
-//
-//   // Show success message
-//   successMessage.classList.add('show');
-//
-//   // Scroll to top
-//   window.scrollTo({top: 0, behavior: 'smooth'});
-//
-//   // Reset form after 2 seconds
-//   setTimeout(() => {
-//     form.reset();
-//     successMessage.classList.remove('show');
-//     isActive = true;
-//     statusToggle.classList.add('active');
-//     statusLabel.textContent = '✓ Hoạt động';
-//     statusLabel.classList.add('active');
-//     statusLabel.classList.remove('inactive');
-//   }, 2000);
-// });
-//
-// // Cancel Button
-// document.getElementById('cancelBtn').addEventListener('click', function () {
-//   if (form.checkValidity() && (
-//       document.getElementById('fullName').value ||
-//       document.getElementById('phone').value ||
-//       document.getElementById('email').value
-//   )) {
-//     // Create inline confirmation
-//     const confirmDiv = document.createElement('div');
-//     confirmDiv.style.cssText = `
-//                     position: fixed;
-//                     top: 50%;
-//                     left: 50%;
-//                     transform: translate(-50%, -50%);
-//                     background: white;
-//                     padding: 30px;
-//                     border-radius: 20px;
-//                     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-//                     z-index: 1000;
-//                     text-align: center;
-//                     max-width: 400px;
-//                 `;
-//
-//     confirmDiv.innerHTML = `
-//                     <div style="font-size: 3em; margin-bottom: 15px;">⚠️</div>
-//                     <h3 style="margin-bottom: 15px; color: #1a1a2e;">Bạn có chắc muốn hủy?</h3>
-//                     <p style="color: #666; margin-bottom: 25px;">Dữ liệu đã nhập sẽ bị mất</p>
-//                     <div style="display: flex; gap: 10px;">
-//                         <button id="confirmCancel" style="flex: 1; padding: 12px; border: none; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); color: white; border-radius: 10px; font-weight: 700; cursor: pointer;">Xác nhận</button>
-//                         <button id="keepEditing" style="flex: 1; padding: 12px; border: 2px solid #667eea; background: white; color: #667eea; border-radius: 10px; font-weight: 700; cursor: pointer;">Tiếp tục</button>
-//                     </div>
-//                 `;
-//
-//     const backdrop = document.createElement('div');
-//     backdrop.style.cssText = `
-//                     position: fixed;
-//                     top: 0;
-//                     left: 0;
-//                     width: 100%;
-//                     height: 100%;
-//                     background: rgba(0, 0, 0, 0.5);
-//                     z-index: 999;
-//                 `;
-//
-//     document.body.appendChild(backdrop);
-//     document.body.appendChild(confirmDiv);
-//
-//     document.getElementById('confirmCancel').addEventListener('click', () => {
-//       form.reset();
-//       document.body.removeChild(confirmDiv);
-//       document.body.removeChild(backdrop);
-//     });
-//
-//     document.getElementById('keepEditing').addEventListener('click', () => {
-//       document.body.removeChild(confirmDiv);
-//       document.body.removeChild(backdrop);
-//     });
-//   } else {
-//     form.reset();
-//   }
-// });
-//
-// // Phone validation
-// const phoneInput = document.getElementById('phone');
-// phoneInput.addEventListener('input', function (e) {
-//   this.value = this.value.replace(/[^0-9]/g, '');
-// });
+import {ref, onMounted} from "vue";
+import {userService} from "@/service/UserService";
+import {toast} from "vue3-toastify";
+
+import {useRoute} from "vue-router";
+import {CreateUserDto} from "@/models/CreateUserDto.ts";
+import router from "@/router.ts";
+const route = useRoute();
+const loginId = route.params.id as string;
+const isUpdate = ref(!!loginId);
+
+// form state
+const form = ref<CreateUserDto>(
+    new CreateUserDto({
+      id: "",
+      loginId: "",
+      password: "",
+      fullName: "",
+      profileImg: "",
+      email: "",
+      telNo: "",
+      gender: "male",
+      userCode: "",
+      note: "",
+      role: "",
+      address: ""
+    })
+);
+
+// Load user nếu đang update
+const loadUserDetail = async () => {
+  console.log("uar alo")
+  if (!loginId) return;
+
+  try {
+    const res = await userService.getUserByLoginId(loginId);
+    const data = res.data.data;
+    console.log(data)
+
+    form.value = new CreateUserDto({
+      id: loginId,
+      loginId: data.loginId,
+      password: "",
+      fullName: data.fullName,
+      profileImg: data.profileImg,
+      email: data.email,
+      telNo: data.telNo,
+      gender: data.gender,
+      userCode: data.userCode,
+      note: data.note,
+      role: data.role,
+      address: data.address
+    });
+    console.log(form.value)
+  } catch (e) {
+    toast.error("Không tải được thông tin người dùng");
+  }
+};
+
+// Submit form (create + update chung)
+const submitForm = async () => {
+  try {
+    if (isUpdate.value) {
+      await userService.updateUser(form.value.toPayload());
+      loadUserDetail();
+      toast.success("Cập nhật người dùng thành công!");
+    } else {
+      await userService.createUser(form.value.toPayload());
+      toast.success("Tạo người dùng mới thành công!");
+      router.push("/admin/user")
+    }
+
+  } catch (e: any) {
+    console.log(e)
+    toast.error(e?.response?.data?.message || "Lỗi xử lý người dùng");
+  }
+};
+
+onMounted(() => {
+  console.log("ad")
+  loadUserDetail();
+});
+
+// toggle active
+const toggleActive = () => {
+  form.value.active = !form.value.active;
+};
+
+// cancel
+const cancel = () => {
+  router.push("/admin/user");
+};
 </script>
 
 <template>
-    <main class="form-card">
-      <form id="createUserForm"><!-- Personal Information -->
-        <section class="form-section">
-          <h2 class="section-title">📋 Thông Tin Cá Nhân</h2>
-          <div class="form-group full-width"><label>Ảnh đại diện</label>
-            <div class="avatar-upload">
-              <div class="avatar-preview">
-                👤
-              </div>
-              <button type="button" class="upload-btn">📷 Tải ảnh lên</button>
+  <main class="form-card">
+    <form id="createUserForm" @submit.prevent="submitForm">
+      <!-- Personal Info -->
+      <section class="form-section">
+        <h2 class="section-title">📋 Thông Tin Cá Nhân</h2>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="fullName">Họ và tên *</label>
+            <input type="text" id="fullName" v-model="form.fullName" required />
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Số điện thoại *</label>
+            <input type="tel" id="phone" v-model="form.telNo" required />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" v-model="form.email" required />
+          </div>
+
+          <div class="form-group">
+            <label>Giới tính *</label>
+            <div class="radio-group">
+              <label class="radio-option">
+                <input type="radio" value="male" v-model="form.gender" />
+                <span>👨 Nam</span>
+              </label>
+
+              <label class="radio-option">
+                <input type="radio" value="female" v-model="form.gender" />
+                <span>👩 Nữ</span>
+              </label>
+
+              <label class="radio-option">
+                <input type="radio" value="other" v-model="form.gender" />
+                <span>⚧️ Khác</span>
+              </label>
             </div>
           </div>
-          <div class="form-grid">
-            <div class="form-group"><label for="fullName"> Họ và tên <span class="required">*</span> </label> <input
-                type="text" id="fullName" name="fullName" placeholder="Nhập họ và tên đầy đủ" required>
-            </div>
-            <div class="form-group"><label for="phone"> Số điện thoại <span class="required">*</span> </label> <input
-                type="tel" id="phone" name="phone" placeholder="Nhập số điện thoại" pattern="[0-9]{10}" required>
-            </div>
-            <div class="form-group"><label for="email"> Email <span class="required">*</span> </label> <input
-                type="email" id="email" name="email" placeholder="example@email.com" required>
-            </div>
-            <div class="form-group"><label> Giới tính <span class="required">*</span> </label>
-              <div class="radio-group"><label class="radio-option"> <input type="radio" name="gender" value="male"
-                                                                           checked> <span
-                  class="radio-label">👨 Nam</span> </label> <label class="radio-option"> <input type="radio"
-                                                                                                name="gender"
-                                                                                                value="female"> <span
-                  class="radio-label">👩 Nữ</span> </label> <label class="radio-option"> <input type="radio"
-                                                                                               name="gender"
-                                                                                               value="other"> <span
-                  class="radio-label">⚧️ Khác</span> </label>
-              </div>
-            </div>
-          </div>
-        </section><!-- Account Information -->
-        <section class="form-section">
-          <h2 class="section-title">🔐 Thông Tin Tài Khoản</h2>
-          <div class="form-grid">
-            <div class="form-group"><label for="username"> Tên đăng nhập <span class="required">*</span> </label> <input
-                type="text" id="username" name="username" placeholder="Nhập tên đăng nhập" required>
-            </div>
-            <div class="form-group"><label for="role"> Vai trò (Role) <span class="required">*</span> </label> <select
-                id="role" name="role" required>
-              <option value="">-- Chọn vai trò --</option>
-              <option value="admin">👑 Admin - Quản trị viên</option>
-              <option value="manager">📊 Manager - Quản lý</option>
-              <option value="staff">👔 Staff - Nhân viên</option>
-              <option value="customer">🛍️ Customer - Khách hàng</option>
-            </select>
-            </div>
-            <div class="form-group full-width"><label> Trạng thái <span class="required">*</span> </label>
-              <div class="toggle-container">
-                <div class="toggle-switch active" id="statusToggle">
-                  <div class="toggle-slider"></div>
-                </div>
-                <span class="toggle-label active" id="statusLabel">✓ Hoạt động</span>
-              </div>
-            </div>
-          </div>
-        </section><!-- Additional Information -->
-        <section class="form-section">
-          <h2 class="section-title">📝 Thông Tin Bổ Sung</h2>
-          <div class="form-grid single-column">
-            <div class="form-group"><label for="address">Địa chỉ</label> <input type="text" id="address" name="address"
-                                                                                placeholder="Nhập địa chỉ chi tiết">
-            </div>
-            <div class="form-group"><label for="notes">Ghi chú</label> <input type="text" id="notes" name="notes"
-                                                                              placeholder="Thêm ghi chú nếu cần">
-            </div>
-          </div>
-        </section><!-- Form Actions -->
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary"> ✓ Tạo User</button>
-          <button type="button" class="btn btn-secondary" id="cancelBtn"> ✕ Hủy bỏ</button>
         </div>
-      </form>
-    </main>
+      </section>
+
+      <!-- Account Info -->
+      <section class="form-section">
+        <h2 class="section-title">🔐 Thông Tin Tài Khoản</h2>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="username">Tên đăng nhập *</label>
+            <input type="text" id="username" v-model="form.loginId" required />
+          </div>
+
+          <div class="form-group">
+            <label for="role">Vai trò *</label>
+            <select id="role" v-model="form.role" required>
+              <option value="">-- Chọn vai trò --</option>
+              <option value="ADMIN">👑 Admin</option>
+              <option value="STAFF">👔 Staff</option>
+              <option value="CUSTOMER">🛍 Customer</option>
+            </select>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Trạng thái *</label>
+            <div class="toggle-container">
+              <div class="toggle-switch" :class="{ active: !form.deleted }" @click="toggleActive">
+                <div class="toggle-slider"></div>
+              </div>
+              <span class="toggle-label" :class="{ active: !form.deleted }">
+                {{ form.deleted ? "✕ Không hoạt động" : "✓ Hoạt động" }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Additional Info -->
+      <section class="form-section">
+        <h2 class="section-title">📝 Thông Tin Bổ Sung</h2>
+
+        <div class="form-grid single-column">
+          <div class="form-group">
+            <label for="address">Địa chỉ</label>
+            <input type="text" id="address" v-model="form.address" />
+          </div>
+
+          <div class="form-group">
+            <label for="notes">Ghi chú</label>
+            <input type="text" id="notes" v-model="form.note" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          {{ isUpdate ? "✓ Cập nhật User" : "✓ Tạo User" }}
+        </button>
+
+        <button type="button" @click="cancel" class="btn btn-secondary">
+          ✕ Hủy bỏ
+        </button>
+      </div>
+    </form>
+  </main>
 </template>
 
 <style scoped>

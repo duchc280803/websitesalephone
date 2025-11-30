@@ -226,6 +226,7 @@ public class CartServiceImpl implements CartService {
             orderItemRepository.saveAndFlush(orderItem);
 
             item.setStatus(CartStatus.CHECKED_OUT.getCode());
+            item.setDeleted(true);
             cartItemRepository.saveAndFlush(item);
         }
         cartRepository.saveAndFlush(cart);

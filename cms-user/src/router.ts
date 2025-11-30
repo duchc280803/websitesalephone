@@ -104,6 +104,12 @@ const router = createRouter({
                     meta: { requiresAuth: true, title: 'Chi tiết người dùng' }
                 },
                 {
+                    path: 'create-user',
+                    name: 'CreateUserPage',
+                    component: UserDetailPage,
+                    meta: { requiresAuth: true, title: 'Create User' }
+                },
+                {
                     path: 'product',
                     name: 'product',
                     component: Product,

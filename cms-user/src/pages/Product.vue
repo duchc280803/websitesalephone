@@ -1,4 +1,79 @@
 <script setup lang="ts">
+import { ref, onMounted, computed, watch } from 'vue';
+import { productService } from '@/service/ProductService';
+import { Search } from '@/models/Search';
+import {toast} from "vue3-toastify";
+
+const products = ref<any[]>([]);
+const searchText = ref("");
+const page = ref<number>(1);
+const size = ref<number>(10);
+const totalPages = ref<number>(0);
+
+const fetchProducts = async () => {
+  const search = new Search(page.value, size.value, searchText.value);
+  try {
+    const res = await productService.search(search);
+    products.value = res.data.data.content || [];
+    totalPages.value = Number(res.data.data.totalPages ?? 1);
+
+    console.log("📄 Fetched page:", page.value, "totalPages:", totalPages.value);
+  } catch (error) {
+    console.error("Lỗi khi load sản phẩm:", error);
+  }
+};
+
+const onPageChange = (newPage: number) => {
+  console.log("🔹 onPageChange called");
+  console.log("Current page:", page.value);
+  console.log("Requested newPage:", newPage);
+  console.log("Total pages:", totalPages.value);
+  console.log("newPage", newPage)
+  newPage = Number(newPage);
+  if (newPage < 1) {
+    console.log("⚠️ newPage < 1, set to 1");
+    newPage = 1;
+  }
+
+  if (newPage > totalPages.value) {
+    console.log(`⚠️ newPage > totalPages (${totalPages.value}), set to totalPages`);
+    newPage = totalPages.value;
+  }
+
+  if (newPage === page.value) {
+    console.log("ℹ️ newPage === current page, nothing to do");
+    return;
+  }
+
+  page.value = newPage;
+  console.log("✅ Page updated to:", page.value, "=> fetching products...");
+  fetchProducts();
+};
+
+watch(searchText, () => {
+  page.value = 1;
+  fetchProducts();
+});
+
+const formatCurrency = (value: number | string) => {
+  if (!value) return "0₫";
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(value));
+};
+
+const deleted = async (id: string) =>{
+  const res = await productService.delete(id);
+  if (res.data.code === 0) {
+    toast.info("Xóa sản phẩm thành công")
+  } else {
+    toast.error("Xóa sản phẩm không thành công")
+  }
+  searchUsers()
+}
+
+onMounted(async () => {
+  await fetchProducts();
+  console.log(page.value)
+});
 
 </script>
 
@@ -7,16 +82,18 @@
     <div class="card-header">
       <h2 class="card-title">📱 Quản Lý Sản Phẩm</h2>
       <div class="card-actions">
+        <input type="text" v-model="searchText" placeholder="Tìm kiếm sản phẩm..." class="input-search" />
         <button class="btn btn-secondary">📥 Import</button>
         <button class="btn btn-primary">+ Thêm Sản Phẩm</button>
       </div>
     </div>
+
     <div class="table-wrapper">
       <table>
         <thead>
         <tr>
           <th>Sản Phẩm</th>
-          <th>Danh Mục</th>
+          <th>Xuất xứ</th>
           <th>Giá</th>
           <th>Tồn Kho</th>
           <th>Đã Bán</th>
@@ -25,192 +102,47 @@
         </tr>
         </thead>
         <tbody>
-        <tr>
+        <tr v-for="product in products" :key="product.id">
           <td>
             <div class="product-cell">
-              <div class="product-image">
-                📱
-              </div>
+              <div class="product-image">📱</div>
               <div class="product-info">
-                <div class="product-name">
-                  iPhone 15 Pro Max
-                </div>
-                <div class="product-sku">
-                  SKU: IP15PM-256-TT
-                </div>
+                <div class="product-name">{{ product.productName }}</div>
               </div>
             </div>
           </td>
-          <td>iPhone</td>
-          <td><span class="price">29.990.000₫</span></td>
-          <td>45</td>
-          <td>128</td>
-          <td><span class="status-badge status-active">Đang Bán</span></td>
+          <td>{{ product.originName }}</td>
+          <td><span class="price">{{ formatCurrency(product.price) }}</span></td>
+          <td>{{ product.quantity }}</td>
+          <td>{{ product.quantityUnitSold }}</td>
+          <td>
+            <span :class="['status-badge', product.status === 'ACTIVE' ? 'status-active' : 'status-inactive']">
+              {{ product.status === 'ACTIVE' ? 'Đang Bán' : 'Ngừng Bán' }}
+            </span>
+          </td>
           <td>
             <div class="action-buttons">
-              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
-              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
-              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div class="product-cell">
-              <div class="product-image">
-                📱
-              </div>
-              <div class="product-info">
-                <div class="product-name">
-                  Samsung S24 Ultra
-                </div>
-                <div class="product-sku">
-                  SKU: SS24U-512-BK
-                </div>
-              </div>
-            </div>
-          </td>
-          <td>Samsung</td>
-          <td><span class="price">26.990.000₫</span></td>
-          <td>32</td>
-          <td>95</td>
-          <td><span class="status-badge status-active">Đang Bán</span></td>
-          <td>
-            <div class="action-buttons">
-              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
-              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
-              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div class="product-cell">
-              <div class="product-image">
-                📱
-              </div>
-              <div class="product-info">
-                <div class="product-name">
-                  iPhone 14 Pro
-                </div>
-                <div class="product-sku">
-                  SKU: IP14P-256-PP
-                </div>
-              </div>
-            </div>
-          </td>
-          <td>iPhone</td>
-          <td><span class="price">23.990.000₫</span></td>
-          <td>18</td>
-          <td>156</td>
-          <td><span class="status-badge status-active">Đang Bán</span></td>
-          <td>
-            <div class="action-buttons">
-              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
-              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
-              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div class="product-cell">
-              <div class="product-image">
-                📱
-              </div>
-              <div class="product-info">
-                <div class="product-name">
-                  Xiaomi 13 Pro
-                </div>
-                <div class="product-sku">
-                  SKU: XI13P-256-WH
-                </div>
-              </div>
-            </div>
-          </td>
-          <td>Xiaomi</td>
-          <td><span class="price">15.990.000₫</span></td>
-          <td>52</td>
-          <td>87</td>
-          <td><span class="status-badge status-active">Đang Bán</span></td>
-          <td>
-            <div class="action-buttons">
-              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
-              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
-              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div class="product-cell">
-              <div class="product-image">
-                📱
-              </div>
-              <div class="product-info">
-                <div class="product-name">
-                  OPPO Find N3
-                </div>
-                <div class="product-sku">
-                  SKU: OP-FN3-512-GD
-                </div>
-              </div>
-            </div>
-          </td>
-          <td>OPPO</td>
-          <td><span class="price">19.990.000₫</span></td>
-          <td>8</td>
-          <td>23</td>
-          <td><span class="status-badge status-inactive">Hết Hàng</span></td>
-          <td>
-            <div class="action-buttons">
-              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
-              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
-              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div class="product-cell">
-              <div class="product-image">
-                📱
-              </div>
-              <div class="product-info">
-                <div class="product-name">
-                  Samsung Z Fold 5
-                </div>
-                <div class="product-sku">
-                  SKU: SS-ZF5-1TB-BK
-                </div>
-              </div>
-            </div>
-          </td>
-          <td>Samsung</td>
-          <td><span class="price">35.990.000₫</span></td>
-          <td>15</td>
-          <td>42</td>
-          <td><span class="status-badge status-active">Đang Bán</span></td>
-          <td>
-            <div class="action-buttons">
-              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
-              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
-              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
+              <button class="action-btn btn-view">👁️</button>
+              <button class="action-btn btn-edit">✏️</button>
+              <button class="action-btn btn-delete" @click="deleted(product.id)">🗑️</button>
             </div>
           </td>
         </tr>
         </tbody>
       </table>
     </div>
+
     <div class="pagination">
-      <button class="page-btn">«</button>
-      <button class="page-btn active">1</button>
-      <button class="page-btn">2</button>
-      <button class="page-btn">3</button>
-      <button class="page-btn">»</button>
+      <button class="page-btn" :disabled="page === 1" @click="onPageChange(1)">⟨⟨ Đầu</button>
+      <button class="page-btn" :disabled="page === 1" @click="onPageChange(page - 1)">⟨ Trước</button>
+      <span class="page-info">Trang {{ page }} / {{ totalPages }}</span>
+      <button class="page-btn" :disabled="page >= totalPages" @click="onPageChange(page + 1)">Sau ⟩</button>
+      <button class="page-btn" :disabled="page >= totalPages" @click="onPageChange(totalPages)">Cuối ⟩⟩</button>
+
     </div>
-  </section><!-- Users Table -->
+  </section>
 </template>
+
 
 <style scoped>
 body {
@@ -648,26 +580,56 @@ tbody tr:hover {
   justify-content: center;
   align-items: center;
   gap: 10px;
-  padding: 30px;
+  margin-top: 40px;
+  flex-wrap: wrap;
 }
 
 .page-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  border: none;
-  background: #f0f0f0;
-  color: #1a1a2e;
-  font-weight: 600;
+  min-width: 45px;
+  height: 45px;
+  padding: 0 15px;
+  background: white;
+  color: #666;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1em;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.page-btn:hover,
+.page-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+  transform: translateY(-2px);
+}
+
 .page-btn.active {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  transform: scale(1.1);
+  border-color: #667eea;
+}
+
+.page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.page-btn:disabled:hover {
+  transform: none;
+  border-color: #e0e0e0;
+  color: #666;
+}
+
+.page-info {
+  padding: 12px 20px;
+  background: white;
+  border-radius: 12px;
+  font-weight: 600;
+  color: #666;
 }
 
 /* Responsive */

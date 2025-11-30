@@ -38,6 +38,11 @@ public class User extends BaseEntity{
     @Column(length = 255)
     private String description;
 
+    @Column(length = 255)
+    private String address;
+
+    private String gender;
+
     @Basic
     @Column(name = "password_expired_at")
     private OffsetDateTime passwordExpiredAt;

@@ -10,10 +10,12 @@ export interface ICreateUserDto {
     profileImg?: string;
     email?: string;
     telNo?: string;
+    gender?: string;
     userCode?: string;
     note?: string;
     password: string;
-    roleDto?: IRoleDto;
+    role?: string;
+    address?: string;
 }
 
 export class CreateUserDto {
@@ -23,10 +25,12 @@ export class CreateUserDto {
     public profileImg?: string;
     public email?: string;
     public telNo?: string;
+    public gender?: string;
     public userCode?: string;
     public note?: string;
     public password: string;
-    public roleDto?: IRoleDto;
+    public role?: string;
+    public address?: string;
 
     constructor(data: {
         loginId: string;
@@ -36,9 +40,11 @@ export class CreateUserDto {
         profileImg?: string;
         email?: string;
         telNo?: string;
+        gender?: string;
         userCode?: string;
         note?: string;
-        roleDto?: IRoleDto;
+        role?: role;
+        address?: address;
     }) {
         this.id = data.id?.trim();
         this.loginId = data.loginId.trim();
@@ -46,10 +52,12 @@ export class CreateUserDto {
         this.profileImg = data.profileImg?.trim();
         this.email = data.email?.trim();
         this.telNo = data.telNo?.trim();
+        this.gender = data.gender?.trim();
         this.userCode = data.userCode?.trim();
         this.note = data.note?.trim();
         this.password = data.password;
-        this.roleDto = data.roleDto;
+        this.role = data.role;
+        this.address = data.address;
     }
 
     // Chuyển sang payload gửi API
@@ -61,10 +69,12 @@ export class CreateUserDto {
             profileImg: this.profileImg,
             email: this.email,
             telNo: this.telNo,
+            gender: this.gender,
             userCode: this.userCode,
             note: this.note,
             password: this.password,
-            roleDto: this.roleDto,
+            role: this.role,
+            address: this.address,
         };
     }
 }

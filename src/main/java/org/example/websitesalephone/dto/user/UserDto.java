@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
 import org.example.websitesalephone.entity.User;
+import org.example.websitesalephone.utils.Constants;
 
 import java.time.OffsetDateTime;
 
@@ -36,7 +37,17 @@ public class UserDto {
 
     private OffsetDateTime passwordExpiredAt;
 
+    private String created;
+
+    private boolean isDeleted;
+
     private String status;
+
+    private String role;
+
+    private String address;
+
+    private String gender;
 
     public static UserDto fromEntity(User entity) {
         return UserDto.builder()
@@ -47,6 +58,11 @@ public class UserDto {
                 .telNo(entity.getPhone())
                 .note(entity.getDescription())
                 .passwordExpiredAt(entity.getPasswordExpiredAt())
+                .created(Constants.FORMATTER.format(entity.getCreatedAt()))
+                .isDeleted(entity.isDeleted())
+                .role(entity.getRole().getRoleEnums().getValue())
+                .address(entity.getAddress())
+                .gender(entity.getGender())
                 .build();
     }
 
@@ -61,6 +77,10 @@ public class UserDto {
                 .userCode(user.getCodeUser())
                 .note(user.getDescription())
                 .passwordExpiredAt(user.getPasswordExpiredAt())
+                .created(Constants.FORMATTER.format(user.getCreatedAt()))
+                .isDeleted(user.isDeleted())
+                .address(user.getAddress())
+                .gender(user.getGender())
                 .build();
     }
 

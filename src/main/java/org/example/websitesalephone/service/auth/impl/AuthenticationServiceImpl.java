@@ -14,6 +14,7 @@ import org.example.websitesalephone.repository.*;
 import org.example.websitesalephone.service.auth.AuthenticationService;
 import org.example.websitesalephone.comon.CommonResponse;
 import org.example.websitesalephone.utils.Constants;
+import org.example.websitesalephone.utils.Utils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -221,11 +222,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         user1.setId(UUID.randomUUID().toString());
         user1.setUsername(registerRequest.getUsername());
+        user1.setPhone(registerRequest.getUsername());
         user1.setFullName(registerRequest.getFullName() == null ? null : registerRequest.getFullName().trim());
         user1.setEmail(registerRequest.getEmail());
         user1.setPasswordHash(BCrypt.hashpw(registerRequest.getPassword(), BCrypt.gensalt()));
         user1.setPasswordExpiredAt(OffsetDateTime.now().plusDays(Constants.PASSWORD_EXPIRE_DAYS));
         user1.setRole(role);
+        user1.setCodeUser(Utils.generateUniqueCode("USER"));
 
         userRepository.saveAndFlush(user1);
 

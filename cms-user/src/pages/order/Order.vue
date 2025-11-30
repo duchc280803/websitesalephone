@@ -1,5 +1,34 @@
 <script setup lang="ts">
+import {ref, onMounted, computed} from "vue";
+import {orderService} from "@/service/OrderService";
+import {Search} from "@/models/Search.ts";
 
+const orders = ref<any>();
+const searchText = ref("");
+const page = ref(1);
+const size = ref(10);
+const totalItems = ref(0);
+
+const callSearch = async () => {
+  const search = new Search(page.value, size.value, searchText.value);
+  const res = await orderService.search(search);
+  orders.value = res.data.data;
+  totalItems.value = res.data.total || 0;
+};
+
+const onSearch = () => {
+  page.value = 1;
+  callSearch();
+};
+
+const onPageChange = (newPage: number) => {
+  page.value = newPage;
+  callSearch();
+};
+
+onMounted(() => {
+  callSearch();
+});
 </script>
 
 <template>
@@ -7,7 +36,7 @@
     <div class="card-header">
       <h2 class="card-title">📦 Quản Lý Đơn Hàng</h2>
       <div class="card-actions">
-        <button class="btn btn-secondary">🔍 Tìm kiếm</button>
+        <button class="btn btn-secondary" @click="callSearch">🔍 Tìm kiếm</button>
         <button class="btn btn-primary">+ Thêm Đơn</button>
       </div>
     </div>
@@ -38,51 +67,28 @@
         </tr>
         </thead>
         <tbody>
-        <tr>
-          <td><strong>#ORD-1001</strong></td>
-          <td>
-            <div class="user-cell">
-              <div class="user-avatar">
-                👨
-              </div>
-              <div class="user-info">
-                <div class="user-name">
-                  Nguyễn Văn A
-                </div>
-                <div class="user-email">
-                  nguyenvana@email.com
-                </div>
-              </div>
-            </div>
-          </td>
-          <td>iPhone 15 Pro Max (x1)</td>
-          <td><span class="price">29.990.000₫</span></td>
-          <td><span class="status-badge status-processing">Đang Xử Lý</span></td>
-          <td><span class="status-badge status-processing">Đang Xử Lý</span></td>
-          <td><span class="status-badge status-processing">Đang Xử Lý</span></td>
-          <td><span class="status-badge status-processing">Đang Xử Lý</span></td>
-          <td><span class="status-badge status-processing">Đang Xử Lý</span></td>
-          <td><span class="status-badge status-processing">Đang Xử Lý</span></td>
-          <td>15/01/2024</td>
-          <td>
-            <div class="action-buttons">
-              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
-              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
-              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
-            </div>
-          </td>
+        <tr v-for="o in orders?.content" :key="o.order_id">
+          <td>#{{ o.orderCode }}</td>
+          <td>{{ o.userName }}</td>
+          <td>{{ o.phone }}</td>
+          <td>{{ o.codeUser }}</td>
+          <td>{{ o.createdAt }}</td>
+          <td>{{ o.dateTimeCheckout }}</td>
+          <td>{{ o.status }}</td>
+          <td>{{ o.quantity }}</td>
+          <td>{{ o.totalPrice }}</td>
+          <td>{{ o.shippingFee }}</td>
+          <td>{{ o.totalOrderAmount }}</td>
         </tr>
         </tbody>
       </table>
     </div>
     <div class="pagination">
-      <button class="page-btn">«</button>
-      <button class="page-btn active">1</button>
-      <button class="page-btn">2</button>
-      <button class="page-btn">3</button>
-      <button class="page-btn">4</button>
-      <button class="page-btn">5</button>
-      <button class="page-btn">»</button>
+      <button class="page-btn" :disabled="page === 1" @click="onPageChange(1)">⟨⟨ Đầu</button>
+      <button class="page-btn" :disabled="page === 1" @click="onPageChange(page - 1)">⟨ Trước</button>
+      <span class="page-info">Trang {{ page }} / {{ Math.ceil(totalItems / size) }}</span>
+      <button class="page-btn" :disabled="page === Math.ceil(totalItems / size)" @click="onPageChange(page + 1)">Sau ⟩</button>
+      <button class="page-btn" :disabled="page === Math.ceil(totalItems / size)" @click="onPageChange(Math.ceil(totalItems / size))">Cuối ⟩⟩</button>
     </div>
   </section><!-- Products Table -->
 </template>
@@ -302,15 +308,22 @@ body {
 /* Table */
 .table-wrapper {
   overflow-x: auto;
+  width: 100%;
 }
 
 table {
   width: 100%;
-  border-collapse: collapse;
+  table-layout: auto; /* cho cột tự co giãn */
 }
 
 thead {
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+th, td {
+  white-space: nowrap; /* không xuống dòng */
+  padding: 15px 20px;
+  text-align: center;
 }
 
 th {
@@ -335,6 +348,15 @@ tbody tr {
 tbody tr:hover {
   background: #f9f9f9;
   transform: scale(1.01);
+}
+
+.table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 10px;
 }
 
 /* Status Badges */
@@ -517,34 +539,6 @@ tbody tr:hover {
   border-bottom-color: #667eea;
 }
 
-/* Pagination */
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  padding: 30px;
-}
-
-.page-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  border: none;
-  background: #f0f0f0;
-  color: #1a1a2e;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.page-btn:hover,
-.page-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  transform: scale(1.1);
-}
-
 /* Responsive */
 @media (max-width: 1200px) {
   .sidebar {
@@ -599,4 +593,62 @@ tbody tr:hover {
     align-items: flex-start;
   }
 }
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+
+.page-btn {
+  min-width: 45px;
+  height: 45px;
+  padding: 0 15px;
+  background: white;
+  color: #666;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+  transform: translateY(-2px);
+}
+
+.page-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: #667eea;
+}
+
+.page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.page-btn:disabled:hover {
+  transform: none;
+  border-color: #e0e0e0;
+  color: #666;
+}
+
+.page-info {
+  padding: 12px 20px;
+  background: white;
+  border-radius: 12px;
+  font-weight: 600;
+  color: #666;
+}
+
 </style>

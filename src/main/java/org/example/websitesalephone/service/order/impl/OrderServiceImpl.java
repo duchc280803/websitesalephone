@@ -3,6 +3,7 @@ package org.example.websitesalephone.service.order.impl;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.example.websitesalephone.comon.CommonResponse;
+import org.example.websitesalephone.comon.PageResponse;
 import org.example.websitesalephone.dto.order.OrderDetailResponse;
 import org.example.websitesalephone.dto.order.OrderRequest;
 import org.example.websitesalephone.dto.order.OrderResponse;
@@ -13,9 +14,11 @@ import org.example.websitesalephone.enums.OrderStatus;
 import org.example.websitesalephone.repository.OrderDescriptionRepository;
 import org.example.websitesalephone.repository.OrderRepository;
 import org.example.websitesalephone.service.order.OrderService;
+import org.example.websitesalephone.spe.OrderSpecification;
 import org.example.websitesalephone.utils.Utils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +32,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public CommonResponse search(OrderSearch searchForm) {
+
         if (Strings.isNotEmpty(searchForm.getSearchText())) {
             searchForm.setSearchText("%" + searchForm.getSearchText() + "%");
         } else {
@@ -37,14 +41,18 @@ public class OrderServiceImpl implements OrderService {
 
         PageRequest pageRequest = Utils.getPaging(searchForm);
 
-        Page<OrderResponse> result = orderRepository.findAll(pageRequest).map(OrderResponse::fromOrder);
+        Specification<Order> spec = OrderSpecification.search(searchForm);
 
-        return CommonResponse
-                .builder()
+        Page<OrderResponse> result = orderRepository
+                .findAll(spec, pageRequest)
+                .map(OrderResponse::fromOrder);
+
+        return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)
-                .data(result)
+                .data(PageResponse.from(result))
                 .build();
     }
+
 
     @Override
     public CommonResponse detail(String id) {

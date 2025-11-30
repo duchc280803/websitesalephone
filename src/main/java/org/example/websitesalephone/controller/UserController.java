@@ -25,7 +25,7 @@ public class UserController {
     }
 
     @PutMapping("update")
-    public CommonResponse updateUser(CreateUserDto createUserDto) {
+    public CommonResponse updateUser(@RequestBody CreateUserDto createUserDto) {
         return userService.updateUser(createUserDto);
     }
 

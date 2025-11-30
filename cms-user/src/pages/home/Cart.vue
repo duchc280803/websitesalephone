@@ -6,6 +6,7 @@ import { cartService } from "@/service/CartService.ts";
 import type { CartResponse, ProductInCart } from "@/models/Cart.ts";
 import { CartRequest } from "@/models/CartRequest.ts";
 import type { CheckOutRequest } from "@/models/CheckOutRequest.ts";
+import {toast} from "vue3-toastify";
 
 type CartItemWithSelect = ProductInCart & { selected: boolean };
 const cartItems = ref<CartItemWithSelect[]>([]);
@@ -79,10 +80,10 @@ const checkout = async () => {
   };
   try {
     await cartService.checkoutCart(payload);
-    alert("Thanh toán thành công!");
+    toast.info("Thanh toán thành công!");
     await fetchCartItems();
   } catch (err) {
-    console.error("Checkout error", err);
+    toast.error("Checkout error", err);
   }
 };
 

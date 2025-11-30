@@ -4,9 +4,9 @@ import java.util.Objects;
 
 public enum RoleEnums {
 
-    ADMIN("1", "ADMIN"),
-    STAFF("2", "STAFF"),
-    CUSTOMER("3", "CUSTOMER");
+    ADMIN("ADMIN", "ADMIN"),
+    STAFF("STAFF", "STAFF"),
+    CUSTOMER("CUSTOMER", "CUSTOMER");
 
     private final String id;
     private final String value;

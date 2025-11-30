@@ -2,6 +2,7 @@ package org.example.websitesalephone.service.product.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
+import org.example.websitesalephone.comon.PageResponse;
 import org.example.websitesalephone.dto.dynamic.CreateCartRequest;
 import org.example.websitesalephone.dto.product.*;
 import org.example.websitesalephone.entity.*;
@@ -11,11 +12,14 @@ import org.example.websitesalephone.comon.CommonResponse;
 import org.example.websitesalephone.utils.Utils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
@@ -49,22 +53,26 @@ public class ProductServiceImpl implements ProductService {
     public CommonResponse getALl(ProductSearch productSearch) {
 
         PageRequest pageRequest = Utils.getPaging(productSearch);
-        Page<ProductListResponse> result;
 
-        if (Strings.isNotEmpty(productSearch.getSearchText())) {
-            String searchText = "%" + productSearch.getSearchText().trim() + "%";
-            result = productVariantRepository
-                    .findByProduct_NameLikeIgnoreCase(searchText, pageRequest)
-                    .map(ProductListResponse::fromEntity);
-        } else {
-            result = productVariantRepository
-                    .findAll(pageRequest)
-                    .map(ProductListResponse::fromEntity);
-        }
+        Specification<Product> spec = (root, query, cb) -> {
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+
+            if (Strings.isNotEmpty(productSearch.getSearchText())) {
+                String searchText = "%" + productSearch.getSearchText().trim().toLowerCase() + "%";
+                predicates.add(cb.like(cb.lower(root.get("name")), searchText));
+            }
+
+            predicates.add(cb.equal(root.get("isDeleted"), false));
+
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+        Page<Product> products = productRepository.findAll(spec, pageRequest);
+
+        Page<ProductListResponse> result = products.map(ProductListResponse::fromEntity);
 
         return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)
-                .data(result)
+                .data(PageResponse.from(result))
                 .build();
     }
 

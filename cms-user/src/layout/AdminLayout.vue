@@ -6,23 +6,23 @@
   <div class="container"><!-- Sidebar Navigation -->
     <aside class="sidebar">
       <nav class="nav-menu">
-        <router-link class="nav-item" data-page="dashboard" to="dashboard">
+        <router-link class="nav-item" data-page="dashboard" to="/admin/dashboard">
           <span class="nav-icon">📊</span>
           <span id="nav-item-1">Dashboard</span>
         </router-link>
-        <router-link href="#" class="nav-item" data-page="analytics" to="order">
+        <router-link href="#" class="nav-item" data-page="analytics" to="/admin/order">
           <span class="nav-icon">📈</span>
           <span id="nav-item-2">Order</span>
         </router-link>
-        <router-link href="#" class="nav-item" data-page="projects" to="product">
+        <router-link href="#" class="nav-item" data-page="projects" to="/admin/product">
           <span class="nav-icon">📁</span>
           <span id="nav-item-3">Product</span>
         </router-link>
-        <router-link href="#" class="nav-item" data-page="team" to="user">
+        <router-link href="#" class="nav-item" data-page="team" to="/admin/user">
           <span class="nav-icon">👥</span>
           <span id="nav-item-4">User</span>
         </router-link>
-        <router-link href="#" class="nav-item" data-page="settings" to="dashboard">
+        <router-link href="#" class="nav-item" data-page="settings" to="/admin/dashboard">
           <span class="nav-icon">⚙️</span>
           <span id="nav-item-5">Settings</span>
         </router-link>

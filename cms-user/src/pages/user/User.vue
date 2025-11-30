@@ -1,14 +1,73 @@
 <script setup lang="ts">
+import {ref, onMounted, computed} from "vue";
+import {userService} from "@/service/UserService";
+import {UserSearchForm} from "@/models/UserSearchForm";
+import {useRoute} from "vue-router";
+import {toast} from "vue3-toastify";
 
+const route = useRoute();
+const userId = route.params.id as string;
+
+// danh sách user trả về
+const users = ref<any[]>([]);
+
+// paging + search form
+const form = ref(new UserSearchForm(1, 10, "", "", ""));
+
+// tổng số trang từ backend
+const totalPages = ref(1);
+
+// gọi API
+const searchUsers = async () => {
+  try {
+    const payload = form.value.toPayload();
+    const res = await userService.search(payload);
+
+    // backend trả về Page<UserDto>
+    const pageData = res.data.data;
+
+    users.value = pageData.content;
+    totalPages.value = pageData.totalPages;
+
+  } catch (e) {
+    console.error("Search error:", e);
+  }
+};
+
+// đổi trang
+const changePage = async (page: number) => {
+  if (page < 1 || page > totalPages.value) return;
+  form.value.page = page;
+  await searchUsers();
+};
+
+// next / prev
+const prevPage = () => changePage(form.value.page - 1);
+const nextPage = () => changePage(form.value.page + 1);
+
+const deleted = async (id: string) =>{
+  const res = await userService.deleteUser(id);
+  if (res.data.code === 0) {
+    toast.info("Xóa tài khoản thành công")
+  } else {
+    toast.error("Xóa tài khoản không thành công")
+  }
+  searchUsers()
+}
+
+// load lần đầu
+onMounted(() => {
+  searchUsers();
+});
 </script>
+
 
 <template>
   <section class="content-card" id="users">
     <div class="card-header">
       <h2 class="card-title">👥 Quản Lý Người Dùng</h2>
       <div class="card-actions">
-        <button class="btn btn-secondary">📊 Xuất Excel</button>
-        <button class="btn btn-primary">+ Thêm User</button>
+        <router-link class="btn btn-primary" to="create-user">+ Thêm User</router-link>
       </div>
     </div>
     <div class="table-wrapper">
@@ -25,177 +84,31 @@
         </tr>
         </thead>
         <tbody>
-        <tr>
+        <tr v-for="u in users" :key="u.id">
           <td>
             <div class="user-cell">
-              <div class="user-avatar">
-                👨
-              </div>
+              <div class="user-avatar">👨</div>
               <div class="user-info">
-                <div class="user-name">
-                  Nguyễn Văn A
-                </div>
-                <div class="user-email">
-                  nguyenvana@email.com
-                </div>
+                <div class="user-name">{{ u.fullName }}</div>
+                <div class="user-email">{{ u.email }}</div>
               </div>
             </div>
           </td>
-          <td>0912 345 678</td>
-          <td>12</td>
-          <td><span class="price">125.450.000₫</span></td>
-          <td>10/01/2023</td>
-          <td><span class="status-badge status-active">Hoạt Động</span></td>
+
+          <td>{{ u.telNo }}</td>
+          <td>{{ u.orderCount }}</td>
+          <td><span class="price">{{ u.totalSpent }}₫</span></td>
+          <td>{{ u.created }}</td>
+          <td>
+      <span :class="['status-badge', u.isDeleted ? 'status-active' : 'status-block']">
+        {{ u.isDeleted ? 'Tạm Khóa' : 'Hoạt Động' }}
+      </span>
+          </td>
+
           <td>
             <div class="action-buttons">
-              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
-              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
-              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div class="user-cell">
-              <div class="user-avatar">
-                👩
-              </div>
-              <div class="user-info">
-                <div class="user-name">
-                  Trần Thị B
-                </div>
-                <div class="user-email">
-                  tranthib@email.com
-                </div>
-              </div>
-            </div>
-          </td>
-          <td>0923 456 789</td>
-          <td>8</td>
-          <td><span class="price">89.320.000₫</span></td>
-          <td>15/02/2023</td>
-          <td><span class="status-badge status-active">Hoạt Động</span></td>
-          <td>
-            <div class="action-buttons">
-              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
-              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
-              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div class="user-cell">
-              <div class="user-avatar">
-                👨
-              </div>
-              <div class="user-info">
-                <div class="user-name">
-                  Lê Văn C
-                </div>
-                <div class="user-email">
-                  levanc@email.com
-                </div>
-              </div>
-            </div>
-          </td>
-          <td>0934 567 890</td>
-          <td>5</td>
-          <td><span class="price">67.890.000₫</span></td>
-          <td>20/03/2023</td>
-          <td><span class="status-badge status-active">Hoạt Động</span></td>
-          <td>
-            <div class="action-buttons">
-              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
-              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
-              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div class="user-cell">
-              <div class="user-avatar">
-                👩
-              </div>
-              <div class="user-info">
-                <div class="user-name">
-                  Phạm Thị D
-                </div>
-                <div class="user-email">
-                  phamthid@email.com
-                </div>
-              </div>
-            </div>
-          </td>
-          <td>0945 678 901</td>
-          <td>15</td>
-          <td><span class="price">156.780.000₫</span></td>
-          <td>05/04/2023</td>
-          <td><span class="status-badge status-active">Hoạt Động</span></td>
-          <td>
-            <div class="action-buttons">
-              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
-              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
-              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div class="user-cell">
-              <div class="user-avatar">
-                👨
-              </div>
-              <div class="user-info">
-                <div class="user-name">
-                  Hoàng Văn E
-                </div>
-                <div class="user-email">
-                  hoangvane@email.com
-                </div>
-              </div>
-            </div>
-          </td>
-          <td>0956 789 012</td>
-          <td>3</td>
-          <td><span class="price">45.670.000₫</span></td>
-          <td>12/05/2023</td>
-          <td><span class="status-badge status-inactive">Không Hoạt Động</span></td>
-          <td>
-            <div class="action-buttons">
-              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
-              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
-              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div class="user-cell">
-              <div class="user-avatar">
-                👩
-              </div>
-              <div class="user-info">
-                <div class="user-name">
-                  Vũ Thị F
-                </div>
-                <div class="user-email">
-                  vuthif@email.com
-                </div>
-              </div>
-            </div>
-          </td>
-          <td>0967 890 123</td>
-          <td>7</td>
-          <td><span class="price">78.990.000₫</span></td>
-          <td>25/06/2023</td>
-          <td><span class="status-badge status-active">Hoạt Động</span></td>
-          <td>
-            <div class="action-buttons">
-              <button class="action-btn btn-view" aria-label="Xem">👁️</button>
-              <button class="action-btn btn-edit" aria-label="Sửa">✏️</button>
-              <button class="action-btn btn-delete" aria-label="Xóa">🗑️</button>
+              <router-link :to="`/admin/user-detail/${u.id}`" class="action-btn btn-edit">✏️</router-link>
+              <button class="action-btn btn-delete" @click="deleted(u.id)">🗑️</button>
             </div>
           </td>
         </tr>
@@ -203,12 +116,19 @@
       </table>
     </div>
     <div class="pagination">
-      <button class="page-btn">«</button>
-      <button class="page-btn active">1</button>
-      <button class="page-btn">2</button>
-      <button class="page-btn">3</button>
-      <button class="page-btn">4</button>
-      <button class="page-btn">»</button>
+      <button class="page-btn" @click="prevPage">«</button>
+
+      <button
+          v-for="n in totalPages"
+          :key="n"
+          class="page-btn"
+          :class="{ active: n === form.page }"
+          @click="changePage(n)"
+      >
+        {{ n }}
+      </button>
+
+      <button class="page-btn" @click="nextPage">»</button>
     </div>
   </section>
 </template>

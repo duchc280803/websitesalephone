@@ -25,9 +25,7 @@ import Footer from "../../layout/Footer.vue";
             </div>
           </div>
           <div class="product-info">
-            <router-link :to="{ name: 'DetailProductHome' }">
               <h3 class="product-name">iPhone 15 Pro Max</h3>
-            </router-link>
             <p class="product-desc">Chip A17 Pro, Camera 48MP, Titanium</p>
             <div class="product-footer">
               <div class="product-price">

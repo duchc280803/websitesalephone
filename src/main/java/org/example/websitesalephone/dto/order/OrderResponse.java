@@ -8,6 +8,7 @@ import org.example.websitesalephone.entity.OrderItem;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Getter
 @AllArgsConstructor
@@ -22,9 +23,9 @@ public class OrderResponse {
 
     private String phone;
 
-    private OffsetDateTime createdAt;
+    private String createdAt; // đổi từ OffsetDateTime -> String
 
-    private OffsetDateTime dateTimeCheckout;
+    private String dateTimeCheckout; // đổi từ OffsetDateTime -> String
 
     private int quantity;
 
@@ -35,6 +36,8 @@ public class OrderResponse {
     private BigDecimal shippingFee;
 
     private BigDecimal totalOrderAmount;
+
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss");
 
     public static OrderResponse fromOrder(final Order order) {
 
@@ -49,14 +52,14 @@ public class OrderResponse {
         BigDecimal totalOrderAmount = totalPrice.add(order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO);
 
         return OrderResponse.builder()
-                .order_id(order.getId() != null ? order.getId() : null)
+                .order_id(order.getId())
                 .orderCode(order.getOrderCode())
                 .userName(order.getUser() != null ? order.getUser().getFullName() : null)
                 .phone(order.getUser() != null ? order.getUser().getPhone() : null)
-                .createdAt(order.getCreatedAt())
-                .dateTimeCheckout(order.getDateTimeCheckout())
+                .createdAt(order.getCreatedAt() != null ? order.getCreatedAt().format(FORMATTER) : null)
+                .dateTimeCheckout(order.getDateTimeCheckout() != null ? order.getDateTimeCheckout().format(FORMATTER) : null)
                 .quantity(totalQuantity)
-                .status(order.getStatus() != null ? order.getStatus() : null)
+                .status(order.getStatus())
                 .totalPrice(totalPrice)
                 .shippingFee(order.getShippingFee())
                 .totalOrderAmount(totalOrderAmount)

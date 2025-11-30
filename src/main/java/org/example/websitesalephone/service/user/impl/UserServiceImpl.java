@@ -3,6 +3,7 @@ package org.example.websitesalephone.service.user.impl;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.example.websitesalephone.auth.UserDetail;
+import org.example.websitesalephone.comon.PageResponse;
 import org.example.websitesalephone.dto.user.UserDto;
 import org.example.websitesalephone.entity.Role;
 import org.example.websitesalephone.entity.User;
@@ -18,7 +19,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public CommonResponse getUserByLoginId(String loginId) {
-        User user = userRepository.findByUsernameAndIsDeleted(loginId, false).orElse(null);
+        User user = userRepository.findByIdAndIsDeleted(loginId, false).orElse(null);
         if (user == null) {
             return CommonResponse.builder()
                     .code(CommonResponse.CODE_NOT_FOUND)
@@ -52,7 +52,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResponse createUser(CreateUserDto userDto) {
-        User entity = CreateUserDto.toEntity(userDto);
+        User entity = CreateUserDto.toEntity(userDto, true);
 
         User userMailCheck = userRepository.findFirstByEmailAndIsDeleted(userDto.getEmail(), false).orElse(null);
 
@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
                     .build();
         }
 
-        Role userRole = roleRepository.findById(userDto.getRoleDto().getRole().getId()).orElse(null);
+        Role userRole = roleRepository.findById(userDto.getRole()).orElse(null);
         if (userRole == null) {
             return CommonResponse.builder()
                     .code(CommonResponse.CODE_NOT_FOUND)
@@ -129,7 +129,7 @@ public class UserServiceImpl implements UserService {
                     .build();
         }
 
-        String roleId = userDto.getRoleDto().getRole().getId();
+        String roleId = userDto.getRole();
         Role userRole = null;
         if (Strings.isNotEmpty(roleId)) {
             userRole = roleRepository.findById(roleId).orElse(null);
@@ -141,18 +141,14 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        currentUser.setEmail(userDto.getEmail());
-        currentUser.setFullName(userDto.getFullName() == null ? null : userDto.getFullName().trim());
-        currentUser.setUsername(userDto.getLoginId());
-        currentUser.setDescription(userDto.getNote());
-        currentUser.setAvatar(userDto.getProfileImg());
-        currentUser.setPhone(userDto.getTelNo());
-        currentUser.setEmail(userDto.getEmail());
         currentUser.setRole(userRole);
-
-        if (Strings.isNotEmpty(userDto.getPassword())) {
-            currentUser.setPasswordHash(BCrypt.hashpw(userDto.getPassword(), BCrypt.gensalt()));
-        }
+        currentUser.setUsername(userDto.getLoginId());
+        currentUser.setFullName(userDto.getFullName());
+        currentUser.setPhone(userDto.getTelNo());
+        currentUser.setGender(userDto.getGender());
+        currentUser.setAddress(userDto.getAddress());
+        currentUser.setDescription(userDto.getNote());
+        currentUser.setEmail(userDto.getEmail());
 
         userRepository.saveAndFlush(currentUser);
 
@@ -172,6 +168,7 @@ public class UserServiceImpl implements UserService {
                     .message("User not found")
                     .build();
         }
+        user.setDeleted(true);
         userRepository.saveAndFlush(user);
         return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)
@@ -214,7 +211,7 @@ public class UserServiceImpl implements UserService {
         }
         return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)
-                .data(result)
+                .data(PageResponse.from(result))
                 .build();
     }
 }

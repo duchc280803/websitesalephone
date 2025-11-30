@@ -3,7 +3,7 @@ import type {Search} from "../models/Search.ts";
 import type {OrderRequest} from "../models/OrderRequest.ts";
 
 class OrderService {
-    private ROOT_API = process.env.VUE_APP_ROOT_API + '/api/order/';
+    private ROOT_API = import.meta.env.VITE_ROOT_API + '/api/order/';
 
     public search(orderSearch: Search): Promise<AxiosResponse> {
         return axios.post(`${this.ROOT_API}search`, orderSearch);
