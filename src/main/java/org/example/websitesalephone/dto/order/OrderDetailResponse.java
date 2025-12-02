@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import org.example.websitesalephone.entity.Address;
 import org.example.websitesalephone.entity.Order;
+import org.example.websitesalephone.utils.Constants;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -15,7 +16,7 @@ public class OrderDetailResponse {
 
     private String orderCode;
 
-    private OffsetDateTime createdAt;
+    private String createdAt;
 
     private String status;
 
@@ -30,6 +31,8 @@ public class OrderDetailResponse {
     private BigDecimal totalPrice;
 
     private String statusTransaction;
+
+    private String email;
 
     private List<ProductOrderResponse> productOrderResponses;
 
@@ -56,19 +59,20 @@ public class OrderDetailResponse {
                 .stream().map(item -> {
                     OrderHistoryStatusResponse orderHistoryStatusResponse = new OrderHistoryStatusResponse();
                     orderHistoryStatusResponse.setStatus(item.getStatus());
-                    orderHistoryStatusResponse.setChangedAt(item.getChangedAt());
+                    orderHistoryStatusResponse.setCreatedAt(Constants.FORMATTER.format(item.getCreatedAt()));
                     return orderHistoryStatusResponse;
                 }).toList();
 
         return OrderDetailResponse.builder()
                 .orderCode(order.getOrderCode())
-                .createdAt(order.getCreatedAt())
+                .createdAt(Constants.FORMATTER.format(order.getCreatedAt()))
                 .status(order.getStatus() != null ? order.getStatus() : null)
                 .fullName(order.getUser() != null ? order.getUser().getFullName() : null)
                 .phoneNumber(order.getUser() != null ? order.getUser().getPhone() : null)
                 .address(order.getUser() != null ? order.getAddressDetail() : null)
                 .methodTransaction(order.getMethodTransaction())
                 .totalPrice(totalPrice)
+                .email(order.getUser().getEmail())
                 .statusTransaction(order.getStatusTransaction())
                 .productOrderResponses(productOrderResponses)
                 .orderHistoryStatusResponses(orderHistoryStatusResponseList)

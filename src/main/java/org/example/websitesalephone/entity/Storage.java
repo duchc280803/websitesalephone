@@ -25,7 +25,7 @@ public class Storage extends BaseEntity{
     @Column(length = 50)
     private String name;
 
-    @OneToMany(mappedBy = "storage", cascade = CascadeType.ALL)
-    private List<ProductVariant> productVariants;
+//    @OneToMany(mappedBy = "storage", cascade = CascadeType.ALL)
+//    private List<ProductVariant> productVariants;
 
 }

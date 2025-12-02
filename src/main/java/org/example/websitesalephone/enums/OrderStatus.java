@@ -12,7 +12,7 @@ public enum OrderStatus {
     SHIPPING("SHIPPING", "Đang giao", "📦"),
     DELIVERED("DELIVERED", "Đã giao", "🏠"),
     COMPLETED("COMPLETED", "Hoàn thành", "⭐"),
-    CANCELLED("", "CANCELLED", "Huyr");
+    CANCELLED("CANCELLED", "hủy", "Huyr");
 
     private final String code;
     private final String description;

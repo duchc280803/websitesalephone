@@ -21,7 +21,7 @@ public class ProductImage extends BaseEntity{
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @Column(length = 500)
+    @Column(columnDefinition = "NVARCHAR(MAX)")
     private String url;
 
     private boolean active;

@@ -12,4 +12,8 @@ public class CreateCartRequest {
     private String idColor;
 
     private String idOrigin;
+
+    private String screenId;
+
+    private String cameraId;
 }

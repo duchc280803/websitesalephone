@@ -44,21 +44,21 @@ public class ProductVariant extends BaseEntity{
     @OneToMany(mappedBy = "productVariant")
     private List<CartItem> cartItems;
 
-    @ManyToOne
-    @JoinColumn(name = "cpu_id", nullable = false)
-    private Cpu cpu;
+//    @ManyToOne
+//    @JoinColumn(name = "cpu_id", nullable = false)
+//    private Cpu cpu;
 
     @ManyToOne
     @JoinColumn(name = "ram_id", nullable = false)
     private Ram ram;
 
-    @ManyToOne
-    @JoinColumn(name = "storage_id", nullable = false)
-    private Storage storage;
-
-    @ManyToOne
-    @JoinColumn(name = "operating_system_id", nullable = false)
-    private OperatingSystem operatingSystem;
+//    @ManyToOne
+//    @JoinColumn(name = "storage_id", nullable = false)
+//    private Storage storage;
+//
+//    @ManyToOne
+//    @JoinColumn(name = "operating_system_id", nullable = false)
+//    private OperatingSystem operatingSystem;
 
     @ManyToOne
     @JoinColumn(name = "screen_id", nullable = false)
@@ -76,8 +76,8 @@ public class ProductVariant extends BaseEntity{
     @JoinColumn(name = "color_id", nullable = false)
     private Color color;
 
-    @ManyToOne
-    @JoinColumn(name = "battery_id", nullable = false)
-    private Battery battery;
+//    @ManyToOne
+//    @JoinColumn(name = "battery_id", nullable = false)
+//    private Battery battery;
 
 }

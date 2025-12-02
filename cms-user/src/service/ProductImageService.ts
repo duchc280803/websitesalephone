@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 
 class ProductImageService {
-    private ROOT_API = process.env.VUE_APP_ROOT_API + '/api/product-images/';
+    private ROOT_API = import.meta.env.VITE_ROOT_API + '/api/product-images/';
 
     public uploadImages(files: File[], productId: string): Promise<AxiosResponse> {
         const formData = new FormData();

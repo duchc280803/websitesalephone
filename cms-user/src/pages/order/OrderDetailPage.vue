@@ -1,282 +1,357 @@
 <script setup lang="ts">
+import {ref, onMounted, computed} from 'vue';
+import {useRoute} from 'vue-router';
+import {orderService} from '@/service/OrderService';
+import {formatCurrency} from "@/utils/Constant.ts";
+import {OrderRequest} from "@/models/OrderRequest.ts";
+import {toast} from "vue3-toastify";
 
+const route = useRoute();
+
+const orderId = ref(route.params.id as string);
+const orderDetail = ref<any>(null);
+const loading = ref(false);
+const error = ref('');
+const description = ref('');
+const shippingFee = ref(<number> 0);
+
+const TIMELINE_ORDER = [
+  { status: 'PENDING', label: 'CHỜ XỬ LÝ', icon: '📝' },
+  { status: 'CONFIRMED', label: 'ĐÃ XÁC NHẬN', icon: '✅' },
+  { status: 'SHIPPING', label: 'ĐANG GIAO', icon: '📦' },
+  { status: 'DELIVERED', label: 'ĐÃ GIAO', icon: '🏠' },
+  { status: 'COMPLETED', label: 'HOÀN THÀNH', icon: '⭐' },
+  { status: 'CANCELLED', label: 'ĐÃ HỦY', icon: '❌' }
+];
+
+/**
+ * Tạo computed timeline CHUNG
+ * – Luôn dựa theo orderDetail hiện tại
+ */
+const timeline = computed(() => {
+  if (!orderDetail.value) return [];
+
+  return TIMELINE_ORDER.map(step => {
+    const match = orderDetail.value.orderHistoryStatusResponses
+        ?.find((s: any) => s.status === step.status);
+
+    return {
+      ...step,
+      time: match?.createdAt ?? null,
+      completed: !!match
+    };
+  });
+});
+
+const fetchOrderDetail = async () => {
+  loading.value = true;
+  try {
+    const res = await orderService.detail(orderId.value);
+    orderDetail.value = res.data.data;
+  } catch (err: any) {
+    error.value = 'Không lấy được chi tiết đơn hàng';
+  } finally {
+    loading.value = false;
+  }
+};
+
+const updateOrderStatus = async (newStatus: string) => {
+  if (!orderDetail.value) return;
+  console.log(orderDetail.value)
+  const requestPayload = new OrderRequest(
+      newStatus,
+      shippingFee.value,
+      description.value,
+      orderId.value
+  );
+
+  try {
+    await orderService.update(requestPayload);
+    toast.success("Cập nhập trạng thái thành công")
+    await fetchOrderDetail();
+  } catch (err) {
+    toast.error("Cập nhập trạng thái that bại ")
+    error.value = 'Cập nhật đơn hàng thất bại';
+  }
+};
+
+/**
+ * Những computed này mới dùng được timeline
+ * vì timeline đã nằm ngoài fetch()
+ */
+const firstIncompleteIndex = computed(() =>
+    timeline.value.findIndex(t => !t.completed)
+);
+
+const completedCount = computed(() =>
+    timeline.value.filter(t => t.completed).length
+);
+
+const progressWidth = computed(() =>
+    (completedCount.value - 1) / (timeline.value.length - 1) * 100
+);
+
+onMounted(() => {
+  fetchOrderDetail();
+});
 </script>
-
 <template>
-    <header class="order-header">
-      <div class="header-left">
-        <h1>📦 Chi Tiết Đơn Hàng</h1>
-        <div class="order-code">
-          Mã đơn hàng: <strong>#DH20241215-0001</strong>
+  <div
+      class="modal fade"
+      id="exampleModal"
+      tabindex="-1"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered modal-md">
+      <div class="modal-content rounded-4 shadow-lg">
+
+        <!-- Header -->
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold">{{ modalTitle }}</h5>
+          <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+          ></button>
         </div>
-        <div class="order-date">
-          Ngày đặt: 15/12/2024 14:30
+
+        <!-- Body -->
+        <div class="modal-body pt-2">
+          <label class="form-label fw-semibold mb-2">Mô tả</label>
+          <textarea
+              v-model="description"
+              class="form-control form-control-lg"
+              rows="5"
+              placeholder="Nhập ghi chú..."
+          ></textarea>
         </div>
+
+        <!-- Footer -->
+        <div class="modal-footer border-0 pt-3">
+          <button
+              type="button"
+              class="btn btn-outline-secondary rounded-3 px-4"
+              data-bs-dismiss="modal"
+          >
+            Đóng
+          </button>
+          <button
+              type="button"
+              class="btn btn-primary rounded-3 px-4 fw-semibold"
+              @click="updateOrderStatus('CANCELLED')"
+          >
+            Lưu
+          </button>
+        </div>
+
       </div>
-      <div class="header-right">
-        <div class="status-badge">
-          ✓ Đang giao hàng
-        </div>
-        <div><button class="print-btn">🖨️ In đơn hàng</button>
-        </div>
-      </div>
-    </header><!-- Status Timeline -->
-    <section class="status-timeline">
-      <h2 class="timeline-title">🚚 Trạng Thái Đơn Hàng</h2>
-      <div class="timeline-container">
-        <div class="timeline-line">
-          <div class="timeline-progress"></div>
-        </div>
-        <div class="timeline-step completed">
-          <div class="step-icon">
-            📝
-          </div>
-          <div>
-            <div class="step-title">
-              Đặt hàng
-            </div>
-            <div class="step-time">
-              15/12 14:30
-            </div>
-          </div>
-        </div>
-        <div class="timeline-step completed">
-          <div class="step-icon">
-            ✅
-          </div>
-          <div>
-            <div class="step-title">
-              Xác nhận
-            </div>
-            <div class="step-time">
-              15/12 15:00
-            </div>
-          </div>
-        </div>
-        <div class="timeline-step active">
-          <div class="step-icon">
-            📦
-          </div>
-          <div>
-            <div class="step-title">
-              Đang giao
-            </div>
-            <div class="step-time">
-              16/12 09:00
-            </div>
-          </div>
-        </div>
-        <div class="timeline-step">
-          <div class="step-icon">
-            🏠
-          </div>
-          <div>
-            <div class="step-title">
-              Đã giao
-            </div>
-            <div class="step-time">
-              Chờ xử lý
-            </div>
-          </div>
-        </div>
-        <div class="timeline-step">
-          <div class="step-icon">
-            ⭐
-          </div>
-          <div>
-            <div class="step-title">
-              Hoàn thành
-            </div>
-            <div class="step-time">
-              Chờ xử lý
-            </div>
-          </div>
-        </div>
-      </div>
-    </section><!-- Main Grid -->
-    <div class="content-grid">
-      <div><!-- Products Table -->
-        <section class="products-section">
-          <h2 class="section-title">📱 Danh Sách Sản Phẩm</h2>
-          <table class="products-table">
-            <thead>
-            <tr>
-              <th>Sản phẩm</th>
-              <th>Đơn giá</th>
-              <th>Số lượng</th>
-              <th>Thành tiền</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-              <td>
-                <div class="product-cell">
-                  <div class="product-image-small">
-                    📱
-                  </div>
-                  <div class="product-details">
-                    <div class="product-name-table">
-                      iPhone 15 Pro Max
-                    </div>
-                    <div class="product-variant">
-                      256GB - Xanh Titan
-                    </div>
-                  </div>
-                </div></td>
-              <td class="price-cell">29.990.000₫</td>
-              <td class="quantity-cell">1</td>
-              <td class="total-cell">29.990.000₫</td>
-            </tr>
-            <tr>
-              <td>
-                <div class="product-cell">
-                  <div class="product-image-small">
-                    📱
-                  </div>
-                  <div class="product-details">
-                    <div class="product-name-table">
-                      Samsung S24 Ultra
-                    </div>
-                    <div class="product-variant">
-                      512GB - Đen Titanium
-                    </div>
-                  </div>
-                </div></td>
-              <td class="price-cell">26.990.000₫</td>
-              <td class="quantity-cell">1</td>
-              <td class="total-cell">26.990.000₫</td>
-            </tr>
-            <tr>
-              <td>
-                <div class="product-cell">
-                  <div class="product-image-small">
-                    📱
-                  </div>
-                  <div class="product-details">
-                    <div class="product-name-table">
-                      iPhone 14 Pro
-                    </div>
-                    <div class="product-variant">
-                      256GB - Tím Deep Purple
-                    </div>
-                  </div>
-                </div></td>
-              <td class="price-cell">23.990.000₫</td>
-              <td class="quantity-cell">2</td>
-              <td class="total-cell">47.980.000₫</td>
-            </tr>
-            </tbody>
-          </table>
-        </section><!-- IMEI Table -->
-        <section class="imei-section">
-          <h2 class="section-title">🔢 Danh Sách IMEI</h2>
-          <table class="imei-table">
-            <thead>
-            <tr>
-              <th>Sản phẩm</th>
-              <th>Mã IMEI</th>
-              <th>Trạng thái</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-              <td>
-                <div class="product-name-table">
-                  iPhone 15 Pro Max
-                </div>
-                <div class="product-variant">
-                  256GB - Xanh Titan
-                </div></td>
-              <td><span class="imei-code">359876543210987</span></td>
-              <td><span class="imei-status">✓ Đã kích hoạt</span></td>
-            </tr>
-            <tr>
-              <td>
-                <div class="product-name-table">
-                  Samsung S24 Ultra
-                </div>
-                <div class="product-variant">
-                  512GB - Đen Titanium
-                </div></td>
-              <td><span class="imei-code">351234567890123</span></td>
-              <td><span class="imei-status">✓ Đã kích hoạt</span></td>
-            </tr>
-            <tr>
-              <td>
-                <div class="product-name-table">
-                  iPhone 14 Pro #1
-                </div>
-                <div class="product-variant">
-                  256GB - Tím Deep Purple
-                </div></td>
-              <td><span class="imei-code">358765432109876</span></td>
-              <td><span class="imei-status">✓ Đã kích hoạt</span></td>
-            </tr>
-            <tr>
-              <td>
-                <div class="product-name-table">
-                  iPhone 14 Pro #2
-                </div>
-                <div class="product-variant">
-                  256GB - Tím Deep Purple
-                </div></td>
-              <td><span class="imei-code">358765432109877</span></td>
-              <td><span class="imei-status">✓ Đã kích hoạt</span></td>
-            </tr>
-            </tbody>
-          </table>
-        </section>
-      </div><!-- Order Summary Sidebar -->
-      <aside class="order-summary-sidebar">
-        <div class="summary-section">
-          <h3>👤 Thông Tin Khách Hàng</h3>
-          <div class="customer-name">
-            Nguyễn Văn An
-          </div>
-          <div class="customer-detail">
-            📞 0987 654 321
-          </div>
-          <div class="customer-detail">
-            📧 nguyenvanan@email.com
-          </div>
-        </div>
-        <div class="summary-section">
-          <h3>📍 Địa Chỉ Giao Hàng</h3>
-          <div class="customer-detail">
-            123 Đường Lê Lợi, Phường Bến Nghé,<br>
-            Quận 1, TP. Hồ Chí Minh
-          </div>
-        </div>
-        <div class="summary-section">
-          <h3>💳 Thanh Toán</h3>
-          <div class="info-row"><span class="info-label">Phương thức:</span> <span class="info-value">Chuyển khoản</span>
-          </div>
-          <div class="info-row"><span class="info-label">Trạng thái:</span> <span class="info-value" style="color: #43e97b;">✓ Đã thanh toán</span>
-          </div>
-        </div>
-        <div class="summary-section">
-          <h3>🚚 Vận Chuyển</h3>
-          <div class="info-row"><span class="info-label">Đơn vị:</span> <span class="info-value">Giao hàng nhanh</span>
-          </div>
-          <div class="info-row"><span class="info-label">Mã vận đơn:</span> <span class="info-value">GHN123456789</span>
-          </div>
-          <div class="info-row"><span class="info-label">Phí ship:</span> <span class="info-value" style="color: #43e97b;">Miễn phí</span>
-          </div>
-        </div>
-        <div class="total-section">
-          <div class="total-row"><span class="info-label">Tạm tính:</span> <span class="info-value">104.960.000₫</span>
-          </div>
-          <div class="total-row"><span class="info-label">Giảm giá:</span> <span class="info-value" style="color: #ff6b6b;">-2.000.000₫</span>
-          </div>
-          <div class="total-row"><span class="info-label">Phí vận chuyển:</span> <span class="info-value" style="color: #43e97b;">Miễn phí</span>
-          </div>
-          <div class="total-row"><span class="total-label">Tổng cộng:</span> <span class="total-amount">102.960.000₫</span>
-          </div>
-        </div>
-        <div class="action-buttons"><button class="btn-action btn-primary"> 📞 Liên hệ hỗ trợ </button> <button class="btn-action btn-secondary"> 🔄 Theo dõi đơn hàng </button>
-        </div>
-      </aside>
     </div>
+  </div>
+  <header class="order-header">
+    <div class="header-left">
+      <h1>📦 Chi Tiết Đơn Hàng</h1>
+      <div class="order-code">
+        Mã đơn hàng: <strong>{{ orderDetail?.orderCode }}</strong>
+      </div>
+      <div class="order-date">
+        Ngày đặt: {{ orderDetail?.createdAt }}
+      </div>
+    </div>
+    <div class="header-right">
+      <div>
+        <button class="print-btn">🖨️ In đơn hàng</button>
+      </div>
+    </div>
+  </header><!-- Status Timeline -->
+  <section class="status-timeline">
+    <h2 class="timeline-title">🚚 Trạng Thái Đơn Hàng</h2>
+    <div class="timeline-container">
+      <div class="timeline-line">
+        <div class="timeline-progress-cancel" v-if="orderDetail?.status === 'CANCELLED'"></div>
+        <div class="timeline-progress" v-else></div>
+      </div>
+      <div
+          class="timeline-step"
+          v-for="(step, idx) in timeline"
+          :key="idx"
+          :class="{
+      completed: step.completed,
+      active: !step.completed && idx === firstIncompleteIndex
+    }"
+      >
+        <div class="step-icon">{{ step.icon }}</div>
+
+        <div>
+          <div class="step-title">{{ step.label }}</div>
+          <div class="step-time">{{ step.time }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="actions mt-3 d-flex gap-2">
+      <button
+          class="btn btn-success"
+          data-bs-toggle="modal"
+          data-bs-target="#exampleModal"
+          v-if="['PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED'].includes(orderDetail?.status)"
+      >
+        Xác nhận đơn
+      </button>
+
+      <button
+          class="btn btn-danger"
+          @click="openModal('cancel')"
+          v-if="['PENDING', 'CONFIRMED'].includes(orderDetail?.status)"
+      >
+        Hủy đơn
+      </button>
+
+      <button class="btn btn-primary" @click="openModal('history')">
+        Lịch sử hóa đơn
+      </button>
+    </div>
+  </section><!-- Main Grid -->
+  <div class="content-grid">
+    <div><!-- Products Table -->
+      <section class="products-section">
+        <h2 class="section-title">📱 Danh Sách Sản Phẩm</h2>
+        <table class="products-table">
+          <thead>
+          <tr>
+            <th>Sản phẩm</th>
+            <th>Đơn giá</th>
+            <th>Số lượng</th>
+            <th>Thành tiền</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="p in orderDetail?.productOrderResponses" :key="p?.id">
+            <td>
+              <div class="product-cell">
+                <div class="product-image-small">
+                  📱
+                </div>
+                <div class="product-details">
+                  <div class="product-name-table">
+                    {{ p?.productName }}
+                  </div>
+                  <div class="product-variant">
+                    256GB - Xanh Titan
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td class="price-cell">{{ formatCurrency(p?.productPrice) }}</td>
+            <td class="quantity-cell">{{ p?.quantity }}</td>
+            <td class="total-cell">{{ formatCurrency(p?.intoMoney) }}</td>
+          </tr>
+          </tbody>
+        </table>
+      </section><!-- IMEI Table -->
+      <section class="imei-section">
+        <h2 class="section-title">🔢 Danh Sách IMEI</h2>
+        <table class="imei-table">
+          <thead>
+          <tr>
+            <th>Sản phẩm</th>
+            <th>Mã IMEI</th>
+            <th>Trạng thái</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>
+              <div class="product-name-table">
+                iPhone 15 Pro Max
+              </div>
+              <div class="product-variant">
+                256GB - Xanh Titan
+              </div>
+            </td>
+            <td><span class="imei-code">359876543210987</span></td>
+            <td><span class="imei-status">✓ Đã kích hoạt</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="product-name-table">
+                Samsung S24 Ultra
+              </div>
+              <div class="product-variant">
+                512GB - Đen Titanium
+              </div>
+            </td>
+            <td><span class="imei-code">351234567890123</span></td>
+            <td><span class="imei-status">✓ Đã kích hoạt</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="product-name-table">
+                iPhone 14 Pro #1
+              </div>
+              <div class="product-variant">
+                256GB - Tím Deep Purple
+              </div>
+            </td>
+            <td><span class="imei-code">358765432109876</span></td>
+            <td><span class="imei-status">✓ Đã kích hoạt</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="product-name-table">
+                iPhone 14 Pro #2
+              </div>
+              <div class="product-variant">
+                256GB - Tím Deep Purple
+              </div>
+            </td>
+            <td><span class="imei-code">358765432109877</span></td>
+            <td><span class="imei-status">✓ Đã kích hoạt</span></td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+    </div><!-- Order Summary Sidebar -->
+    <aside class="order-summary-sidebar">
+      <div class="summary-section">
+        <h3>👤 Thông Tin Khách Hàng</h3>
+        <div class="customer-name">
+          Nguyễn Văn An
+        </div>
+        <div class="customer-detail">
+          📞 {{orderDetail?.phoneNumber}}
+        </div>
+        <div class="customer-detail">
+          📧 {{orderDetail?.email}}
+        </div>
+      </div>
+      <div class="summary-section">
+        <h3>📍 Địa Chỉ Giao Hàng</h3>
+        <div class="customer-detail">
+          123 Đường Lê Lợi, Phường Bến Nghé,<br>
+          Quận 1, TP. Hồ Chí Minh
+        </div>
+      </div>
+      <div class="summary-section">
+        <h3>💳 Thanh Toán</h3>
+        <div class="info-row"><span class="info-label">Phương thức:</span> <span class="info-value">Chuyển khoản</span>
+        </div>
+        <div class="info-row"><span class="info-label">Trạng thái:</span> <span class="info-value"
+                                                                                style="color: #43e97b;">✓ Đã thanh toán</span>
+        </div>
+      </div>
+      <div class="total-section">
+        <div class="total-row"><span class="info-label">Tạm tính:</span> <span class="info-value">104.960.000₫</span>
+        </div>
+        <div class="total-row"><span class="info-label">Phí vận chuyển:</span> <span class="info-value"
+                                                                                     style="color: #43e97b;">Miễn phí</span>
+        </div>
+        <div class="total-row"><span class="total-label">Tổng cộng:</span> <span
+            class="total-amount">102.960.000₫</span>
+        </div>
+      </div>
+    </aside>
+  </div>
 </template>
 
 <style scoped>
@@ -419,6 +494,17 @@ body {
   height: 100%;
   width: 60%;
   background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.timeline-progress-cancel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: red;
   border-radius: 2px;
   transition: width 0.5s ease;
 }

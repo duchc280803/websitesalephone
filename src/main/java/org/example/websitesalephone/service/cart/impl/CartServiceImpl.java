@@ -12,6 +12,7 @@ import org.example.websitesalephone.enums.CartStatus;
 import org.example.websitesalephone.enums.OrderStatus;
 import org.example.websitesalephone.repository.*;
 import org.example.websitesalephone.service.cart.CartService;
+import org.example.websitesalephone.utils.Utils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,8 @@ public class CartServiceImpl implements CartService {
     private final OrderItemRepository orderItemRepository;
 
     private final UserRepository userRepository;
+
+    private final OrderStatusHistoryRepository orderStatusHistoryRepository;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -73,7 +76,7 @@ public class CartServiceImpl implements CartService {
         }
 
         Optional<CartItem> existingItemOpt = cart.getCartItems().stream()
-                .filter(i -> i.getProductVariant().getId().equals(request.getProductId()))
+                .filter(i -> !i.isDeleted())
                 .findFirst();
 
         if (existingItemOpt.isPresent()) {
@@ -93,10 +96,6 @@ public class CartServiceImpl implements CartService {
             cart.getCartItems().add(newItem);
             cartItemRepository.saveAndFlush(newItem);
         }
-
-        product.setQuantity(product.getQuantity() - request.getQuantity());
-        productVariantRepository.saveAndFlush(product);
-
         return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)
                 .message("Thêm sản phẩm vào giỏ hàng thành công")
@@ -137,9 +136,6 @@ public class CartServiceImpl implements CartService {
             item.setQuantity(request.getQuantity());
             cartItemRepository.saveAndFlush(item);
         }
-        product.setQuantity(product.getQuantity() - request.getQuantity());
-        productVariantRepository.saveAndFlush(product);
-
         return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)
                 .message("Cập nhật sản phẩm trong giỏ hàng thành công")
@@ -203,6 +199,7 @@ public class CartServiceImpl implements CartService {
 
         Order order = new Order();
         order.setId(UUID.randomUUID().toString());
+        order.setOrderCode(Utils.generateUniqueCode("ORDER-"));
         order.setUser(user);
         order.setTotalAmount(cart.getCartItems().stream()
                 .map(i -> i.getProductVariant().getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
@@ -230,6 +227,12 @@ public class CartServiceImpl implements CartService {
             cartItemRepository.saveAndFlush(item);
         }
         cartRepository.saveAndFlush(cart);
+
+        OrderStatusHistory orderStatusHistory = new OrderStatusHistory();
+        orderStatusHistory.setId(UUID.randomUUID().toString());
+        orderStatusHistory.setOrder(order);
+        orderStatusHistory.setStatus(OrderStatus.PENDING.getCode());
+        orderStatusHistoryRepository.saveAndFlush(orderStatusHistory);
 
         return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)

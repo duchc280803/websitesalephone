@@ -2,6 +2,7 @@
 import {ref, onMounted, computed} from "vue";
 import {orderService} from "@/service/OrderService";
 import {Search} from "@/models/Search.ts";
+import {formatCurrency} from "@/utils/Constant.ts";
 
 const orders = ref<any>();
 const searchText = ref("");
@@ -37,7 +38,6 @@ onMounted(() => {
       <h2 class="card-title">📦 Quản Lý Đơn Hàng</h2>
       <div class="card-actions">
         <button class="btn btn-secondary" @click="callSearch">🔍 Tìm kiếm</button>
-        <button class="btn btn-primary">+ Thêm Đơn</button>
       </div>
     </div>
     <div class="tabs">
@@ -68,7 +68,7 @@ onMounted(() => {
         </thead>
         <tbody>
         <tr v-for="o in orders?.content" :key="o.order_id">
-          <td>#{{ o.orderCode }}</td>
+          <td>{{ o.orderCode }}</td>
           <td>{{ o.userName }}</td>
           <td>{{ o.phone }}</td>
           <td>{{ o.codeUser }}</td>
@@ -76,9 +76,10 @@ onMounted(() => {
           <td>{{ o.dateTimeCheckout }}</td>
           <td>{{ o.status }}</td>
           <td>{{ o.quantity }}</td>
-          <td>{{ o.totalPrice }}</td>
-          <td>{{ o.shippingFee }}</td>
-          <td>{{ o.totalOrderAmount }}</td>
+          <td>{{ formatCurrency(o.totalPrice) }}</td>
+          <td>{{ formatCurrency(o.shippingFee) }}</td>
+          <td>{{ formatCurrency(o.totalOrderAmount) }}</td>
+          <td><router-link :to="`/admin/orders-detail/${o.order_id}`" class="action-btn btn-edit">✏️</router-link></td>
         </tr>
         </tbody>
       </table>

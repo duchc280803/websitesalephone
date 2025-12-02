@@ -5,9 +5,11 @@ import org.apache.logging.log4j.util.Strings;
 import org.example.websitesalephone.auth.UserDetail;
 import org.example.websitesalephone.comon.PageResponse;
 import org.example.websitesalephone.dto.user.UserDto;
+import org.example.websitesalephone.entity.Cart;
 import org.example.websitesalephone.entity.Role;
 import org.example.websitesalephone.entity.User;
 import org.example.websitesalephone.enums.RoleEnums;
+import org.example.websitesalephone.repository.CartRepository;
 import org.example.websitesalephone.repository.RoleRepository;
 import org.example.websitesalephone.repository.UserRepository;
 import org.example.websitesalephone.dto.user.CreateUserDto;
@@ -32,6 +34,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     private final RoleRepository roleRepository;
+
+    private final CartRepository cartRepository;
 
     @Override
     public CommonResponse getUserByLoginId(String loginId) {
@@ -87,6 +91,11 @@ public class UserServiceImpl implements UserService {
         entity.setId(UUID.randomUUID().toString());
         entity.setPasswordExpiredAt(OffsetDateTime.now().minusDays(1));
         userRepository.saveAndFlush(entity);
+
+        Cart cart = new Cart();
+        cart.setUser(entity);
+        cart.setId(UUID.randomUUID().toString());
+        cartRepository.saveAndFlush(cart);
 
         return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)

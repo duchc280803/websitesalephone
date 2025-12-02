@@ -25,6 +25,6 @@ public class OperatingSystem extends BaseEntity{
 
     private Boolean isDeleted;
 
-    @OneToMany(mappedBy = "operatingSystem", cascade = CascadeType.ALL)
-    private List<ProductVariant> productVariants;
+//    @OneToMany(mappedBy = "operatingSystem", cascade = CascadeType.ALL)
+//    private List<ProductVariant> productVariants;
 }

@@ -23,6 +23,6 @@ public class Battery extends BaseEntity{
     @Column(length = 100)
     private String name;
 
-    @OneToMany(mappedBy = "battery", cascade = CascadeType.ALL)
-    private List<ProductVariant> productVariants;
+//    @OneToMany(mappedBy = "battery", cascade = CascadeType.ALL)
+//    private List<ProductVariant> productVariants;
 }

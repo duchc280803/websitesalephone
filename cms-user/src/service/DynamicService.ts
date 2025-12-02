@@ -3,7 +3,7 @@ import type {DynamicSearch} from "../models/DynamicSearch.ts";
 import type {DynamicRequest} from "../models/DynamicRequest.ts";
 
 class DynamicService {
-    private ROOT_API = process.env.VUE_APP_ROOT_API + '/api/dynamic/';
+    private ROOT_API = import.meta.env.VITE_ROOT_API + '/api/dynamic/';
 
     public search(dynamicSearch: DynamicSearch): Promise<AxiosResponse> {
         return axios.post(`${this.ROOT_API}search`, dynamicSearch);

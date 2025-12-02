@@ -11,6 +11,6 @@ public class OrderHistoryStatusResponse {
 
     private String status;
 
-    private OffsetDateTime changedAt;
+    private String createdAt;
 
 }

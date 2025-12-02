@@ -65,7 +65,7 @@ const decreaseQty = () => {
 
 const updateQuantity = async () => {
   // Kiểm tra đủ 3 option bắt buộc
-  if (!selectedRam.value || !selectedColor.value || !selectedOrigin.value) {
+  if (!selectedRam.value || !selectedColor.value || !selectedOrigin.value || !selectedScreen.value || !selectedCamera.value) {
     availableQuantity.value = null; // chưa đủ chọn thì ẩn số lượng
     return;
   }
@@ -76,6 +76,8 @@ const updateQuantity = async () => {
     idRam: selectedRam.value,
     idColor: selectedColor.value,
     idOrigin: selectedOrigin.value,
+    screenId: selectedScreen.value,
+    cameraId: selectedCamera.value,
   };
 
   try {
@@ -84,7 +86,7 @@ const updateQuantity = async () => {
     productVariantId.value = response.data.data.idProduct; // backend trả số lượng tồn
   } catch (error) {
     console.error("Lỗi khi lấy số lượng sản phẩm", error);
-    availableQuantity.value = null;
+    availableQuantity.value = Number(0);
   }
 };
 
@@ -117,7 +119,7 @@ const addToCart = async () => {
 
   try {
     await cartService.addToCart(cartRequest);
-    toast.info(`Đã thêm ${quantity.value} sản phẩm vào giỏ hàng`);
+    toast.success(`Đã thêm ${quantity.value} sản phẩm vào giỏ hàng`);
   } catch (err) {
     console.error(err);
     toast.error("Thêm vào giỏ hàng thất bại!");
@@ -231,8 +233,33 @@ const colorMap: Record<string, string> = {
             </div>
           </div>
         </div>
+
+        <!-- screen Selection -->
+        <div class="spec-section" v-if="product?.screens?.length">
+          <div class="spec-label">Màn hình</div>
+          <div class="spec-options">
+            <div v-for="screen in product.screens" :key="screen.id" class="spec-option"
+                 :class="{ selected: selectedScreen === screen.id }"
+                 @click="selectOption('screen', screen.id)">
+              {{ screen.name }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Camera Selection -->
+        <div class="spec-section" v-if="product?.cameras?.length">
+          <div class="spec-label">Camera</div>
+          <div class="spec-options">
+            <div v-for="camera in product.cameras" :key="camera.id" class="spec-option"
+                 :class="{ selected: selectedCamera === camera.id }"
+                 @click="selectOption('camera', camera.id)">
+              {{ camera.name }}
+            </div>
+          </div>
+        </div>
+
         <!-- Quantity Selection -->
-        <div class="spec-section" v-if="availableQuantity !== null">
+        <div class="spec-section">
           <div class="spec-options quantity-options">
             <!-- Giảm: disable khi quantity <= 1 -->
             <button class="qty-btn" @click="decreaseQty" :disabled="quantity <= 1">-</button>
@@ -248,7 +275,14 @@ const colorMap: Record<string, string> = {
 
         <!-- Add to Cart -->
         <div class="action-buttons">
-          <button class="btn btn-primary" @click="addToCart">🛒 Thêm Vào Giỏ Hàng</button>
+          <a
+              href="#"
+              class="btn btn-primary"
+              :class="{ 'disabled-link': availableQuantity === 0 }"
+              @click.prevent="availableQuantity === 0 ? null : addToCart()"
+          >
+            🛒 Thêm Vào Giỏ Hàng
+          </a>
         </div>
       </section>
     </div>
@@ -264,6 +298,12 @@ const colorMap: Record<string, string> = {
 </template>
 
 <style scoped>
+.disabled-link {
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .color-option span {
   display: block;
   width: 50px;

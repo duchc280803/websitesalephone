@@ -14,6 +14,7 @@ import java.util.List;
 @Builder
 public class ProductDetailResponse {
 
+    private String id;
     private String productName;
     private String description;
     private BigDecimal price;
@@ -36,27 +37,28 @@ public class ProductDetailResponse {
         ProductVariant variant = productVariants.get(0);
 
         return ProductDetailResponse.builder()
+                .id(product.getId())
                 .productName(product.getName())
                 .description(product.getDescription())
                 .price(variant.getPrice())
                 .colors(removeDuplicate(productVariants.stream()
                         .map(v -> new DynamicResponse(v.getColor().getId(), v.getColor().getName()))
                         .toList()))
-                .batterys(removeDuplicate(productVariants.stream()
-                        .map(v -> new DynamicResponse(v.getBattery().getId(), v.getBattery().getName()))
-                        .toList()))
-                .cpus(removeDuplicate(productVariants.stream()
-                        .map(v -> new DynamicResponse(v.getCpu().getId(), v.getCpu().getName()))
-                        .toList()))
+//                .batterys(removeDuplicate(productVariants.stream()
+//                        .map(v -> new DynamicResponse(v.getBattery().getId(), v.getBattery().getName()))
+//                        .toList()))
+//                .cpus(removeDuplicate(productVariants.stream()
+//                        .map(v -> new DynamicResponse(v.getCpu().getId(), v.getCpu().getName()))
+//                        .toList()))
                 .rams(removeDuplicate(productVariants.stream()
                         .map(v -> new DynamicResponse(v.getRam().getId(), v.getRam().getName()))
                         .toList()))
-                .storages(removeDuplicate(productVariants.stream()
-                        .map(v -> new DynamicResponse(v.getStorage().getId(), v.getStorage().getName()))
-                        .toList()))
-                .operators(removeDuplicate(productVariants.stream()
-                        .map(v -> new DynamicResponse(v.getOperatingSystem().getId(), v.getOperatingSystem().getName()))
-                        .toList()))
+//                .storages(removeDuplicate(productVariants.stream()
+//                        .map(v -> new DynamicResponse(v.getStorage().getId(), v.getStorage().getName()))
+//                        .toList()))
+//                .operators(removeDuplicate(productVariants.stream()
+//                        .map(v -> new DynamicResponse(v.getOperatingSystem().getId(), v.getOperatingSystem().getName()))
+//                        .toList()))
                 .origins(removeDuplicate(productVariants.stream()
                         .map(v -> new DynamicResponse(v.getOrigin().getId(), v.getOrigin().getName()))
                         .toList()))

@@ -48,7 +48,7 @@ const nextPage = () => changePage(form.value.page + 1);
 const deleted = async (id: string) =>{
   const res = await userService.deleteUser(id);
   if (res.data.code === 0) {
-    toast.info("Xóa tài khoản thành công")
+    toast.success("Xóa tài khoản thành công")
   } else {
     toast.error("Xóa tài khoản không thành công")
   }
@@ -184,105 +184,6 @@ body {
   border-left-color: #fee140;
 }
 
-.nav-icon {
-  font-size: 1.4em;
-  width: 30px;
-  text-align: center;
-}
-
-/* Main Content */
-.main-content {
-  flex: 1;
-  padding: 40px;
-  overflow-y: auto;
-}
-
-.page-title {
-  font-size: 2.5em;
-  font-weight: 800;
-  color: #1a1a2e;
-  margin-bottom: 10px;
-}
-
-.breadcrumb {
-  color: #666;
-  font-size: 1.05em;
-}
-
-.breadcrumb a {
-  color: #667eea;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-/* Stats Cards */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 25px;
-  margin-bottom: 40px;
-}
-
-.stat-card {
-  background: white;
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 100px;
-  height: 100px;
-  background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
-  border-radius: 50%;
-  transform: translate(30%, -30%);
-}
-
-.stat-icon {
-  font-size: 3em;
-  margin-bottom: 15px;
-  display: inline-block;
-}
-
-.stat-value {
-  font-size: 2.2em;
-  font-weight: 800;
-  color: #1a1a2e;
-  margin-bottom: 5px;
-}
-
-.stat-label {
-  color: #666;
-  font-size: 1.05em;
-  font-weight: 600;
-}
-
-.stat-trend {
-  margin-top: 10px;
-  font-size: 0.9em;
-  font-weight: 600;
-}
-
-.trend-up {
-  color: #43e97b;
-}
-
-.trend-down {
-  color: #ff6b6b;
-}
-
 /* Content Card */
 .content-card {
   background: white;
@@ -392,70 +293,6 @@ tbody tr:hover {
   display: inline-block;
 }
 
-.status-pending {
-  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-  color: #d35400;
-}
-
-.status-processing {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: #0c5c7a;
-}
-
-.status-completed {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: #0d6e3e;
-}
-
-.status-cancelled {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  color: #7a0c0c;
-}
-
-.status-active {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: #0d6e3e;
-}
-
-.status-inactive {
-  background: linear-gradient(135deg, #c3cfe2 0%, #a8b8d8 100%);
-  color: #4a5568;
-}
-
-/* Product Image */
-.product-cell {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.product-image {
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8em;
-  flex-shrink: 0;
-}
-
-.product-info {
-  flex: 1;
-}
-
-.product-name {
-  font-weight: 700;
-  color: #1a1a2e;
-  margin-bottom: 3px;
-}
-
-.product-sku {
-  font-size: 0.9em;
-  color: #666;
-}
-
 /* User Avatar */
 .user-cell {
   display: flex;
@@ -512,55 +349,6 @@ tbody tr:hover {
 
 .action-btn:hover {
   transform: scale(1.15);
-}
-
-.btn-view {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: white;
-}
-
-.btn-edit {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: white;
-}
-
-.btn-delete {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  color: white;
-}
-
-/* Price */
-.price {
-  font-weight: 700;
-  color: #667eea;
-  font-size: 1.05em;
-}
-
-/* Tabs */
-.tabs {
-  display: flex;
-  gap: 10px;
-  padding: 25px 30px 0;
-  border-bottom: 2px solid #f0f0f0;
-}
-
-.tab {
-  padding: 12px 30px;
-  background: transparent;
-  border: none;
-  font-weight: 600;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-  font-size: 1em;
-}
-
-.tab:hover,
-.tab.active {
-  color: #667eea;
-  border-bottom-color: #667eea;
 }
 
 /* Pagination */

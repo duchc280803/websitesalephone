@@ -4,6 +4,8 @@ import App from './App.vue'
 import router from './router.ts'
 import './style.css'
 import 'vue3-toastify/dist/index.css'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap'
 
 const app = createApp(App)
 

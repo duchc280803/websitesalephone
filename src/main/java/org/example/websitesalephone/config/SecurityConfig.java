@@ -38,6 +38,7 @@ public class SecurityConfig {
                                 "/api/cart/**",
                                 "/api/dynamic/**",
                                 "/api/user/**",
+                                "/api/product-images/**",
                                 "/api/order/**")
                         .permitAll()
                         .anyRequest()

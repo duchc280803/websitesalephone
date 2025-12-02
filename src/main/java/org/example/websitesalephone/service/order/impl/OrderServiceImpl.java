@@ -22,6 +22,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
@@ -117,7 +119,7 @@ public class OrderServiceImpl implements OrderService {
                         .build();
         }
         orderRepository.saveAndFlush(order);
-
+        orderDescription.setId(UUID.randomUUID().toString());
         orderDescription.setOrder(order);
         orderDescription.setDescription(orderRequest.getDescription());
 

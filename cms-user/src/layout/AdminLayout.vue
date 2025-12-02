@@ -1,5 +1,16 @@
 <script setup lang="ts">
+import {authService} from "@/service/AuthService.ts";
+import {toast} from "vue3-toastify";
+import {ref} from "vue";
+import router from "@/router.ts";
+const showMenu = ref(false);
 
+const logout = () => {
+  authService.logout();
+  showMenu.value = false;
+  toast.success("Đăng xuất thành công!");
+  router.push("/login");
+};
 </script>
 
 <template>
@@ -28,7 +39,7 @@
         </router-link>
       </nav>
     </aside><!-- Main Content -->
-    <main class="main-content"><!-- Header -->
+    <main><!-- Header -->
       <header class="header">
         <div class="header-left">
         </div>
@@ -41,6 +52,7 @@
             <div class="user-avatar" id="user-avatar">
               JD
             </div>
+
             <div class="user-info">
               <div class="user-name" id="user-name">
                 John Doe
@@ -49,6 +61,10 @@
                 Administrator
               </div>
             </div>
+
+            <button class="logout-btn" @click="logout">
+              Logout
+            </button>
           </div>
         </div>
       </header><!-- Content Area -->
@@ -60,6 +76,26 @@
 </template>
 
 <style scoped>
+/* Ẩn nút logout lúc đầu */
+.logout-btn {
+  padding: 6px 14px;
+  border: 1px solid #d9534f;
+  background-color: #fff;
+  color: #d9534f;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s ease;
+}
+
+/* Khi hover: hiện lên */
+.user-profile:hover .logout-btn {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
 body {
   box-sizing: border-box;
   margin: 0;
@@ -325,6 +361,8 @@ html {
   padding: 32px;
   overflow-y: auto;
   background: rgba(255, 255, 255, 0.5);
+  margin-top: 80px;
+  width: 1575px;
 }
 
 .content-placeholder {
@@ -424,7 +462,8 @@ html {
   padding: 32px;
   overflow-y: auto;
   background: rgba(255, 255, 255, 0.5);
-  margin-top: 0; /* header đã được tính trong main-content */
+  margin-top: 80px;
+  width: 1575px;
 }
 
 </style>

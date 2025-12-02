@@ -13,11 +13,13 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
 
     List<ProductVariant> findByProduct_Id(String id);
 
-    ProductVariant findByProduct_IdAndOrigin_IdAndColor_IdAndRam_Id(
+    ProductVariant findByProduct_IdAndOrigin_IdAndColor_IdAndRam_IdAndScreen_idAndCamera_id(
             String productId,
             String originId,
             String colorId,
-            String ramId
+            String ramId,
+            String screenId,
+            String cameraId
     );
 
 }

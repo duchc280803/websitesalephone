@@ -2,6 +2,235 @@
 
 import Header from "../../layout/Header.vue";
 import Footer from "../../layout/Footer.vue";
+let currentProductName = '';
+let currentProductDescription = '';
+let allProducts = [];
+
+// Initialize Data SDK
+const dataHandler = {
+  onDataChanged(data) {
+    allProducts = data;
+    renderProductList();
+    updateStats();
+  }
+};
+
+async function initializeApp() {
+  const result = await window.dataSdk.init(dataHandler);
+  if (!result.isOk) {
+    showToast('error', 'Không thể kết nối với Canva Sheet');
+  }
+}
+
+initializeApp();
+
+// Toast notification
+function showToast(type, message) {
+  const toast = document.getElementById('toast');
+  const toastIcon = document.getElementById('toastIcon');
+  const toastMessage = document.getElementById('toastMessage');
+
+  toast.className = `toast ${type} show`;
+  toastIcon.textContent = type === 'success' ? '✓' : '⚠️';
+  toastMessage.textContent = message;
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3000);
+}
+
+// Format currency
+function formatCurrency(value) {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(value);
+}
+
+// Update stats
+function updateStats() {
+  document.getElementById('totalProducts').textContent = allProducts.length;
+}
+
+// Step 1: Create Product
+const productForm = document.getElementById('productForm');
+const createProductBtn = document.getElementById('createProductBtn');
+
+productForm.addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const name = document.getElementById('productName').value.trim();
+  const description = document.getElementById('productDescription').value.trim();
+
+  if (!name || !description) {
+    showToast('error', 'Vui lòng điền đầy đủ thông tin!');
+    return;
+  }
+
+  // Save current product info
+  currentProductName = name;
+  currentProductDescription = description;
+
+  // Switch to step 2
+  document.getElementById('step1Form').style.display = 'none';
+  document.getElementById('step2Form').style.display = 'block';
+  document.getElementById('formIcon').textContent = '⚙️';
+  document.getElementById('formTitle').textContent = 'Thêm Chi Tiết';
+
+  // Show current product
+  document.getElementById('currentProduct').innerHTML = `
+                <div class="current-label">SẢN PHẨM HIỆN TẠI</div>
+                <div class="current-name">${currentProductName}</div>
+                <div class="current-desc">${currentProductDescription}</div>
+            `;
+
+  showToast('success', 'Sản phẩm đã tạo! Hãy thêm chi tiết.');
+});
+
+// Step 2: Add Details
+const detailsForm = document.getElementById('detailsForm');
+const addDetailsBtn = document.getElementById('addDetailsBtn');
+
+detailsForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const quantity = parseInt(document.getElementById('quantity').value);
+  const price = parseInt(document.getElementById('price').value);
+  const screenSize = document.getElementById('screenSize').value;
+  const ram = document.getElementById('ram').value;
+  const camera = document.getElementById('camera').value;
+  const color = document.getElementById('color').value;
+  const origin = document.getElementById('origin').value;
+
+  if (!quantity || !price || !screenSize || !ram || !camera || !color || !origin) {
+    showToast('error', 'Vui lòng điền đầy đủ thông tin!');
+    return;
+  }
+
+  if (allProducts.length >= 999) {
+    showToast('error', 'Đã đạt giới hạn 999 sản phẩm!');
+    return;
+  }
+
+  // Show loading
+  const originalContent = addDetailsBtn.innerHTML;
+  addDetailsBtn.innerHTML = '<span class="loading-spinner"></span> Đang lưu...';
+  addDetailsBtn.disabled = true;
+
+  const productData = {
+    product_name: currentProductName,
+    description: currentProductDescription,
+    quantity: quantity,
+    price: price,
+    screen_size: screenSize,
+    ram: ram,
+    camera: camera,
+    color: color,
+    origin: origin,
+    created_at: new Date().toISOString()
+  };
+
+  const result = await window.dataSdk.create(productData);
+
+  addDetailsBtn.innerHTML = originalContent;
+  addDetailsBtn.disabled = false;
+
+  if (result.isOk) {
+    showToast('success', `Đã thêm biến thể: ${color} - ${ram}`);
+    // Reset detail fields only
+    document.getElementById('quantity').value = '';
+    document.getElementById('price').value = '';
+    document.getElementById('screenSize').value = '';
+    document.getElementById('ram').value = '';
+    document.getElementById('camera').value = '';
+    document.getElementById('color').value = '';
+    document.getElementById('origin').value = '';
+  } else {
+    showToast('error', 'Không thể lưu sản phẩm!');
+  }
+});
+
+// New Product Button
+document.getElementById('newProductBtn').addEventListener('click', function() {
+  document.getElementById('step1Form').style.display = 'block';
+  document.getElementById('step2Form').style.display = 'none';
+  document.getElementById('formIcon').textContent = '📝';
+  document.getElementById('formTitle').textContent = 'Tạo Sản Phẩm Mới';
+
+  // Reset all forms
+  productForm.reset();
+  detailsForm.reset();
+  currentProductName = '';
+  currentProductDescription = '';
+});
+
+// Render product list
+function renderProductList() {
+  const productList = document.getElementById('productList');
+
+  if (allProducts.length === 0) {
+    productList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📦</div>
+                        <div class="empty-text">Chưa có sản phẩm nào</div>
+                    </div>
+                `;
+    return;
+  }
+
+  productList.innerHTML = `
+                <table class="product-table">
+                    <thead>
+                        <tr>
+                            <th>Tên Sản Phẩm</th>
+                            <th>Mô Tả</th>
+                            <th>Số Lượng</th>
+                            <th>Giá Bán</th>
+                            <th>Màn Hình</th>
+                            <th>RAM</th>
+                            <th>Camera</th>
+                            <th>Màu Sắc</th>
+                            <th>Xuất Xứ</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${allProducts.map(product => `
+                            <tr>
+                                <td class="product-name-cell">${product.product_name}</td>
+                                <td class="product-desc-cell">${product.description}</td>
+                                <td class="quantity-cell">${product.quantity}</td>
+                                <td class="product-price-cell">${formatCurrency(product.price)}</td>
+                                <td class="spec-cell">${product.screen_size}"</td>
+                                <td class="spec-cell">${product.ram}</td>
+                                <td class="spec-cell">${product.camera}</td>
+                                <td class="spec-cell">${product.color}</td>
+                                <td class="spec-cell">${product.origin}</td>
+                                <td class="action-cell">
+                                    <button class="delete-btn" onclick="deleteProduct('${product.__backendId}')" title="Xóa sản phẩm">
+                                        🗑️
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+}
+
+// Delete product
+async function deleteProduct(backendId) {
+  const product = allProducts.find(p => p.__backendId === backendId);
+  if (!product) return;
+
+  const result = await window.dataSdk.delete(product);
+
+  if (result.isOk) {
+    showToast('success', 'Đã xóa sản phẩm');
+  } else {
+    showToast('error', 'Không thể xóa sản phẩm');
+  }
+}
 </script>
 
 <template>

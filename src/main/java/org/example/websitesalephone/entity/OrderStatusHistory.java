@@ -9,21 +9,17 @@ import java.time.OffsetDateTime;
 @Table(name = "order_status_history")
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderStatusHistory {
+public class OrderStatusHistory extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
 
     private String status;
-
-    private OffsetDateTime changedAt;
 
 }

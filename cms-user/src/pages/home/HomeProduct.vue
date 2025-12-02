@@ -4,6 +4,7 @@ import HomeLayout from "../../layout/Header.vue";
 import Footer from "../../layout/Footer.vue";
 import { productService } from "@/service/ProductService";
 import { Search } from "@/models/Search.ts";
+import {formatCurrency} from "@/utils/Constant.ts";
 
 const products = ref<any[]>([]);
 const searchText = ref("");
@@ -58,7 +59,7 @@ onMounted(loadProducts);
             <span class="spec-tag" v-for="spec in product.specs" :key="spec">{{ spec }}</span>
           </div>
           <div class="product-footer">
-            <div class="product-price">{{ product.price | currency }}₫</div>
+            <div class="product-price">{{ formatCurrency(product.price | currency )}}</div>
             <button class="btn-add-cart">🛒 Thêm</button>
           </div>
         </div>

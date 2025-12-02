@@ -1,6 +1,7 @@
 package org.example.websitesalephone.service.dyanmic.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.example.websitesalephone.dto.product.ProductImageResponse;
 import org.example.websitesalephone.entity.Product;
 import org.example.websitesalephone.entity.ProductImage;
 import org.example.websitesalephone.repository.ProductImageRepository;
@@ -73,7 +74,7 @@ public class ProductImageServiceImpl implements ProductImageService {
         return CommonResponse
                 .builder()
                 .code(CommonResponse.CODE_SUCCESS)
-                .data(productImages)
+                .data(productImages.stream().map(ProductImageResponse::fromEntity).toList())
                 .build();
     }
 

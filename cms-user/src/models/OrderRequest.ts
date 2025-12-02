@@ -15,10 +15,9 @@ export class OrderRequest {
         this.status = status.trim();
         this.shippingFee = shippingFee;
         this.description = description?.trim();
-        if (id) this.id = id.trim();
+        this.id = id;
     }
 
-    // Chuyển sang payload gửi API
     toPayload(): IOrderRequest {
         return {
             id: this.id,

@@ -80,7 +80,7 @@ const checkout = async () => {
   };
   try {
     await cartService.checkoutCart(payload);
-    toast.info("Thanh toán thành công!");
+    toast.success("Thanh toán thành công!");
     await fetchCartItems();
   } catch (err) {
     toast.error("Checkout error", err);
@@ -108,7 +108,7 @@ function getContrastColor(hex: string): string {
     <header class="cart-header">
       <div class="header-left">
         <h1>🛒 Giỏ Hàng Của Bạn</h1>
-        <div class="breadcrumb"><a href="#home">Trang chủ</a> / Giỏ hàng</div>
+        <div class="breadcrumb"><router-link to="/customer/product-home">Sản Phẩm</router-link> / Giỏ hàng</div>
       </div>
       <div class="header-right">
         <div class="cart-count">{{ totalQuantity }}</div>
@@ -180,7 +180,7 @@ function getContrastColor(hex: string): string {
     </div>
 
     <div class="continue-shopping">
-      <a href="#products" class="btn-continue">⬅️ Tiếp Tục Mua Sắm</a>
+      <router-link to="/customer/product-home" class="btn-continue">⬅️ Tiếp Tục Mua Sắm</router-link>
     </div>
   </div>
   <Footer />

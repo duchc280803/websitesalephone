@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import org.example.websitesalephone.entity.Order;
 import org.example.websitesalephone.entity.OrderItem;
+import org.example.websitesalephone.utils.Constants;
+import org.example.websitesalephone.utils.Utils;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -56,7 +58,7 @@ public class OrderResponse {
                 .orderCode(order.getOrderCode())
                 .userName(order.getUser() != null ? order.getUser().getFullName() : null)
                 .phone(order.getUser() != null ? order.getUser().getPhone() : null)
-                .createdAt(order.getCreatedAt() != null ? order.getCreatedAt().format(FORMATTER) : null)
+                .createdAt(Constants.FORMATTER.format(order.getCreatedAt()))
                 .dateTimeCheckout(order.getDateTimeCheckout() != null ? order.getDateTimeCheckout().format(FORMATTER) : null)
                 .quantity(totalQuantity)
                 .status(order.getStatus())

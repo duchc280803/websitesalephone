@@ -10,7 +10,7 @@ import AdminLayout from './layout/AdminLayout.vue'
 import AdminPage from './pages/dashboard.vue'
 import User from './pages/user/User.vue'
 import UserDetailPage from './pages/user/UserDetailPage.vue'
-import Product from './pages/Product.vue'
+import Product from './pages/product/Product.vue'
 import Order from './pages/order/Order.vue'
 import OrderDetailPage from './pages/order/OrderDetailPage.vue'
 import HomePage from "./pages/home/HomePage.vue";
@@ -19,6 +19,7 @@ import OrderDetailByUser from "./pages/home/OrderDetailByUser.vue";
 import LoginPageCustomer from "./pages/LoginPage.vue";
 import RegisterPage from "./pages/RegisterPage.vue";
 import {authService} from "./service/AuthService.ts";
+import ProductDetailPage from "./pages/product/ProductDetailPage.vue";
 
 const router = createRouter({
     history: createWebHistory(),
@@ -113,6 +114,18 @@ const router = createRouter({
                     path: 'product',
                     name: 'product',
                     component: Product,
+                    meta: { requiresAuth: true, title: 'Sản phẩm' }
+                },
+                {
+                    path: 'product-detail/:id',
+                    name: 'ProductDetailPage',
+                    component: ProductDetailPage,
+                    meta: { requiresAuth: true, title: 'Sản phẩm' }
+                },
+                {
+                    path: 'create-product',
+                    name: 'CreateProduct',
+                    component: ProductDetailPage,
                     meta: { requiresAuth: true, title: 'Sản phẩm' }
                 },
                 {

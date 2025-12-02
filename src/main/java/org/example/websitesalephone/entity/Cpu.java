@@ -22,6 +22,6 @@ public class Cpu extends BaseEntity{
     @Column(length = 100)
     private String name;
 
-    @OneToMany(mappedBy = "cpu", cascade = CascadeType.ALL)
-    private List<ProductVariant> productVariants;
+//    @OneToMany(mappedBy = "cpu", cascade = CascadeType.ALL)
+//    private List<ProductVariant> productVariants;
 }
