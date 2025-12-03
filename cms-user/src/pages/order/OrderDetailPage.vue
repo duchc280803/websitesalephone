@@ -13,15 +13,15 @@ const orderDetail = ref<any>(null);
 const loading = ref(false);
 const error = ref('');
 const description = ref('');
-const shippingFee = ref(<number> 0);
+const shippingFee = ref(<number>0);
 
 const TIMELINE_ORDER = [
-  { status: 'PENDING', label: 'CHỜ XỬ LÝ', icon: '📝' },
-  { status: 'CONFIRMED', label: 'ĐÃ XÁC NHẬN', icon: '✅' },
-  { status: 'SHIPPING', label: 'ĐANG GIAO', icon: '📦' },
-  { status: 'DELIVERED', label: 'ĐÃ GIAO', icon: '🏠' },
-  { status: 'COMPLETED', label: 'HOÀN THÀNH', icon: '⭐' },
-  { status: 'CANCELLED', label: 'ĐÃ HỦY', icon: '❌' }
+  {status: 'PENDING', label: 'CHỜ XỬ LÝ', icon: '📝'},
+  {status: 'CONFIRMED', label: 'ĐÃ XÁC NHẬN', icon: '✅'},
+  {status: 'SHIPPING', label: 'ĐANG GIAO', icon: '📦'},
+  {status: 'DELIVERED', label: 'ĐÃ GIAO', icon: '🏠'},
+  {status: 'COMPLETED', label: 'HOÀN THÀNH', icon: '⭐'},
+  {status: 'CANCELLED', label: 'ĐÃ HỦY', icon: '❌'}
 ];
 
 /**
@@ -30,11 +30,9 @@ const TIMELINE_ORDER = [
  */
 const timeline = computed(() => {
   if (!orderDetail.value) return [];
-
   return TIMELINE_ORDER.map(step => {
     const match = orderDetail.value.orderHistoryStatusResponses
         ?.find((s: any) => s.status === step.status);
-
     return {
       ...step,
       time: match?.createdAt ?? null,
@@ -57,7 +55,7 @@ const fetchOrderDetail = async () => {
 
 const updateOrderStatus = async (newStatus: string) => {
   if (!orderDetail.value) return;
-  console.log(orderDetail.value)
+
   const requestPayload = new OrderRequest(
       newStatus,
       shippingFee.value,
@@ -67,11 +65,12 @@ const updateOrderStatus = async (newStatus: string) => {
 
   try {
     await orderService.update(requestPayload);
-    toast.success("Cập nhập trạng thái thành công")
+    toast.success("Cập nhật trạng thái thành công");
     await fetchOrderDetail();
+    shippingFee.value = 0;
+    description.value = ""
   } catch (err) {
-    toast.error("Cập nhập trạng thái that bại ")
-    error.value = 'Cập nhật đơn hàng thất bại';
+    toast.error("Cập nhật trạng thái thất bại");
   }
 };
 
@@ -83,13 +82,12 @@ const firstIncompleteIndex = computed(() =>
     timeline.value.findIndex(t => !t.completed)
 );
 
-const completedCount = computed(() =>
-    timeline.value.filter(t => t.completed).length
-);
-
-const progressWidth = computed(() =>
-    (completedCount.value - 1) / (timeline.value.length - 1) * 100
-);
+const progressPercent = computed(() => {
+  const steps = timeline.value.filter(s => s.status !== 'CANCELLED');
+  const total = steps.length;
+  const completed = steps.filter(s => s.completed).length;
+  return (completed / total) * 100;
+});
 
 onMounted(() => {
   fetchOrderDetail();
@@ -99,24 +97,9 @@ onMounted(() => {
   <div
       class="modal fade"
       id="exampleModal"
-      tabindex="-1"
-      aria-labelledby="exampleModalLabel"
-      aria-hidden="true"
-  >
+      data-bs-backdrop="static" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-md">
       <div class="modal-content rounded-4 shadow-lg">
-
-        <!-- Header -->
-        <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title fw-bold">{{ modalTitle }}</h5>
-          <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-          ></button>
-        </div>
-
         <!-- Body -->
         <div class="modal-body pt-2">
           <label class="form-label fw-semibold mb-2">Mô tả</label>
@@ -124,8 +107,8 @@ onMounted(() => {
               v-model="description"
               class="form-control form-control-lg"
               rows="5"
-              placeholder="Nhập ghi chú..."
-          ></textarea>
+              placeholder="Nhập ghi chú...">
+         </textarea>
         </div>
 
         <!-- Footer -->
@@ -141,6 +124,57 @@ onMounted(() => {
               type="button"
               class="btn btn-primary rounded-3 px-4 fw-semibold"
               @click="updateOrderStatus('CANCELLED')"
+              data-bs-dismiss="modal"
+          >
+            Lưu
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div
+      class="modal fade"
+      id="exampleModal1"
+      tabindex="-1"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered modal-md">
+      <div class="modal-content rounded-4 shadow-lg">
+        <!-- Body -->
+        <div class="modal-body pt-2">
+          <label class="form-label fw-semibold mb-2">Mô tả</label>
+          <textarea
+              v-model="description"
+              class="form-control form-control-lg"
+              rows="5"
+              placeholder="Nhập ghi chú..."
+          ></textarea>
+          <div v-if="['PENDING'].includes(orderDetail?.status)">
+            <label class="form-label fw-semibold mt-3 mb-2">Phí ship</label>
+            <input
+                v-model="shippingFee"
+                type="number"
+                class="form-control form-control-lg"
+                placeholder="Nhập phí ship..."/>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer border-0 pt-3">
+          <button
+              type="button"
+              class="btn btn-outline-secondary rounded-3 px-4"
+              data-bs-dismiss="modal"
+          >
+            Đóng
+          </button>
+          <button
+              type="button"
+              class="btn btn-primary rounded-3 px-4 fw-semibold"
+              data-bs-dismiss="modal"
+              @click="updateOrderStatus('')"
           >
             Lưu
           </button>
@@ -169,8 +203,14 @@ onMounted(() => {
     <h2 class="timeline-title">🚚 Trạng Thái Đơn Hàng</h2>
     <div class="timeline-container">
       <div class="timeline-line">
-        <div class="timeline-progress-cancel" v-if="orderDetail?.status === 'CANCELLED'"></div>
-        <div class="timeline-progress" v-else></div>
+        <div class="timeline-progress"
+             v-if="orderDetail?.status !== 'CANCELLED'"
+             :style="{ width: progressPercent + '%' }">
+        </div>
+
+        <div class="timeline-progress-cancel"
+             v-else>
+        </div>
       </div>
       <div
           class="timeline-step"
@@ -193,7 +233,7 @@ onMounted(() => {
       <button
           class="btn btn-success"
           data-bs-toggle="modal"
-          data-bs-target="#exampleModal"
+          data-bs-target="#exampleModal1"
           v-if="['PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED'].includes(orderDetail?.status)"
       >
         Xác nhận đơn
@@ -201,7 +241,8 @@ onMounted(() => {
 
       <button
           class="btn btn-danger"
-          @click="openModal('cancel')"
+          data-bs-toggle="modal"
+          data-bs-target="#exampleModal"
           v-if="['PENDING', 'CONFIRMED'].includes(orderDetail?.status)"
       >
         Hủy đơn
@@ -319,10 +360,10 @@ onMounted(() => {
           Nguyễn Văn An
         </div>
         <div class="customer-detail">
-          📞 {{orderDetail?.phoneNumber}}
+          📞 {{ orderDetail?.phoneNumber }}
         </div>
         <div class="customer-detail">
-          📧 {{orderDetail?.email}}
+          📧 {{ orderDetail?.email }}
         </div>
       </div>
       <div class="summary-section">
@@ -341,13 +382,13 @@ onMounted(() => {
         </div>
       </div>
       <div class="total-section">
-        <div class="total-row"><span class="info-label">Tạm tính:</span> <span class="info-value">104.960.000₫</span>
+        <div class="total-row"><span class="info-label">Tạm tính:</span> <span class="info-value">{{formatCurrency(orderDetail?.totalPrice)}}</span>
         </div>
         <div class="total-row"><span class="info-label">Phí vận chuyển:</span> <span class="info-value"
-                                                                                     style="color: #43e97b;">Miễn phí</span>
+                                                                                     style="color: black;">{{formatCurrency(orderDetail?.shippingFee)}}}</span>
         </div>
         <div class="total-row"><span class="total-label">Tổng cộng:</span> <span
-            class="total-amount">102.960.000₫</span>
+            class="total-amount">{{formatCurrency(orderDetail?.totalOrderAmount)}}</span>
         </div>
       </div>
     </aside>
@@ -492,7 +533,6 @@ body {
   top: 0;
   left: 0;
   height: 100%;
-  width: 60%;
   background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
   border-radius: 2px;
   transition: width 0.5s ease;
@@ -863,8 +903,8 @@ body {
 
 .total-amount {
   font-size: 1.8em;
-  font-weight: 800;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-weight: 600;
+  background: black;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

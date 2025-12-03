@@ -47,6 +47,11 @@ public class ProductController {
         return productService.deletedProductDetail(id);
     }
 
+    @PutMapping("deleted-image/{id}")
+    public CommonResponse deletedImage(@PathVariable(name = "id") String id) {
+        return productService.deletedImage(id);
+    }
+
     @PostMapping("detail")
     public CommonResponse detail(@RequestBody ProductDetailRequest productDetailRequest) {
         return productService.detail(productDetailRequest);
@@ -75,6 +80,11 @@ public class ProductController {
     @GetMapping("/get-all-product-variant/{id}")
     public CommonResponse getAllProductVariant(@PathVariable String id) {
         return productService.getAllProductVariant(id);
+    }
+
+    @GetMapping("/get-product-variant-detail/{id}")
+    public CommonResponse getProductVariantDetail(@PathVariable String id) {
+        return productService.getProductVariantDetail(id);
     }
 
 }

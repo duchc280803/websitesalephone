@@ -3,10 +3,13 @@ package org.example.websitesalephone.dto.user;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
+import org.example.websitesalephone.entity.Order;
 import org.example.websitesalephone.entity.User;
 import org.example.websitesalephone.utils.Constants;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -49,6 +52,10 @@ public class UserDto {
 
     private String gender;
 
+    private int orderCount;
+
+    private BigDecimal totalSpent;
+
     public static UserDto fromEntity(User entity) {
         return UserDto.builder()
                 .id(entity.getId())
@@ -67,6 +74,12 @@ public class UserDto {
     }
 
     public static UserDto fromEntitySearch(User user) {
+        List<Order> orderList = user.getOrders();
+
+        BigDecimal totalExpenditure = orderList.stream()
+                .map(Order::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         return UserDto.builder()
                 .id(user.getId())
                 .loginId(user.getUsername())
@@ -81,6 +94,8 @@ public class UserDto {
                 .isDeleted(user.isDeleted())
                 .address(user.getAddress())
                 .gender(user.getGender())
+                .orderCount(orderList.size())
+                .totalSpent(totalExpenditure)
                 .build();
     }
 

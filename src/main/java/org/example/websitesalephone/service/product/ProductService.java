@@ -33,4 +33,7 @@ public interface ProductService {
 
     CommonResponse getAllProductVariant(String productId);
 
+    CommonResponse getProductVariantDetail(String productVariantId);
+
+    CommonResponse deletedImage(String idImage);
 }

@@ -39,6 +39,8 @@ public class OrderResponse {
 
     private BigDecimal totalOrderAmount;
 
+    private String codeStaff;
+
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss");
 
     public static OrderResponse fromOrder(final Order order) {
@@ -56,8 +58,8 @@ public class OrderResponse {
         return OrderResponse.builder()
                 .order_id(order.getId())
                 .orderCode(order.getOrderCode())
-                .userName(order.getUser() != null ? order.getUser().getFullName() : null)
-                .phone(order.getUser() != null ? order.getUser().getPhone() : null)
+                .userName(order.getCustomer() != null ? order.getCustomer().getFullName() : null)
+                .phone(order.getCustomer() != null ? order.getCustomer().getPhone() : null)
                 .createdAt(Constants.FORMATTER.format(order.getCreatedAt()))
                 .dateTimeCheckout(order.getDateTimeCheckout() != null ? order.getDateTimeCheckout().format(FORMATTER) : null)
                 .quantity(totalQuantity)
@@ -65,6 +67,7 @@ public class OrderResponse {
                 .totalPrice(totalPrice)
                 .shippingFee(order.getShippingFee())
                 .totalOrderAmount(totalOrderAmount)
+                    .codeStaff(order.getStaff() == null ? "ADMIN" : order.getStaff().getCodeUser())
                 .build();
     }
 

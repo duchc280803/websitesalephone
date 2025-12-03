@@ -23,7 +23,11 @@ public class Order extends BaseEntity{
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private User customer;
+
+    @ManyToOne
+    @JoinColumn(name = "staff_id")
+    private User staff;
 
     @ManyToOne
     @JoinColumn(name = "address_id")

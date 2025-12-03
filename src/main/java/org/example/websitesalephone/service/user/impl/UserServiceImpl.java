@@ -10,6 +10,7 @@ import org.example.websitesalephone.entity.Role;
 import org.example.websitesalephone.entity.User;
 import org.example.websitesalephone.enums.RoleEnums;
 import org.example.websitesalephone.repository.CartRepository;
+import org.example.websitesalephone.repository.OrderRepository;
 import org.example.websitesalephone.repository.RoleRepository;
 import org.example.websitesalephone.repository.UserRepository;
 import org.example.websitesalephone.dto.user.CreateUserDto;
@@ -37,6 +38,8 @@ public class UserServiceImpl implements UserService {
 
     private final CartRepository cartRepository;
 
+    private final OrderRepository orderRepository;
+
     @Override
     public CommonResponse getUserByLoginId(String loginId) {
         User user = userRepository.findByIdAndIsDeleted(loginId, false).orElse(null);
@@ -56,7 +59,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResponse createUser(CreateUserDto userDto) {
-        User entity = CreateUserDto.toEntity(userDto, true);
+        User entity = CreateUserDto.toEntity(userDto);
 
         User userMailCheck = userRepository.findFirstByEmailAndIsDeleted(userDto.getEmail(), false).orElse(null);
 
@@ -88,6 +91,12 @@ public class UserServiceImpl implements UserService {
         }
 
         entity.setRole(userRole);
+        if (userRole.getRoleEnums().getValue().equalsIgnoreCase(RoleEnums.STAFF.getValue())) {
+            entity.setCodeUser(Utils.generateUniqueCode("STAFF-"));
+        }
+        if (userRole.getRoleEnums().getValue().equalsIgnoreCase(RoleEnums.CUSTOMER.getValue())) {
+            entity.setCodeUser(Utils.generateUniqueCode("CUSTOMER-"));
+        }
         entity.setId(UUID.randomUUID().toString());
         entity.setPasswordExpiredAt(OffsetDateTime.now().minusDays(1));
         userRepository.saveAndFlush(entity);

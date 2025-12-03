@@ -200,13 +200,14 @@ public class CartServiceImpl implements CartService {
         Order order = new Order();
         order.setId(UUID.randomUUID().toString());
         order.setOrderCode(Utils.generateUniqueCode("ORDER-"));
-        order.setUser(user);
+        order.setCustomer(user);
         order.setTotalAmount(cart.getCartItems().stream()
                 .map(i -> i.getProductVariant().getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
         );
         order.setStatus(OrderStatus.PENDING.getCode());
-
+        order.setAddressDetail(checkOutRequest.getAddressLine());
+        order.setMethodTransaction("THANH TOÁN KHI NHẬN HÀNG");
         orderRepository.save(order);
 
         for (CartItem item : cart.getCartItems()) {

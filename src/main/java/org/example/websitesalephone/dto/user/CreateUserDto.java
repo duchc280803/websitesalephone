@@ -33,7 +33,7 @@ public class CreateUserDto {
 
     private String gender;
 
-    public static User toEntity(CreateUserDto dto, boolean isCreated) {
+    public static User toEntity(CreateUserDto dto) {
         User user = new User();
 
         user.setId(UUID.randomUUID().toString());
@@ -43,9 +43,6 @@ public class CreateUserDto {
         user.setDescription(dto.getNote());
         user.setPasswordHash(BCrypt.hashpw("666666", BCrypt.gensalt()));
         user.setPasswordExpiredAt(OffsetDateTime.now().plusDays(Constants.PASSWORD_EXPIRE_DAYS));
-        if (isCreated) {
-            user.setCodeUser(Utils.generateUniqueCode("USER"));
-        }
         user.setAddress(dto.getAddress());
         user.setGender(dto.getGender());
         user.setPhone(dto.getTelNo());

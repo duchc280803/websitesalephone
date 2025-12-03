@@ -30,7 +30,11 @@ public class OrderDetailResponse {
 
     private BigDecimal totalPrice;
 
+    private BigDecimal totalOrderAmount;
+
     private String statusTransaction;
+
+    private BigDecimal shippingFee;
 
     private String email;
 
@@ -63,16 +67,20 @@ public class OrderDetailResponse {
                     return orderHistoryStatusResponse;
                 }).toList();
 
+        BigDecimal totalOrderAmount = totalPrice.add(order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO);
+
         return OrderDetailResponse.builder()
                 .orderCode(order.getOrderCode())
                 .createdAt(Constants.FORMATTER.format(order.getCreatedAt()))
                 .status(order.getStatus() != null ? order.getStatus() : null)
-                .fullName(order.getUser() != null ? order.getUser().getFullName() : null)
-                .phoneNumber(order.getUser() != null ? order.getUser().getPhone() : null)
-                .address(order.getUser() != null ? order.getAddressDetail() : null)
+                .fullName(order.getCustomer() != null ? order.getCustomer().getFullName() : null)
+                .phoneNumber(order.getCustomer() != null ? order.getCustomer().getPhone() : null)
+                .address(order.getCustomer() != null ? order.getAddressDetail() : null)
                 .methodTransaction(order.getMethodTransaction())
                 .totalPrice(totalPrice)
-                .email(order.getUser().getEmail())
+                .totalOrderAmount(totalOrderAmount)
+                .shippingFee(order.getShippingFee())
+                .email(order.getCustomer().getEmail())
                 .statusTransaction(order.getStatusTransaction())
                 .productOrderResponses(productOrderResponses)
                 .orderHistoryStatusResponses(orderHistoryStatusResponseList)

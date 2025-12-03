@@ -4,20 +4,18 @@ import {userService} from "@/service/UserService";
 import {UserSearchForm} from "@/models/UserSearchForm";
 import {useRoute} from "vue-router";
 import {toast} from "vue3-toastify";
+import {formatCurrency} from "@/utils/Constant.ts";
 
 const route = useRoute();
 const userId = route.params.id as string;
 
-// danh sách user trả về
 const users = ref<any[]>([]);
+const page = ref<number>(1);
+const size = ref<number>(10);
+const totalPages = ref<number>(0);
 
-// paging + search form
-const form = ref(new UserSearchForm(1, 10, "", "", ""));
+const form = ref(new UserSearchForm(page, size, "", "", ""));
 
-// tổng số trang từ backend
-const totalPages = ref(1);
-
-// gọi API
 const searchUsers = async () => {
   try {
     const payload = form.value.toPayload();
@@ -41,11 +39,25 @@ const changePage = async (page: number) => {
   await searchUsers();
 };
 
-// next / prev
-const prevPage = () => changePage(form.value.page - 1);
-const nextPage = () => changePage(form.value.page + 1);
+const onPageChange = (newPage: number) => {
+  newPage = Number(newPage);
+  if (newPage < 1) {
+    newPage = 1;
+  }
 
-const deleted = async (id: string) =>{
+  if (newPage > totalPages.value) {
+    newPage = totalPages.value;
+  }
+
+  if (newPage === page.value) {
+    return;
+  }
+
+  page.value = newPage;
+  searchUsers();
+};
+
+const deleted = async (id: string) => {
   const res = await userService.deleteUser(id);
   if (res.data.code === 0) {
     toast.success("Xóa tài khoản thành công")
@@ -94,10 +106,9 @@ onMounted(() => {
               </div>
             </div>
           </td>
-
           <td>{{ u.telNo }}</td>
           <td>{{ u.orderCount }}</td>
-          <td><span class="price">{{ u.totalSpent }}₫</span></td>
+          <td><span class="price">{{ formatCurrency(u.totalSpent) }}</span></td>
           <td>{{ u.created }}</td>
           <td>
       <span :class="['status-badge', u.isDeleted ? 'status-active' : 'status-block']">
@@ -116,19 +127,13 @@ onMounted(() => {
       </table>
     </div>
     <div class="pagination">
-      <button class="page-btn" @click="prevPage">«</button>
-
+      <button class="page-btn" :disabled="page === 1" @click="onPageChange(page - 1)">«</button>
       <button
-          v-for="n in totalPages"
-          :key="n"
-          class="page-btn"
-          :class="{ active: n === form.page }"
-          @click="changePage(n)"
+          class="page-btn active"
       >
-        {{ n }}
+        {{ page }} / {{ totalPages }}
       </button>
-
-      <button class="page-btn" @click="nextPage">»</button>
+      <button class="page-btn" :disabled="page >= totalPages" @click="onPageChange(page + 1)">»</button>
     </div>
   </section>
 </template>
@@ -235,15 +240,6 @@ body {
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-}
-
-.btn-secondary {
-  background: #f0f0f0;
-  color: #1a1a2e;
-}
-
-.btn-secondary:hover {
-  background: #e0e0e0;
 }
 
 /* Table */
@@ -387,27 +383,6 @@ tbody tr:hover {
 }
 
 @media (max-width: 968px) {
-  .admin-wrapper {
-    flex-direction: column;
-  }
-
-  .sidebar {
-    width: 100%;
-    position: relative;
-    height: auto;
-  }
-
-  .main-content {
-    padding: 20px;
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
-
-  .page-title {
-    font-size: 2em;
-  }
 
   .table-wrapper {
     overflow-x: scroll;
@@ -419,18 +394,21 @@ tbody tr:hover {
 }
 
 @media (max-width: 480px) {
-  .page-title {
-    font-size: 1.6em;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
   .card-header {
     flex-direction: column;
     gap: 15px;
     align-items: flex-start;
   }
+}
+.page-btn:disabled {
+  background: #ddd !important;
+  color: #888 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+.page-btn:disabled:hover {
+  background: #ddd !important;
+  transform: none !important;
 }
 </style>

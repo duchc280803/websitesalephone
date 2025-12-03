@@ -1,5 +1,6 @@
 package org.example.websitesalephone.service.product.impl;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.example.websitesalephone.comon.PageResponse;
@@ -11,6 +12,7 @@ import org.example.websitesalephone.repository.*;
 import org.example.websitesalephone.service.product.ProductService;
 import org.example.websitesalephone.comon.CommonResponse;
 import org.example.websitesalephone.utils.Utils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -48,6 +51,9 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
 
     private final ProductVariantRepository productVariantRepository;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @Override
     public CommonResponse getALl(ProductSearch productSearch) {
@@ -126,58 +132,42 @@ public class ProductServiceImpl implements ProductService {
                     .message("Screen not found")
                     .build();
         }
-//
-//        Battery battery = batteryRepository.findById(productRequest.getBatteryId()).orElse(null);
-//        if (battery == null) {
-//            return CommonResponse.builder()
-//                    .code(CommonResponse.CODE_NOT_FOUND)
-//                    .message("Battery not found")
-//                    .build();
-//        }
-//
-//        Storage storage = storageRepository.findById(productRequest.getStorageId()).orElse(null);
-//        if (storage == null) {
-//            return CommonResponse.builder()
-//                    .code(CommonResponse.CODE_NOT_FOUND)
-//                    .message("Storage not found")
-//                    .build();
-//        }
-//
-//        OperatingSystem operatingSystem = operatingSystemRepository.findById(productRequest.getOperatorId()).orElse(null);
-//        if (operatingSystem == null) {
-//            return CommonResponse.builder()
-//                    .code(CommonResponse.CODE_NOT_FOUND)
-//                    .message("Operating System not found")
-//                    .build();
-//        }
-//
-//        Cpu cpu = cpuRepository.findById(productRequest.getCpuId()).orElse(null);
-//        if (cpu == null) {
-//            return CommonResponse.builder()
-//                    .code(CommonResponse.CODE_NOT_FOUND)
-//                    .message("CPU not found")
-//                    .build();
-//        }
 
-        ProductVariant productVariant = new ProductVariant();
-        productVariant.setId(UUID.randomUUID().toString());
-        productVariant.setProduct(product);
-//        productVariant.setBattery(battery);
-        productVariant.setCamera(camera);
-        productVariant.setColor(color);
-//        productVariant.setCpu(cpu);
-        productVariant.setScreen(screen);
-//        productVariant.setOperatingSystem(operatingSystem);
-        productVariant.setRam(ram);
-        productVariant.setOrigin(origin);
-//        productVariant.setStorage(storage);
-        productVariant.setPrice(productRequest.getPrice());
-        productVariant.setQuantity(productRequest.getQuantity());
+        Optional<ProductVariant> existOpt = productVariantRepository
+                .findByProduct_IdAndOrigin_IdAndColor_IdAndRam_IdAndScreen_idAndCamera_id(
+                        product.getId(),
+                        origin.getId(),
+                        color.getId(),
+                        ram.getId(),
+                        screen.getId(),
+                        camera.getId()
+                );
 
-        productVariantRepository.saveAndFlush(productVariant);
+        ProductVariant variant;
+
+        if (existOpt.isPresent()) {
+            // 🔄 Update nếu trùng
+            variant = existOpt.get();
+            variant.setPrice(productRequest.getPrice());
+            variant.setQuantity(productRequest.getQuantity());
+        } else {
+            // ➕ Create nếu không trùng
+            variant = new ProductVariant();
+            variant.setId(UUID.randomUUID().toString());
+            variant.setProduct(product);
+            variant.setColor(color);
+            variant.setRam(ram);
+            variant.setOrigin(origin);
+            variant.setCamera(camera);
+            variant.setScreen(screen);
+            variant.setPrice(productRequest.getPrice());
+            variant.setQuantity(productRequest.getQuantity());
+        }
+
+        productVariantRepository.saveAndFlush(variant);
 
         return CommonResponse.builder()
-                .data(ProductVariantResponse.fromEntity(productVariant))
+                .data(ProductVariantResponse.fromEntity(variant))
                 .code(CommonResponse.CODE_SUCCESS)
                 .build();
     }
@@ -321,7 +311,7 @@ public class ProductServiceImpl implements ProductService {
                     .build();
         }
 
-        List<ProductImage> productImages = productImageRepository.findByProduct_id(product.getId());
+        List<ProductImage> productImages = productImageRepository.findByProduct_idAndIsDeleted(product.getId(), false);
 
         if (productImages == null) {
             return CommonResponse.builder()
@@ -367,7 +357,7 @@ public class ProductServiceImpl implements ProductService {
                         createCartRequest.getIdRam(),
                         createCartRequest.getScreenId(),
                         createCartRequest.getCameraId()
-                );
+                ).orElse(null);
 
         if (productVariant == null) {
             return CommonResponse.builder()
@@ -407,7 +397,6 @@ public class ProductServiceImpl implements ProductService {
                 .build();
     }
 
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public CommonResponse getAllImage(String productId) {
         Product product = productRepository.findById(productId).orElse(null);
@@ -419,9 +408,10 @@ public class ProductServiceImpl implements ProductService {
                     .build();
         }
 
-        List<ProductImage> images = productImageRepository.findByProduct_id(productId);
+        List<ProductImage> images = productImageRepository.findByProduct_idAndIsDeleted(productId, false);
 
-        List<ProductImageResponse> responseList = images.stream()
+        List<ProductImageResponse> responseList = images
+                .stream()
                 .map(ProductImageResponse::fromEntity)
                 .toList();
 
@@ -432,9 +422,18 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public CommonResponse updateImage(ProductImageRequest productImageRequest) {
-        ProductImage productImage = productImageRepository.findById(productImageRequest.getProductImageId()).orElse(null);
+        ProductImage findByActive = productImageRepository.findByActive(true);
+        if (findByActive == null) {
+            System.out.println("hiện không có cái ảnh nào đang active");
+        } else {
+            findByActive.setActive(false);
+            productImageRepository.saveAndFlush(findByActive);
+        }
+
+        ProductImage productImage = productImageRepository.findById(productImageRequest.getProductImageId())
+                .orElse(null);
 
         if (productImage == null) {
             return CommonResponse.builder()
@@ -442,15 +441,8 @@ public class ProductServiceImpl implements ProductService {
                     .message("Image not found")
                     .build();
         }
-
-        if (productImageRequest.getUrl() != null) {
-            productImage.setUrl(productImageRequest.getUrl());
-        }
-
-        productImageRepository.setInactiveAllByProductId(productImage.getProduct().getId());
         productImage.setActive(true);
-
-        productImageRepository.save(productImage);
+        productImageRepository.saveAndFlush(productImage);
 
         return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)
@@ -459,6 +451,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResponse deletedProductDetail(String id) {
         ProductVariant productVariant = productVariantRepository.findById(id).orElse(null);
 
@@ -496,6 +489,40 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public CommonResponse getProductVariantDetail(String productVariantId) {
+        ProductVariant productVariant = productVariantRepository.findById(productVariantId).orElse(null);
+        if (productVariant == null) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_NOT_FOUND)
+                    .build();
+        }
+
+        return CommonResponse.builder()
+                .data(ProductVariantDetailResponse.from(productVariant))
+                .code(CommonResponse.CODE_SUCCESS)
+                .build();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResponse deletedImage(String idImage) {
+        ProductImage productImage = productImageRepository.findById(idImage).orElse(null);
+
+        if (productImage == null) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_NOT_FOUND)
+                    .build();
+        }
+        productImage.setDeleted(true);
+        productImageRepository.saveAndFlush(productImage);
+        return CommonResponse.builder()
+                .code(CommonResponse.CODE_SUCCESS)
+                .data(ProductImageResponse.fromEntity(productImage))
+                .build();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResponse createdProduct(ProductRequest productRequest) {
         Product product = new Product();
         product.setId(UUID.randomUUID().toString());

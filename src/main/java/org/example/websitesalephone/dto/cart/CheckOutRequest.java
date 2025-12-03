@@ -7,8 +7,6 @@ import lombok.Data;
 @Builder
 public class CheckOutRequest {
 
-    private String recipientName;
-
     private String phone;
 
     private String addressLine;

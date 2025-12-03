@@ -26,6 +26,7 @@ const createProductResponse = ref<CommonResponse<any> | null>(null);
 const createProductDetailResponse = ref<any[]>([]);
 const createProductImageResponse = ref<any[]>([]);
 const productDetailList = ref<any[]>([]);
+const productVariantDetail = ref<any>({});
 
 const ramList = ref([]);
 const cameraList = ref([]);
@@ -36,13 +37,6 @@ const screenList = ref([]);
 const description = ref("");
 const quantity = ref(0);
 const price = ref(0);
-
-// các select ID
-const colorId = ref("");
-const ramId = ref("");
-const cameraId = ref("");
-const screenId = ref("");
-const originId = ref("");
 
 const productImageId = ref("");
 const url = ref("");
@@ -77,7 +71,7 @@ const fetchDataImage = async (productId: string) => {
 
   try {
     const res = await productService.getAllImage(productId);
-    resultsImage.value.push(res.data.data);
+    resultsImage.value = res.data.data;
   } catch (err) {
     console.error(err);
     error.value = "Không lấy được dữ liệu. Vui lòng thử lại.";
@@ -100,37 +94,56 @@ const handleCreateProduct = async () => {
     };
 
     const res = await productService.createProduct(req);
-    createProductResponse.value = res.data;
-    toast.success("Tạo sản phẩm thành công!");
-    console.log(createProductResponse.value.data.id)
-    loadProductDetail()
+    if (res.data.code === 0) {
+      createProductResponse.value = res.data;
+      toast.success("Tạo sản phẩm thành công!");
+      loadAllProductDetail()
+    } else {
+      toast.error("Tạo sản phẩm không thành công!");
+    }
   } catch (e) {
     toast.error(e);
   }
 };
 
 const handleCreateProductDetail = async () => {
+  const id = createProductResponse?.value?.data.id || productIdRouter?.value;
+
+  if (!id) return;
+
   try {
     const request = new ProductVariantRequest({
       productName: productName.value,
       description: description.value,
-      quantity: quantity.value,
-      price: price.value,
+      quantity: productVariantDetail.value.quantity,
+      price: productVariantDetail.value.price,
 
-      idProduct: createProductResponse.value.data.id,
-      colorId: colorId.value,
-      cameraId: cameraId.value,
-      screenId: screenId.value,
-      originId: originId.value,
-      ramId: ramId.value
+      idProduct: id,
+      colorId: productVariantDetail.value.colorId,
+      cameraId: productVariantDetail.value.cameraId,
+      screenId: productVariantDetail.value.screenId,
+      originId: productVariantDetail.value.originId,
+      ramId: productVariantDetail.value.ramId
     });
+    console.log(request)
 
     const payload = request.toPayload();
     const res = await productService.createProductDetail(payload);
-    createProductDetailResponse.value.push(res.data.data);
+    if (res.data.code === 0) {
+      createProductDetailResponse.value.push(res.data.data);
 
-    toast.success("Tạo biến thể thành công!");
-    loadProductDetail()
+      toast.success("Tạo biến thể thành công!");
+      loadAllProductDetail()
+      productVariantDetail.value.colorId = '';
+      productVariantDetail.value.cameraId = '';
+      productVariantDetail.value.screenId = '';
+      productVariantDetail.value.originId = '';
+      productVariantDetail.value.ramId = '';
+      productVariantDetail.value.quantity = 0;
+      productVariantDetail.value.price = 0;
+    } else {
+      toast.error("Không thể tạo biến thể");
+    }
   } catch (e) {
     console.error(e);
     toast.error("Không thể tạo biến thể");
@@ -143,28 +156,34 @@ const loadDynamic = async (type) => {
 };
 
 const handleCreateProductImage = async () => {
+  const id = createProductResponse?.value?.data.id || productIdRouter?.value;
+
+  if (!id) return;
   try {
     const request = new ProductImageRequest({
       productImageId: productImageId.value,
-      productId: createProductResponse.value.data.id,
+      productId: id,
       url: url.value,
       isActive: true,
     });
 
     const payload = request.toPayload();
     const res = await productService.createImage(payload);
-    createProductImageResponse.value.push(res.data.data);
-    fetchDataImage(createProductResponse.value.data.id)
-    url.value = null;
-
-    toast.success("Thêm ảnh thành công!");
+    if (res.data.code === 0) {
+      createProductImageResponse.value.push(res.data.data);
+      fetchDataImage(id)
+      url.value = null;
+      toast.success("Thêm ảnh thành công!");
+    } else {
+      toast.error("Không thể thêm ảnh");
+    }
   } catch (e) {
     console.error(e);
     toast.error("Không thể thêm ảnh");
   }
 };
 
-const loadProductDetail = async () => {
+const loadAllProductDetail = async () => {
   const id = createProductResponse?.value?.data.id || productIdRouter?.value;
 
   if (!id) return;
@@ -174,6 +193,13 @@ const loadProductDetail = async () => {
   if (id) {
     productName.value = productDetailList.value[0].productName;
     productDescription.value = productDetailList.value[0].description;
+  }
+};
+
+const loadProductVariantDetail = async (id: string) => {
+  const res = await productService.getProductVariantDetail(id);
+  if (res.data.code === 0) {
+    productVariantDetail.value = res.data.data;
   }
 };
 
@@ -188,10 +214,13 @@ const loadProductImage = async () => {
 };
 
 const setActiveImage = async (productImgId: string) => {
+  const id = createProductResponse?.value?.data.id || productIdRouter?.value;
+
+  if (!id) return;
   try {
     const request = new ProductImageRequest({
       productImageId: productImgId,
-      productId: createProductResponse.value.data.id,
+      productId: id,
       url: url.value,
       isActive: isActive.value,
     });
@@ -199,7 +228,7 @@ const setActiveImage = async (productImgId: string) => {
     const payload = request.toPayload();
     const res = await productService.updateImage(payload);
     createProductImageResponse.value.push(res.data.data);
-    fetchDataImage(createProductResponse.value.data.id)
+    fetchDataImage(id)
     toast.success("Update thành công!");
   } catch (e) {
     console.error(e);
@@ -211,7 +240,7 @@ const deleted = async (id: string) =>{
   const res = await productService.deleteProductDetail(id);
   if (res.data.code === 0) {
     toast.success("Xóa biến thể sản phẩm thành công")
-    loadProductDetail();
+    loadAllProductDetail();
   } else {
     toast.error("Xóa biến thể sản phẩm không thành công")
   }
@@ -225,10 +254,31 @@ onMounted(async () => {
   cameraList.value = await loadDynamic("CAMERA");
   originList.value = await loadDynamic("ORIGIN");
   if (productIdRouter.value !== null && productIdRouter.value !== undefined) {
-    loadProductDetail();
-    loadProductImage();
+    loadAllProductDetail();
+    await loadProductImage();
   }
 });
+
+const deleteImage = async (id) => {
+  if (!id) return;
+
+  try {
+    const res = await productService.deleteImage(id);
+
+    if (res.data.code === 0) {
+      console.log(res)
+      toast.success("Xóa ảnh thành công!");
+      await loadProductImage();
+    } else {
+      toast.error("Không thể xóa ảnh!");
+    }
+
+  } catch (e) {
+    console.error(e);
+    toast.error("Lỗi kết nối khi xoá ảnh!");
+  }
+};
+
 </script>
 
 <template>
@@ -270,25 +320,25 @@ onMounted(async () => {
           </button>
         </form>
       </div><!-- Step 2: Add Details -->
-      <div v-if="createProductResponse?.code === 0 || id !== null">
+      <div v-if="createProductResponse !== null || productIdRouter !== undefined">
         <br>
         <form @submit.prevent="handleCreateProductDetail">
           <div class="form-grid">
             <div class="form-group">
               <label for="quantity" class="form-label"> Số lượng <span class="required">*</span>
               </label>
-              <input type="number" v-model="quantity" id="quantity" class="form-input" placeholder="0" min="0" required>
+              <input type="number" v-model="productVariantDetail.quantity" id="quantity" class="form-input" placeholder="0" min="0" required>
             </div>
             <div class="form-group">
               <label for="price" class="form-label"> Giá (VNĐ) <span class="required">*</span>
               </label>
-              <input type="number" v-model="price" class="form-input" placeholder="0" min="0" required>
+              <input type="number" v-model="productVariantDetail.price" class="form-input" placeholder="0" min="0" required>
             </div>
           </div>
           <div class="form-grid">
             <div class="form-group">
               <label for="screenSize" class="form-label"> Màn hình <span class="required">*</span> </label>
-              <select id="color" class="form-select" v-model="screenId" required>
+              <select id="color" class="form-select" v-model="productVariantDetail.screenId" required>
                 <option value="">Chọn...</option>
                 <option v-for="c in screenList" :key="c.id" :value="c.id">
                   {{ c.name }}
@@ -297,7 +347,7 @@ onMounted(async () => {
             </div>
             <div class="form-group">
               <label for="ram" class="form-label"> RAM <span class="required">*</span> </label>
-              <select id="color" class="form-select" v-model="ramId" required>
+              <select id="color" class="form-select" v-model="productVariantDetail.ramId" required>
                 <option value="">Chọn...</option>
                 <option v-for="c in ramList" :key="c.id" :value="c.id">
                   {{ c.name }}
@@ -308,7 +358,7 @@ onMounted(async () => {
           <div class="form-grid">
             <div class="form-group"><label for="camera" class="form-label"> Camera <span class="required">*</span>
             </label>
-              <select id="color" class="form-select" v-model="cameraId" required>
+              <select id="color" class="form-select" v-model="productVariantDetail.cameraId" required>
                 <option value="">Chọn...</option>
                 <option v-for="c in cameraList" :key="c.id" :value="c.id">
                   {{ c.name }}
@@ -317,7 +367,7 @@ onMounted(async () => {
             </div>
             <div class="form-group"><label for="color" class="form-label"> Màu sắc <span class="required">*</span>
             </label>
-              <select id="color" class="form-select" v-model="colorId" required>
+              <select id="color" class="form-select" v-model="productVariantDetail.colorId" required>
                 <option value="">Chọn...</option>
                 <option v-for="c in colorList" :key="c.id" :value="c.id">
                   {{ c.name }}
@@ -327,7 +377,7 @@ onMounted(async () => {
           </div>
           <div class="form-group"><label for="origin" class="form-label"> Xuất xứ <span class="required">*</span>
           </label>
-            <select id="color" class="form-select" v-model="originId" required>
+            <select id="color" class="form-select" v-model="productVariantDetail.originId" required>
               <option value="">Chọn...</option>
               <option v-for="c in originList" :key="c.id" :value="c.id">
                 {{ c.name }}
@@ -374,7 +424,7 @@ onMounted(async () => {
             <td>{{ item.originName }}</td>
 
             <td class="action-cell flex gap-2">
-              <button class="detail-btn">
+              <button class="detail-btn" @click="loadProductVariantDetail(item.idProduct)">
                 🔍
               </button>
               <button class="delete-btn" @click="deleted(item.idProduct)">
@@ -395,7 +445,7 @@ onMounted(async () => {
       </div>
     </div>
   </div>
-  <div class="image-gallery" v-if="createProductResponse?.code === 0 || id !== null">
+  <div class="image-gallery" v-if="createProductResponse?.code === 0 || productIdRouter !== undefined">
     <h2 class="card-title">
       <span>🖼️</span>
       Thư Viện Ảnh Sản Phẩm
@@ -411,7 +461,6 @@ onMounted(async () => {
             :src="i.url"
             :alt="i.alt || 'Ảnh sản phẩm'"
             class="gallery-image"
-            @error="handleImageError(index)"
         />
 
         <div class="gallery-info">
@@ -422,6 +471,13 @@ onMounted(async () => {
               :disabled="i.active"
           >
             {{ i.active ? "✓ Đang hiển thị" : "🖼️ Đặt làm đại diện" }}
+          </button>
+          <br>
+          <button
+              class="delete-image-btn"
+              @click="deleteImage(i.productImageId)"
+          >
+            🗑️ Xóa
           </button>
         </div>
       </div>
@@ -442,6 +498,21 @@ onMounted(async () => {
   cursor: pointer;
   padding: 4px;
   transition: 0.2s;
+}
+.delete-image-btn {
+  width: 100%;
+  margin-top: 5px;
+  padding: 6px 10px;
+  border: none;
+  background: #ff4d4f;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.delete-image-btn:hover {
+  background: #d9363e;
 }
 
 .button.detail-btn:hover {

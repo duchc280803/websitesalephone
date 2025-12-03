@@ -20,6 +20,8 @@ public class OrderStatusHistory extends BaseEntity {
     @JoinColumn(name = "order_id")
     private Order order;
 
+    private String description;
+
     private String status;
 
 }

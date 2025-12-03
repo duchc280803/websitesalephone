@@ -1,24 +1,25 @@
 import axios, { AxiosResponse } from 'axios';
 import type {DynamicSearch} from "../models/DynamicSearch.ts";
 import type {DynamicRequest} from "../models/DynamicRequest.ts";
+import api from "../api/api.ts";
 
 class DynamicService {
     private ROOT_API = import.meta.env.VITE_ROOT_API + '/api/dynamic/';
 
     public search(dynamicSearch: DynamicSearch): Promise<AxiosResponse> {
-        return axios.post(`${this.ROOT_API}search`, dynamicSearch);
+        return api.post(`${this.ROOT_API}search`, dynamicSearch);
     }
 
     public create(dynamicRequest: DynamicRequest): Promise<AxiosResponse> {
-        return axios.post(`${this.ROOT_API}create`, dynamicRequest);
+        return api.post(`${this.ROOT_API}create`, dynamicRequest);
     }
 
     public update(dynamicRequest: DynamicRequest): Promise<AxiosResponse> {
-        return axios.put(`${this.ROOT_API}update`, dynamicRequest);
+        return api.put(`${this.ROOT_API}update`, dynamicRequest);
     }
 
     public delete(dynamicRequest: DynamicRequest): Promise<AxiosResponse> {
-        return axios.delete(`${this.ROOT_API}delete`, { data: dynamicRequest });
+        return api.delete(`${this.ROOT_API}delete`, { data: dynamicRequest });
     }
 }
 

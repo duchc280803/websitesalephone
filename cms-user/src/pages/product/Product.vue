@@ -25,29 +25,20 @@ const fetchProducts = async () => {
 };
 
 const onPageChange = (newPage: number) => {
-  console.log("🔹 onPageChange called");
-  console.log("Current page:", page.value);
-  console.log("Requested newPage:", newPage);
-  console.log("Total pages:", totalPages.value);
-  console.log("newPage", newPage)
   newPage = Number(newPage);
   if (newPage < 1) {
-    console.log("⚠️ newPage < 1, set to 1");
     newPage = 1;
   }
 
   if (newPage > totalPages.value) {
-    console.log(`⚠️ newPage > totalPages (${totalPages.value}), set to totalPages`);
     newPage = totalPages.value;
   }
 
   if (newPage === page.value) {
-    console.log("ℹ️ newPage === current page, nothing to do");
     return;
   }
 
   page.value = newPage;
-  console.log("✅ Page updated to:", page.value, "=> fetching products...");
   fetchProducts();
 };
 
@@ -68,6 +59,7 @@ const deleted = async (id: string) =>{
 
 onMounted(async () => {
   await fetchProducts();
+  console.log(page.value)
 });
 
 </script>
@@ -127,14 +119,12 @@ onMounted(async () => {
     </div>
     <div class="pagination">
       <button class="page-btn" :disabled="page === 1" @click="onPageChange(page - 1)">«</button>
-
       <button
           class="page-btn active"
       >
         {{ page }} / {{ totalPages }}
       </button>
-
-      <button class="page-btn" :disabled="page >= totalPages" @click="onPageChange(totalPages)">»</button>
+      <button class="page-btn" :disabled="page >= totalPages" @click="onPageChange(page + 1)">»</button>
     </div>
   </section>
 </template>
@@ -153,6 +143,17 @@ body {
 
 html, body {
   height: 100%;
+}
+.page-btn:disabled {
+  background: #ddd !important;
+  color: #888 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+.page-btn:disabled:hover {
+  background: #ddd !important;
+  transform: none !important;
 }
 
 body {
@@ -237,15 +238,6 @@ body {
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-}
-
-.btn-secondary {
-  background: #f0f0f0;
-  color: #1a1a2e;
-}
-
-.btn-secondary:hover {
-  background: #e0e0e0;
 }
 
 /* Table */

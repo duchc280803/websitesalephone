@@ -35,27 +35,35 @@ class ProductService {
     }
 
     public createImage(request: ProductImageRequest): Promise<AxiosResponse> {
-        return axios.post(`${this.ROOT_API}create-image`, request);
+        return api.post(`${this.ROOT_API}create-image`, request);
     }
 
     public getAllImage(productId: string): Promise<AxiosResponse> {
-        return axios.get(`${this.ROOT_API}list/${productId}`);
+        return api.get(`${this.ROOT_API}list/${productId}`);
     }
 
     public updateImage(request: ProductImageRequest): Promise<AxiosResponse> {
-        return axios.put(`${this.ROOT_API}update-image`, request);
+        return api.put(`${this.ROOT_API}update-image`, request);
     }
 
     public deleteProduct(id: string): Promise<AxiosResponse> {
-        return axios.put(`${this.ROOT_API}deleted/${id}` );
+        return api.put(`${this.ROOT_API}deleted/${id}` );
+    }
+
+    public deleteImage(id: string): Promise<AxiosResponse> {
+        return api.put(`${this.ROOT_API}deleted-image/${id}` );
     }
 
     public deleteProductDetail(id: string): Promise<AxiosResponse> {
-        return axios.put(`${this.ROOT_API}deleted-product-detail/${id}`);
+        return api.put(`${this.ROOT_API}deleted-product-detail/${id}`);
     }
 
     public getAllProductVariant(id: string): Promise<AxiosResponse> {
-        return axios.get(`${this.ROOT_API}get-all-product-variant/${id}`);
+        return api.get(`${this.ROOT_API}get-all-product-variant/${id}`);
+    }
+
+    public getProductVariantDetail(id: string): Promise<AxiosResponse> {
+        return api.get(`${this.ROOT_API}get-product-variant-detail/${id}`);
     }
 }
 

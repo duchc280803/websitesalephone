@@ -35,7 +35,7 @@ public class ProductImageServiceImpl implements ProductImageService {
 
         if (optionalProduct.isPresent()) {
             Product product = optionalProduct.get();
-            List<ProductImage> findBySanPham = productImageRepository.findByProduct_id(productId);
+            List<ProductImage> findBySanPham = productImageRepository.findByProduct_idAndIsDeleted(productId, false);
 
             boolean hasDefaultImage = findBySanPham.stream().anyMatch(ProductImage::isActive);
 
@@ -70,7 +70,7 @@ public class ProductImageServiceImpl implements ProductImageService {
 
     @Override
     public CommonResponse findByProductId(String id) {
-        List<ProductImage> productImages = productImageRepository.findByProduct_id(id);
+        List<ProductImage> productImages = productImageRepository.findByProduct_idAndIsDeleted(id, false);
         return CommonResponse
                 .builder()
                 .code(CommonResponse.CODE_SUCCESS)
@@ -89,7 +89,7 @@ public class ProductImageServiceImpl implements ProductImageService {
 
     @Override
     public CommonResponse updateImage(String idImage, String idProduct) {
-        List<ProductImage> imageList = productImageRepository.findByProduct_id(idProduct);
+        List<ProductImage> imageList = productImageRepository.findByProduct_idAndIsDeleted(idProduct, false);
         for (ProductImage i : imageList) {
             if (i.isActive()) {
                 i.setActive(false);
