@@ -20,6 +20,7 @@ import LoginPageCustomer from "./pages/LoginPage.vue";
 import RegisterPage from "./pages/RegisterPage.vue";
 import {authService} from "./service/AuthService.ts";
 import ProductDetailPage from "./pages/product/ProductDetailPage.vue";
+import UserProfile from "./pages/home/UserProfile.vue";
 
 const router = createRouter({
     history: createWebHistory(),
@@ -77,6 +78,12 @@ const router = createRouter({
                     path: 'order-detail',
                     name: 'OrderDetailByUser',
                     component: OrderDetailByUser,
+                    meta: { requiresAuth: false, title: 'Đơn hàng user' }
+                },
+                {
+                    path: 'user-profile',
+                    name: 'UserProfile',
+                    component: UserProfile,
                     meta: { requiresAuth: false, title: 'Đơn hàng user' }
                 }
             ]

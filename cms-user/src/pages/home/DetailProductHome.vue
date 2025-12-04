@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, onMounted} from "vue";
+import {ref, onMounted, onUnmounted} from "vue";
 import {useRoute} from "vue-router";
 import HomeLayout from "../../layout/Header.vue";
 import Footer from "../../layout/Footer.vue";
@@ -28,6 +28,10 @@ const selectedStorage = ref<string>("");
 const availableQuantity = ref<number | null>(null);
 const productVariantId = ref<string | null>(null);
 
+const currentIndex = ref(0)
+
+let intervalId: any = null
+
 // Format giá
 const formatCurrency = (value: number) =>
     new Intl.NumberFormat("vi-VN", {style: "currency", currency: "VND"}).format(value);
@@ -37,24 +41,19 @@ const loadProductDetail = async () => {
     const response = await productService.detail(new ProductDetailRequest({idProduct: productId}));
     product.value = response.data.data;
 
-    if (product.value) {
-      selectedRam.value = product.value.rams[0]?.id || "";
-      selectedCpu.value = product.value.cpus[0]?.id || "";
-      selectedCamera.value = product.value.cameras[0]?.id || "";
-      selectedScreen.value = product.value.screens[0]?.id || "";
-      selectedColor.value = product.value.colors[0]?.id || "";
-      selectedOrigin.value = product.value.origins[0]?.id || "";
-      selectedOp.value = product.value.operators[0]?.id || "";
-      selectedBattery.value = product.value.batterys[0]?.id || "";
-      selectedStorage.value = product.value.storages[0]?.id || "";
+    if (product?.value) {
+      selectedRam.value = product?.value?.rams[0]?.id || "";
+      selectedCamera.value = product?.value?.cameras[0]?.id || "";
+      selectedScreen.value = product?.value?.screens[0]?.id || "";
+      selectedColor.value = product?.value?.colors[0]?.id || "";
+      selectedOrigin.value = product?.value?.origins[0]?.id || "";
       updateQuantity();
+      startAutoSlide();
     }
   } catch (error) {
     console.error("Lỗi khi lấy chi tiết sản phẩm", error);
   }
 };
-
-onMounted(() => loadProductDetail());
 
 const quantity = ref(1);
 
@@ -69,7 +68,7 @@ const updateQuantity = async () => {
     availableQuantity.value = null; // chưa đủ chọn thì ẩn số lượng
     return;
   }
-  if (!product.value) return;
+  if (!product?.value) return;
 
   const request: CreateCartRequest = {
     idProduct: productId,
@@ -95,22 +94,40 @@ const selectOption = (
     id: string
 ) => {
   switch (type) {
-    case "ram": selectedRam.value = id; break;
-    case "cpu": selectedCpu.value = id; break;
-    case "camera": selectedCamera.value = id; break;
-    case "screen": selectedScreen.value = id; break;
-    case "color": selectedColor.value = id; break;
-    case "origin": selectedOrigin.value = id; break;
-    case "op": selectedOp.value = id; break;
-    case "battery": selectedBattery.value = id; break;
-    case "storage": selectedStorage.value = id; break;
+    case "ram":
+      selectedRam.value = id;
+      break;
+    case "cpu":
+      selectedCpu.value = id;
+      break;
+    case "camera":
+      selectedCamera.value = id;
+      break;
+    case "screen":
+      selectedScreen.value = id;
+      break;
+    case "color":
+      selectedColor.value = id;
+      break;
+    case "origin":
+      selectedOrigin.value = id;
+      break;
+    case "op":
+      selectedOp.value = id;
+      break;
+    case "battery":
+      selectedBattery.value = id;
+      break;
+    case "storage":
+      selectedStorage.value = id;
+      break;
   }
 
   updateQuantity();
 };
 
 const addToCart = async () => {
-  if (!product.value || quantity.value < 1) return;
+  if (!product?.value || quantity.value < 1) return;
 
   const cartRequest: CartRequest = {
     productId: productVariantId.value,
@@ -160,6 +177,22 @@ const colorMap: Record<string, string> = {
   PEACH: "#FFE5B4",
   // Bạn có thể thêm các màu khác theo sản phẩm
 };
+
+const startAutoSlide = () => {
+  if (!product?.value?.responseList?.length) return;
+
+  intervalId = setInterval(() => {
+    currentIndex.value =
+        (currentIndex.value + 1) % product.value.responseList.length;
+  }, 3000);
+};
+
+onMounted(() =>
+        loadProductDetail(),
+);
+onUnmounted(() => {
+  if (intervalId) clearInterval(intervalId)
+})
 </script>
 
 <template>
@@ -177,16 +210,13 @@ const colorMap: Record<string, string> = {
       <!-- Image Gallery -->
       <section class="image-gallery">
         <div class="main-image">
-          <!--          <img :src="product?.images[0]?.name" alt="main image" v-if="product?.images.length"/>-->
-          <!--          <span v-else>📱</span>-->
-        </div>
-        <div class="thumbnail-grid">
-          <div v-for="img in product?.images" :key="img.id" class="thumbnail">
-            <img :src="img.name" alt="thumb"/>
-          </div>
+          <img
+              :src="product?.responseList?.[currentIndex]?.url ?? 'https://cellphones.com.vn/iphone-16-pro-max.html'"
+              alt="main image"
+              style="width: 323px; height: 323px"
+          />
         </div>
       </section>
-
       <!-- Product Info -->
       <section class="product-info">
         <span class="product-badge">🔥 HOT DEAL</span>
@@ -264,7 +294,7 @@ const colorMap: Record<string, string> = {
             <!-- Giảm: disable khi quantity <= 1 -->
             <button class="qty-btn" @click="decreaseQty" :disabled="quantity <= 1">-</button>
 
-            <input type="text" v-model.number="quantity" readonly />
+            <input type="text" v-model.number="quantity" readonly/>
 
             <!-- Tăng: disable khi quantity >= availableQuantity -->
             <button class="qty-btn" @click="increaseQty" :disabled="quantity >= availableQuantity">+</button>
@@ -286,12 +316,6 @@ const colorMap: Record<string, string> = {
         </div>
       </section>
     </div>
-
-    <!-- Description -->
-    <section class="description-section">
-      <h2 class="description-title">📝 Mô Tả Sản Phẩm</h2>
-      <p class="description-text">{{ product?.description }}</p>
-    </section>
   </article>
 
   <Footer/>
@@ -317,6 +341,23 @@ const colorMap: Record<string, string> = {
   border-color: #1a1a2e;
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3);
   position: relative;
+}
+.main-image img {
+  transition: opacity 0.6s ease;
+}
+
+.main-image img {
+  opacity: 1;
+}
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+.main-image img.fade {
+  opacity: 0;
 }
 
 .color-option.selected::after {
@@ -402,12 +443,13 @@ body {
 .image-gallery {
   position: sticky;
   top: 20px;
+  width: 586px;
+  margin-right: 20px;
 }
 
 .main-image {
   width: 100%;
   height: 500px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   border-radius: 20px;
   display: flex;
   align-items: center;
@@ -416,37 +458,12 @@ body {
   margin-bottom: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  border: 1px solid #d1d5db;
+  margin-left: 145px;
 }
 
 .main-image:hover {
   transform: scale(1.02);
-}
-
-.thumbnail-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
-}
-
-.thumbnail {
-  width: 100%;
-  height: 100px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 40px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 3px solid transparent;
-}
-
-.thumbnail:hover,
-.thumbnail.active {
-  border-color: #667eea;
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
 }
 
 /* Product Info */
@@ -473,53 +490,11 @@ body {
   line-height: 1.2;
 }
 
-.rating {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 25px;
-}
-
-.stars {
-  color: #ffd700;
-  font-size: 1.3em;
-  letter-spacing: 3px;
-}
-
-.review-count {
-  color: #666;
-  font-size: 1em;
-}
-
-.price-section {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding: 25px;
-  border-radius: 15px;
-  margin-bottom: 30px;
-}
-
 .current-price {
   font-size: 2.5em;
   font-weight: 800;
   color: #667eea;
   margin-bottom: 5px;
-}
-
-.original-price {
-  font-size: 1.3em;
-  color: #999;
-  text-decoration: line-through;
-  margin-right: 15px;
-}
-
-.discount-badge {
-  display: inline-block;
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  color: white;
-  padding: 5px 15px;
-  border-radius: 15px;
-  font-size: 0.9em;
-  font-weight: 700;
 }
 
 /* Specifications Options */
@@ -610,80 +585,6 @@ body {
   text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
-.color-black {
-  background: linear-gradient(135deg, #434343 0%, #000000 100%);
-}
-
-.color-white {
-  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
-  border: 2px solid #ddd;
-}
-
-.color-blue {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
-.color-purple {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.color-gold {
-  background: linear-gradient(135deg, #f7ce68 0%, #fbab7e 100%);
-}
-
-.color-green {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-}
-
-.color-red {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-}
-
-/* Key Features */
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  margin: 30px 0;
-  padding: 25px;
-  background: #f9f9f9;
-  border-radius: 15px;
-}
-
-.feature-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.feature-icon {
-  font-size: 2em;
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.feature-text {
-  flex: 1;
-}
-
-.feature-label {
-  font-size: 0.85em;
-  color: #666;
-  margin-bottom: 2px;
-}
-
-.feature-value {
-  font-weight: 700;
-  color: #1a1a2e;
-  font-size: 1.05em;
-}
-
 /* Action Buttons */
 .action-buttons {
   display: flex;
@@ -715,38 +616,6 @@ body {
 .btn-primary:hover {
   transform: translateY(-3px);
   box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
-}
-
-.btn-secondary {
-  background: white;
-  color: #667eea;
-  border: 2px solid #667eea;
-}
-
-.btn-secondary:hover {
-  background: #667eea;
-  color: white;
-}
-
-/* Stock Status */
-.stock-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: white;
-  border-radius: 12px;
-  font-weight: 700;
-  margin-bottom: 20px;
-}
-
-.stock-dot {
-  width: 10px;
-  height: 10px;
-  background: white;
-  border-radius: 50%;
-  animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
@@ -795,9 +664,6 @@ body {
     font-size: 140px;
   }
 
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 768px) {
@@ -816,16 +682,6 @@ body {
   .main-image {
     height: 300px;
     font-size: 100px;
-  }
-
-  .thumbnail-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-  }
-
-  .thumbnail {
-    height: 70px;
-    font-size: 30px;
   }
 
   .action-buttons {

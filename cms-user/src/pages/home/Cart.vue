@@ -1,24 +1,25 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import {ref, onMounted, computed} from "vue";
 import HomeLayout from "../../layout/Header.vue";
 import Footer from "../../layout/Footer.vue";
-import { cartService } from "@/service/CartService.ts";
-import type { CartResponse, ProductInCart } from "@/models/Cart.ts";
-import { CartRequest } from "@/models/CartRequest.ts";
-import type { CheckOutRequest } from "@/models/CheckOutRequest.ts";
+import {cartService} from "@/service/CartService.ts";
+import type {CartResponse, ProductInCart} from "@/models/Cart.ts";
+import {CartRequest} from "@/models/CartRequest.ts";
 import {toast} from "vue3-toastify";
+import {CheckOutRequest} from "@/models/CheckOutRequest.ts";
 
 type CartItemWithSelect = ProductInCart & { selected: boolean };
 const cartItems = ref<CartItemWithSelect[]>([]);
 const loading = ref(false);
 const search = {};
+const address = ref<string>("");
 
 const fetchCartItems = async () => {
   loading.value = true;
   try {
     const response = await cartService.getCartItems(search);
     const cart: CartResponse = response.data.data;
-    cartItems.value = cart.products.map(item => ({ ...item, selected: true }));
+    cartItems.value = cart.products.map(item => ({...item, selected: true}));
   } catch (err) {
     console.error("Fetch cart error", err);
   } finally {
@@ -73,13 +74,12 @@ const removeItem = async (item: CartItemWithSelect) => {
 };
 
 const checkout = async () => {
-  const payload: CheckOutRequest = {
-    items: cartItems.value
-        .filter(i => i.selected)
-        .map(i => new CartRequest(i.productId, i.quantity).toPayload())
-  };
+  const payload = new CheckOutRequest(
+      address.value
+  );
   try {
-    await cartService.checkoutCart(payload);
+    console.log(payload)
+    await cartService.checkoutCart(payload.toPayload());
     toast.success("Thanh toán thành công!");
     await fetchCartItems();
   } catch (err) {
@@ -103,12 +103,15 @@ function getContrastColor(hex: string): string {
 </script>
 
 <template>
-  <HomeLayout />
+  <HomeLayout/>
   <div class="container">
     <header class="cart-header">
       <div class="header-left">
         <h1>🛒 Giỏ Hàng Của Bạn</h1>
-        <div class="breadcrumb"><router-link to="/customer/product-home">Sản Phẩm</router-link> / Giỏ hàng</div>
+        <div class="breadcrumb">
+          <router-link to="/customer/product-home">Sản Phẩm</router-link>
+          / Giỏ hàng
+        </div>
       </div>
       <div class="header-right">
         <div class="cart-count">{{ totalQuantity }}</div>
@@ -121,16 +124,16 @@ function getContrastColor(hex: string): string {
         <div class="cart-items-header">
           <h2 class="cart-items-title">📦 Sản Phẩm Trong Giỏ</h2>
           <label class="select-all">
-            <input type="checkbox" v-model="allSelected" /> Chọn tất cả
+            <input type="checkbox" v-model="allSelected"/> Chọn tất cả
           </label>
         </div>
 
         <article class="cart-item" v-for="item in cartItems" :key="item.productId">
           <div class="item-select">
-            <input type="checkbox" v-model="item.selected" />
+            <input type="checkbox" v-model="item.selected"/>
           </div>
           <div class="item-image">
-            <img :src="item.image || '/placeholder.png'" alt="product" />
+            <img :src="item.image || '/placeholder.png'" alt="product"/>
           </div>
           <div class="item-details">
             <h3 class="item-name">{{ item.productName }}</h3>
@@ -140,13 +143,13 @@ function getContrastColor(hex: string): string {
                   class="spec-badge"
                   :style="{ backgroundColor: item.color, color: getContrastColor(item.color) }"
               ></span>
-              <span class="spec-badge">{{ item.ops }}</span>
+              <span class="spec-badge">{{ item.origin }}</span>
             </div>
             <div class="item-price">{{ Number(item.price).toLocaleString('vi-VN') }}₫</div>
             <div class="item-controls">
               <div class="quantity-control">
                 <button class="qty-btn" @click="decreaseQty(item)">−</button>
-                <input type="text" class="qty-input" :value="item.quantity" readonly />
+                <input type="text" class="qty-input" :value="item.quantity" readonly/>
                 <button class="qty-btn" @click="increaseQty(item)">+</button>
               </div>
               <button class="btn-remove" @click="removeItem(item)">🗑️ Xóa</button>
@@ -156,10 +159,28 @@ function getContrastColor(hex: string): string {
       </section>
 
       <aside class="order-summary">
+        <div class=" address-row">
+          <label for="address" class="summary-label">Địa chỉ nhận hàng</label>
+          <input
+              id="address"
+              v-model="address"
+              type="text"
+              class="address-input"
+              placeholder="Nhập địa chỉ giao hàng..."
+          />
+        </div>
+        <br>
         <h2 class="summary-title">📋 Tóm Tắt Đơn Hàng</h2>
         <div class="summary-row">
           <span class="summary-label">Tạm tính ({{ totalQuantity }} sản phẩm)</span>
           <span class="summary-value">{{ subtotal.toLocaleString('vi-VN') }}₫</span>
+        </div>
+        <div class="summary-row payment-row">
+          <span class="summary-label">Hình thức thanh toán</span>
+          <span class="summary-value cod-note">
+            Khi nhận hàng
+            <small class="payment-info">(Hiện chưa hỗ trợ chuyển khoản)</small>
+          </span>
         </div>
         <div class="summary-row">
           <span class="summary-label">Phí vận chuyển</span>
@@ -169,12 +190,21 @@ function getContrastColor(hex: string): string {
           <span class="total-label">Tổng cộng</span>
           <span class="total-value">{{ subtotal.toLocaleString('vi-VN') }}₫</span>
         </div>
-        <button class="btn-checkout" @click="checkout">💳 Thanh Toán Ngay</button>
+        <button class="btn-checkout" @click="checkout" :disabled="cartItems.length === 0">💳 Đặt hàng ngay</button>
 
         <div class="features">
-          <div class="feature"><div class="feature-icon">🚚</div><div class="feature-text">Giao hàng miễn phí</div></div>
-          <div class="feature"><div class="feature-icon">🔒</div><div class="feature-text">Thanh toán bảo mật</div></div>
-          <div class="feature"><div class="feature-icon">↩️</div><div class="feature-text">Đổi trả 30 ngày</div></div>
+          <div class="feature">
+            <div class="feature-icon">🚚</div>
+            <div class="feature-text">Giao hàng miễn phí</div>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">🔒</div>
+            <div class="feature-text">Thanh toán bảo mật</div>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">↩️</div>
+            <div class="feature-text">Đổi trả 30 ngày</div>
+          </div>
         </div>
       </aside>
     </div>
@@ -182,8 +212,9 @@ function getContrastColor(hex: string): string {
     <div class="continue-shopping">
       <router-link to="/customer/product-home" class="btn-continue">⬅️ Tiếp Tục Mua Sắm</router-link>
     </div>
+    <br>
   </div>
-  <Footer />
+  <Footer/>
 </template>
 <style scoped>
 body {
@@ -195,9 +226,30 @@ body {
   padding: 0;
   box-sizing: border-box;
 }
+button.btn-checkout:disabled {
+  background: #ddd !important;
+  color: #888 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+img {
+  width: 110px;
+  height: 115px;
+}
 
 html, body {
   height: 100%;
+}
+.cod-note {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+}
+
+.payment-info {
+  font-size: 12px;
+  color: #888;
+  margin-top: 2px;
 }
 
 body {
@@ -245,6 +297,26 @@ body {
 
 .header-right {
   text-align: right;
+}
+
+.address-row {
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+}
+
+.address-input {
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.address-input:focus {
+  border-color: #43e97b;
 }
 
 .cart-count {
@@ -353,7 +425,6 @@ body {
 .item-image {
   width: 120px;
   height: 120px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   border-radius: 15px;
   display: flex;
   align-items: center;

@@ -17,6 +17,10 @@ class OrderService {
     public update(orderRequest: OrderRequest): Promise<AxiosResponse> {
         return api.put(`${this.ROOT_API}update`, orderRequest);
     }
+
+    public getListHistory(id: string): Promise<AxiosResponse> {
+        return api.get(`${this.ROOT_API}history/${id}`);
+    }
 }
 
 export const orderService = new OrderService();

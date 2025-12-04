@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.example.websitesalephone.auth.UserDetail;
 import org.example.websitesalephone.comon.PageResponse;
+import org.example.websitesalephone.dto.user.ProfileUserRequest;
 import org.example.websitesalephone.dto.user.UserDto;
 import org.example.websitesalephone.entity.Cart;
 import org.example.websitesalephone.entity.Role;
@@ -42,7 +43,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public CommonResponse getUserByLoginId(String loginId) {
-        User user = userRepository.findByIdAndIsDeleted(loginId, false).orElse(null);
+        User user = userRepository.findByUsernameAndIsDeleted(loginId, false).orElse(null);
         if (user == null) {
             return CommonResponse.builder()
                     .code(CommonResponse.CODE_NOT_FOUND)
@@ -230,6 +231,30 @@ public class UserServiceImpl implements UserService {
         return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)
                 .data(PageResponse.from(result))
+                .build();
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public CommonResponse updateProfileUser(ProfileUserRequest profileUserRequest, String id) {
+        User loginUser = userRepository.findByIdAndIsDeleted(id, false).orElse(null);
+
+        if (loginUser == null) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_NOT_FOUND)
+                    .message("User not found")
+                    .build();
+        }
+
+        loginUser.setPhone(profileUserRequest.getTelNo());
+        loginUser.setAddress(profileUserRequest.getAddress());
+        loginUser.setGender(profileUserRequest.getGender());
+        loginUser.setEmail(profileUserRequest.getEmail());
+        loginUser.setFullName(profileUserRequest.getFullName());
+
+        userRepository.saveAndFlush(loginUser);
+        return CommonResponse.builder()
+                .code(CommonResponse.CODE_SUCCESS)
                 .build();
     }
 }

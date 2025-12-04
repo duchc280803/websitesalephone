@@ -1,10 +1,15 @@
 package org.example.websitesalephone.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.websitesalephone.auth.UserDetail;
 import org.example.websitesalephone.comon.CommonResponse;
 import org.example.websitesalephone.dto.user.CreateUserDto;
+import org.example.websitesalephone.dto.user.ProfileUserRequest;
 import org.example.websitesalephone.dto.user.UserSearchForm;
 import org.example.websitesalephone.service.user.UserService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,9 +19,18 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("get-user-by-login/{loginId}")
-    public CommonResponse getUserByLoginId(@PathVariable(name = "loginId") String loginId) {
-        return userService.getUserByLoginId(loginId);
+    @GetMapping("/get/user-detail")
+    public ResponseEntity<CommonResponse> getUserDetail() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            UserDetail userDetail = (UserDetail) auth.getPrincipal();
+            return ResponseEntity.ok(userService.getUserByLoginId(userDetail.getLoginId()));
+        } catch (Exception e) {
+            return ResponseEntity.ok(CommonResponse.builder()
+                    .code(CommonResponse.CODE_INTERNAL_ERROR)
+                    .message(e.getMessage())
+                    .build());
+        }
     }
 
     @PostMapping("create")
@@ -37,5 +51,19 @@ public class UserController {
     @PostMapping("search")
     public CommonResponse search(@RequestBody UserSearchForm searchForm) {
         return userService.search(searchForm);
+    }
+
+    @PutMapping("update-profile-user")
+    public ResponseEntity<CommonResponse> updateProfileUser(@RequestBody ProfileUserRequest profileUserRequest) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            UserDetail userDetail = (UserDetail) auth.getPrincipal();
+            return ResponseEntity.ok(userService.updateProfileUser(profileUserRequest, userDetail.getUserId()));
+        } catch (Exception e) {
+            return ResponseEntity.ok(CommonResponse.builder()
+                    .code(CommonResponse.CODE_INTERNAL_ERROR)
+                    .message(e.getMessage())
+                    .build());
+        }
     }
 }

@@ -8,7 +8,7 @@ const orders = ref<any>();
 const searchText = ref("");
 const page = ref<number>(1);
 const size = ref<number>(10);
-const totalPages = ref<number>(0);
+const totalPages = ref<number>(1);
 
 const callSearch = async () => {
   const search = new Search(page.value, size.value, searchText.value);
@@ -103,7 +103,7 @@ onMounted(() => {
       <button
           class="page-btn active"
       >
-        {{ page }} / {{ totalPages + 1}}
+        {{ page }} / {{ totalPages}}
       </button>
       <button class="page-btn" :disabled="page >= totalPages" @click="onPageChange(page + 1)">»</button>
     </div>

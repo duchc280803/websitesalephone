@@ -9,7 +9,7 @@ const products = ref<any[]>([]);
 const searchText = ref("");
 const page = ref<number>(1);
 const size = ref<number>(10);
-const totalPages = ref<number>(0);
+const totalPages = ref<number>(1);
 
 const fetchProducts = async () => {
   const search = new Search(page.value, size.value, searchText.value);

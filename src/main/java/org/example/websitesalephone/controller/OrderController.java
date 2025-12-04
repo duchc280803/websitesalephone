@@ -28,4 +28,11 @@ public class OrderController {
     public CommonResponse update(@RequestBody OrderRequest orderRequest) {
         return orderService.update(orderRequest);
     }
+
+    @GetMapping("/history/{id}")
+    public CommonResponse getListHistory(@PathVariable String id) {
+        return orderService.getListHistory(id);
+    }
+
+
 }

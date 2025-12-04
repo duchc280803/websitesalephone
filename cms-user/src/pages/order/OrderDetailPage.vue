@@ -14,6 +14,7 @@ const loading = ref(false);
 const error = ref('');
 const description = ref('');
 const shippingFee = ref(<number>0);
+const listHistory = ref<any>();
 
 const TIMELINE_ORDER = [
   {status: 'PENDING', label: 'CHỜ XỬ LÝ', icon: '📝'},
@@ -46,6 +47,18 @@ const fetchOrderDetail = async () => {
   try {
     const res = await orderService.detail(orderId.value);
     orderDetail.value = res.data.data;
+  } catch (err: any) {
+    error.value = 'Không lấy được chi tiết đơn hàng';
+  } finally {
+    loading.value = false;
+  }
+};
+
+const fetchHistory = async () => {
+  loading.value = true;
+  try {
+    const res = await orderService.getListHistory(orderId.value);
+    listHistory.value = res.data.data;
   } catch (err: any) {
     error.value = 'Không lấy được chi tiết đơn hàng';
   } finally {
@@ -91,9 +104,49 @@ const progressPercent = computed(() => {
 
 onMounted(() => {
   fetchOrderDetail();
+  fetchHistory();
 });
 </script>
 <template>
+  <div class="modal fade" id="history" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content shadow-lg history-modal">
+
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold text-primary">Lịch sử cập nhật</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <table class="table table-hover align-middle history-table">
+            <thead>
+            <tr>
+              <th>Trạng thái</th>
+              <th>Thời gian</th>
+              <th>Người xác nhận</th>
+              <th>Ghi chú</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="item in listHistory" :key="item.time">
+              <td>{{ item?.status }}</td>
+              <td>{{ item?.time }}</td>
+              <td>{{ item?.nameStaff }}</td>
+              <td>{{ item?.description }}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-dark px-4" data-bs-dismiss="modal">
+            Đóng
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
   <div
       class="modal fade"
       id="exampleModal"
@@ -248,7 +301,8 @@ onMounted(() => {
         Hủy đơn
       </button>
 
-      <button class="btn btn-primary" @click="openModal('history')">
+      <button class="btn btn-primary" data-bs-toggle="modal"
+              data-bs-target="#history">
         Lịch sử hóa đơn
       </button>
     </div>
@@ -290,74 +344,12 @@ onMounted(() => {
           </tbody>
         </table>
       </section><!-- IMEI Table -->
-      <section class="imei-section">
-        <h2 class="section-title">🔢 Danh Sách IMEI</h2>
-        <table class="imei-table">
-          <thead>
-          <tr>
-            <th>Sản phẩm</th>
-            <th>Mã IMEI</th>
-            <th>Trạng thái</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr>
-            <td>
-              <div class="product-name-table">
-                iPhone 15 Pro Max
-              </div>
-              <div class="product-variant">
-                256GB - Xanh Titan
-              </div>
-            </td>
-            <td><span class="imei-code">359876543210987</span></td>
-            <td><span class="imei-status">✓ Đã kích hoạt</span></td>
-          </tr>
-          <tr>
-            <td>
-              <div class="product-name-table">
-                Samsung S24 Ultra
-              </div>
-              <div class="product-variant">
-                512GB - Đen Titanium
-              </div>
-            </td>
-            <td><span class="imei-code">351234567890123</span></td>
-            <td><span class="imei-status">✓ Đã kích hoạt</span></td>
-          </tr>
-          <tr>
-            <td>
-              <div class="product-name-table">
-                iPhone 14 Pro #1
-              </div>
-              <div class="product-variant">
-                256GB - Tím Deep Purple
-              </div>
-            </td>
-            <td><span class="imei-code">358765432109876</span></td>
-            <td><span class="imei-status">✓ Đã kích hoạt</span></td>
-          </tr>
-          <tr>
-            <td>
-              <div class="product-name-table">
-                iPhone 14 Pro #2
-              </div>
-              <div class="product-variant">
-                256GB - Tím Deep Purple
-              </div>
-            </td>
-            <td><span class="imei-code">358765432109877</span></td>
-            <td><span class="imei-status">✓ Đã kích hoạt</span></td>
-          </tr>
-          </tbody>
-        </table>
-      </section>
     </div><!-- Order Summary Sidebar -->
     <aside class="order-summary-sidebar">
       <div class="summary-section">
         <h3>👤 Thông Tin Khách Hàng</h3>
         <div class="customer-name">
-          Nguyễn Văn An
+          {{ orderDetail?.fullName }}
         </div>
         <div class="customer-detail">
           📞 {{ orderDetail?.phoneNumber }}
@@ -369,13 +361,12 @@ onMounted(() => {
       <div class="summary-section">
         <h3>📍 Địa Chỉ Giao Hàng</h3>
         <div class="customer-detail">
-          123 Đường Lê Lợi, Phường Bến Nghé,<br>
-          Quận 1, TP. Hồ Chí Minh
+          {{ orderDetail?.address}}
         </div>
       </div>
       <div class="summary-section">
         <h3>💳 Thanh Toán</h3>
-        <div class="info-row"><span class="info-label">Phương thức:</span> <span class="info-value">Chuyển khoản</span>
+        <div class="info-row"><span class="info-label">Phương thức:</span> <span class="info-value">{{ orderDetail?.methodTransaction }}</span>
         </div>
         <div class="info-row"><span class="info-label">Trạng thái:</span> <span class="info-value"
                                                                                 style="color: #43e97b;">✓ Đã thanh toán</span>
@@ -385,7 +376,7 @@ onMounted(() => {
         <div class="total-row"><span class="info-label">Tạm tính:</span> <span class="info-value">{{formatCurrency(orderDetail?.totalPrice)}}</span>
         </div>
         <div class="total-row"><span class="info-label">Phí vận chuyển:</span> <span class="info-value"
-                                                                                     style="color: black;">{{formatCurrency(orderDetail?.shippingFee)}}}</span>
+                                                                                     style="color: black;">{{formatCurrency(orderDetail?.shippingFee)}}</span>
         </div>
         <div class="total-row"><span class="total-label">Tổng cộng:</span> <span
             class="total-amount">{{formatCurrency(orderDetail?.totalOrderAmount)}}</span>

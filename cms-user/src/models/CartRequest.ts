@@ -1,6 +1,7 @@
 export interface ICartRequest {
     productId: string;
     quantity: number;
+    add
 }
 
 export class CartRequest {

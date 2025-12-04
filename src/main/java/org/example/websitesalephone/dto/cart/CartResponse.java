@@ -40,7 +40,7 @@ public class CartResponse {
                             .quantity(item.getQuantity())
                             .ram(variant.getRam().getName())
                             .color(variant.getColor().getName())
-//                            .ops(variant.getOperatingSystem().getName())
+                            .origin(variant.getOrigin().getName())
                             .image(imageUrl)
                             .price(variant.getPrice())
                             .build();

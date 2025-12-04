@@ -5,10 +5,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.example.websitesalephone.auth.UserDetail;
 import org.example.websitesalephone.comon.CommonResponse;
 import org.example.websitesalephone.comon.PageResponse;
-import org.example.websitesalephone.dto.order.OrderDetailResponse;
-import org.example.websitesalephone.dto.order.OrderRequest;
-import org.example.websitesalephone.dto.order.OrderResponse;
-import org.example.websitesalephone.dto.order.OrderSearch;
+import org.example.websitesalephone.dto.order.*;
 import org.example.websitesalephone.entity.Order;
 import org.example.websitesalephone.entity.OrderStatusHistory;
 import org.example.websitesalephone.entity.User;
@@ -28,6 +25,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -147,6 +146,26 @@ public class OrderServiceImpl implements OrderService {
                 .code(CommonResponse.CODE_SUCCESS)
                 .message("Cập nhật trạng thái đơn hàng thành công")
                 .data(OrderResponse.fromOrder(order))
+                .build();
+    }
+
+    @Override
+    public CommonResponse getListHistory(String id) {
+        List<OrderStatusHistory> statusHistories = orderStatusHistoryRepository.findByOrder_id(id);
+
+        if (statusHistories.isEmpty()) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_NOT_FOUND)
+                    .data(new ArrayList<>())
+                    .build();
+        }
+
+        List<OrderStatusHistoryResponse> orderStatusHistoryResponses =
+                statusHistories.stream().map(OrderStatusHistoryResponse::from).toList();
+
+        return CommonResponse.builder()
+                .code(CommonResponse.CODE_SUCCESS)
+                .data(orderStatusHistoryResponses)
                 .build();
     }
 

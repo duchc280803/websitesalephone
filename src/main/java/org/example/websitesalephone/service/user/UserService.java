@@ -2,6 +2,7 @@ package org.example.websitesalephone.service.user;
 
 import org.example.websitesalephone.comon.CommonResponse;
 import org.example.websitesalephone.dto.user.CreateUserDto;
+import org.example.websitesalephone.dto.user.ProfileUserRequest;
 import org.example.websitesalephone.dto.user.UserSearchForm;
 
 public interface UserService {
@@ -15,4 +16,6 @@ public interface UserService {
     CommonResponse deleteUser(String userId);
 
     CommonResponse search(UserSearchForm searchForm);
+
+    CommonResponse updateProfileUser(ProfileUserRequest profileUserRequest, String id);
 }

@@ -6,6 +6,7 @@ import {toast} from "vue3-toastify";
 import {useRoute} from "vue-router";
 import {CreateUserDto} from "@/models/CreateUserDto.ts";
 import router from "@/router.ts";
+import {useUserStore} from "@/userStore.ts";
 const route = useRoute();
 const loginId = route.params.id as string;
 const isUpdate = ref(!!loginId);
@@ -30,13 +31,11 @@ const form = ref<CreateUserDto>(
 
 // Load user nếu đang update
 const loadUserDetail = async () => {
-  console.log("uar alo")
   if (!loginId) return;
 
   try {
-    const res = await userService.getUserByLoginId(loginId);
+    const res = useUserStore().getUserByLoginId();
     const data = res.data.data;
-    console.log(data)
 
     form.value = new CreateUserDto({
       id: loginId,
@@ -52,7 +51,6 @@ const loadUserDetail = async () => {
       role: data.role,
       address: data.address
     });
-    console.log(form.value)
   } catch (e) {
     toast.error("Không tải được thông tin người dùng");
   }

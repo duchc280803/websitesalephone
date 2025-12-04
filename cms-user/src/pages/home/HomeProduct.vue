@@ -10,14 +10,19 @@ const products = ref<any[]>([]);
 const searchText = ref("");
 const page = ref(1);
 const size = ref(12);
-const totalItems = ref(0);
+const totalPages = ref<number>(1);
 
 const loadProducts = async () => {
   const search = new Search(page.value, size.value, searchText.value);
-  const res = await productService.search(search);
-  products.value = res.data.data.content || [];
-  totalItems.value = res.data.total || 0;
-  console.log(products)
+  try {
+    const res = await productService.search(search);
+    products.value = res.data.data.content || [];
+    totalPages.value = Number(res.data.data.totalPages ?? 1);
+
+    console.log("📄 Fetched page:", page.value, "totalPages:", totalPages.value);
+  } catch (error) {
+    console.error("Lỗi khi load sản phẩm:", error);
+  }
 };
 
 const onSearch = () => {
@@ -26,6 +31,19 @@ const onSearch = () => {
 };
 
 const onPageChange = (newPage: number) => {
+  newPage = Number(newPage);
+  if (newPage < 1) {
+    newPage = 1;
+  }
+
+  if (newPage > totalPages.value) {
+    newPage = totalPages.value;
+  }
+
+  if (newPage === page.value) {
+    return;
+  }
+
   page.value = newPage;
   loadProducts();
 };
@@ -65,13 +83,14 @@ onMounted(loadProducts);
         </div>
       </article>
     </div>
-
     <div class="pagination">
-      <button class="page-btn" :disabled="page === 1" @click="onPageChange(1)">⟨⟨ Đầu</button>
-      <button class="page-btn" :disabled="page === 1" @click="onPageChange(page - 1)">⟨ Trước</button>
-      <span class="page-info">Trang {{ page }} / {{ Math.ceil(totalItems / size) }}</span>
-      <button class="page-btn" :disabled="page === Math.ceil(totalItems / size)" @click="onPageChange(page + 1)">Sau ⟩</button>
-      <button class="page-btn" :disabled="page === Math.ceil(totalItems / size)" @click="onPageChange(Math.ceil(totalItems / size))">Cuối ⟩⟩</button>
+      <button class="page-btn" :disabled="page === 1" @click="onPageChange(page - 1)">«</button>
+      <button
+          class="page-btn active"
+      >
+        {{ page }} / {{ totalPages }}
+      </button>
+      <button class="page-btn" :disabled="page >= totalPages" @click="onPageChange(page + 1)">»</button>
     </div>
   </div>
   <Footer/>
@@ -175,75 +194,10 @@ body {
   color: #667eea;
 }
 
-.filter-group {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-}
-
-.filter-select {
-  padding: 16px 40px 16px 20px;
-  border: 2px solid #e0e0e0;
-  border-radius: 15px;
-  font-size: 1em;
-  font-weight: 600;
-  cursor: pointer;
-  background: white;
-  transition: all 0.3s ease;
-}
-
-.filter-select:hover,
-.filter-select:focus {
-  outline: none;
-  border-color: #667eea;
-}
-
-.results-info {
-  background: white;
-  padding: 20px 30px;
-  border-radius: 15px;
-  margin-bottom: 30px;
-  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 15px;
-}
-
-.results-count {
-  font-size: 1.1em;
-  color: #666;
-  font-weight: 600;
-}
-
 .results-count strong {
   color: #667eea;
   font-size: 1.3em;
 }
-
-.view-toggle {
-  display: flex;
-  gap: 10px;
-}
-
-.view-btn {
-  padding: 10px 15px;
-  border: 2px solid #e0e0e0;
-  background: white;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 1.2em;
-  transition: all 0.3s ease;
-}
-
-.view-btn:hover,
-.view-btn.active {
-  background: #667eea;
-  border-color: #667eea;
-  color: white;
-}
-
 /* Products Grid */
 .products-grid {
   display: grid;
@@ -274,22 +228,6 @@ body {
   justify-content: center;
   font-size: 80px;
   position: relative;
-}
-
-.product-badge {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  padding: 8px 15px;
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  color: white;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 0.85em;
-}
-
-.product-badge.new {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
 }
 
 .product-info {
@@ -328,24 +266,6 @@ body {
   border-radius: 6px;
   font-size: 0.8em;
   color: #666;
-}
-
-.product-rating {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 15px;
-}
-
-.stars {
-  color: #ffd700;
-  font-size: 1em;
-}
-
-.rating-text {
-  color: #666;
-  font-size: 0.9em;
-  font-weight: 600;
 }
 
 .product-footer {
@@ -390,85 +310,38 @@ body {
   justify-content: center;
   align-items: center;
   gap: 10px;
-  margin-top: 40px;
-  flex-wrap: wrap;
+  padding: 30px;
 }
 
 .page-btn {
-  min-width: 45px;
-  height: 45px;
-  padding: 0 15px;
-  background: white;
-  color: #666;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 1em;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  background: #f0f0f0;
+  color: #1a1a2e;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.page-btn:hover {
-  border-color: #667eea;
-  color: #667eea;
-  transform: translateY(-2px);
-}
-
+.page-btn:hover,
 .page-btn.active {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  border-color: #667eea;
+  transform: scale(1.1);
 }
-
 .page-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
+  background: #ddd !important;
+  color: #888 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
 }
 
 .page-btn:disabled:hover {
-  transform: none;
-  border-color: #e0e0e0;
-  color: #666;
+  background: #ddd !important;
+  transform: none !important;
 }
-
-.page-info {
-  padding: 12px 20px;
-  background: white;
-  border-radius: 12px;
-  font-weight: 600;
-  color: #666;
-}
-
-/* Empty State */
-.empty-state {
-  background: white;
-  border-radius: 20px;
-  padding: 80px 40px;
-  text-align: center;
-  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
-}
-
-.empty-icon {
-  font-size: 120px;
-  margin-bottom: 20px;
-  opacity: 0.3;
-}
-
-.empty-title {
-  font-size: 1.8em;
-  font-weight: 700;
-  color: #666;
-  margin-bottom: 10px;
-}
-
-.empty-text {
-  color: #999;
-  font-size: 1.1em;
-}
-
 /* Responsive */
 @media (max-width: 968px) {
   .products-grid {
@@ -484,13 +357,6 @@ body {
     width: 100%;
   }
 
-  .filter-group {
-    width: 100%;
-  }
-
-  .filter-select {
-    flex: 1;
-  }
 }
 
 @media (max-width: 640px) {
@@ -505,12 +371,6 @@ body {
   .products-grid {
     grid-template-columns: 1fr;
   }
-
-  .results-info {
-    flex-direction: column;
-    text-align: center;
-  }
-
   .pagination {
     gap: 5px;
   }

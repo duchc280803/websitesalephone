@@ -52,9 +52,6 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductVariantRepository productVariantRepository;
 
-    @Autowired
-    private EntityManager entityManager;
-
     @Override
     public CommonResponse getALl(ProductSearch productSearch) {
 
@@ -69,6 +66,8 @@ public class ProductServiceImpl implements ProductService {
             }
 
             predicates.add(cb.equal(root.get("isDeleted"), false));
+
+            predicates.add(cb.isNotEmpty(root.get("variants")));
 
             return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };

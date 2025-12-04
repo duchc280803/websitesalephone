@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import {CreateUserDto} from "../models/CreateUserDto.ts";
 import type {UserSearchForm} from "../models/UserSearchForm.ts";
 import api from "../api/api.ts";
+import type {ProfileUserRequest} from "../models/ProfileUserRequest.ts";
 
 class UserService {
     private ROOT_API = import.meta.env.VITE_ROOT_API + '/api/user/';
@@ -24,6 +25,10 @@ class UserService {
 
     public search(searchForm: UserSearchForm): Promise<AxiosResponse> {
         return api.post(`${this.ROOT_API}search`, searchForm);
+    }
+
+    public updateProfileUser(profileUserRequest: ProfileUserRequest): Promise<AxiosResponse> {
+        return api.put(`${this.ROOT_API}update-profile-user`, profileUserRequest);
     }
 }
 

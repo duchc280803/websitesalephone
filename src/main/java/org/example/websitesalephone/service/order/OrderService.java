@@ -11,4 +11,6 @@ public interface OrderService {
     CommonResponse detail(String id);
 
     CommonResponse update(OrderRequest orderRequest);
+
+    CommonResponse getListHistory(String id);
 }

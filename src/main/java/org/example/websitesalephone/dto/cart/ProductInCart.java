@@ -17,9 +17,9 @@ public class ProductInCart {
 
     private String ram;
 
-    private String color;
+    private String origin;
 
-    private String ops;
+    private String color;
 
     private String image;
 

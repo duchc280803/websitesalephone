@@ -34,6 +34,8 @@ public class CommonResponse {
 
     public static final int TOKEN_IS_EXPIRED = 12;
 
+    public static final int CODE_INTERNAL_ERROR = 9999;
+
     @JsonProperty("code")
     @Builder.Default
     private Integer code = CODE_SUCCESS;

@@ -8,6 +8,7 @@ import org.example.websitesalephone.entity.ProductVariant;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 @Data
 @Builder
@@ -25,6 +26,8 @@ public class ProductListResponse {
     private int quantity;
 
     private String status;
+
+    private List<ProductImageResponse> responseList;
 
     public static ProductListResponse fromEntity(Product entity) {
         int totalQuantity = entity.getVariants().stream()

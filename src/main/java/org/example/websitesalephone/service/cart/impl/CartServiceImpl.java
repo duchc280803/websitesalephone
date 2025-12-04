@@ -190,7 +190,7 @@ public class CartServiceImpl implements CartService {
         }
 
         for (CartItem item : cart.getCartItems()) {
-            if (item.getProductVariant().getQuantity() < item.getQuantity()) {
+            if (item.getProductVariant().getQuantity() < item.getQuantity() && !item.isDeleted()) {
                 return CommonResponse.builder()
                         .code(CommonResponse.CODE_NOT_FOUND)
                         .build();
@@ -211,24 +211,24 @@ public class CartServiceImpl implements CartService {
         orderRepository.save(order);
 
         for (CartItem item : cart.getCartItems()) {
-            ProductVariant p = item.getProductVariant();
-            p.setQuantity(p.getQuantity() - item.getQuantity());
-            productVariantRepository.saveAndFlush(p);
+            if (!item.isDeleted()) {
+                ProductVariant p = item.getProductVariant();
+                p.setQuantity(p.getQuantity() - item.getQuantity());
+                productVariantRepository.saveAndFlush(p);
 
-            OrderItem orderItem = new OrderItem();
-            orderItem.setId(UUID.randomUUID().toString());
-            orderItem.setOrder(order);
-            orderItem.setProductVariant(item.getProductVariant());
-            orderItem.setQuantity(item.getQuantity());
-            orderItem.setUnitPrice(item.getProductVariant().getPrice());
-            orderItemRepository.saveAndFlush(orderItem);
+                OrderItem orderItem = new OrderItem();
+                orderItem.setId(UUID.randomUUID().toString());
+                orderItem.setOrder(order);
+                orderItem.setProductVariant(item.getProductVariant());
+                orderItem.setQuantity(item.getQuantity());
+                orderItem.setUnitPrice(item.getProductVariant().getPrice());
+                orderItemRepository.saveAndFlush(orderItem);
 
-            item.setStatus(CartStatus.CHECKED_OUT.getCode());
-            item.setDeleted(true);
-            cartItemRepository.saveAndFlush(item);
+                item.setStatus(CartStatus.CHECKED_OUT.getCode());
+                item.setDeleted(true);
+                cartItemRepository.saveAndFlush(item);
+            }
         }
-        cartRepository.saveAndFlush(cart);
-
         OrderStatusHistory orderStatusHistory = new OrderStatusHistory();
         orderStatusHistory.setId(UUID.randomUUID().toString());
         orderStatusHistory.setOrder(order);

@@ -75,7 +75,7 @@ public class OrderDetailResponse {
                 .status(order.getStatus() != null ? order.getStatus() : null)
                 .fullName(order.getCustomer() != null ? order.getCustomer().getFullName() : null)
                 .phoneNumber(order.getCustomer() != null ? order.getCustomer().getPhone() : null)
-                .address(order.getCustomer() != null ? order.getAddressDetail() : null)
+                .address(order.getAddressDetail() == null ? "" : order.getAddressDetail())
                 .methodTransaction(order.getMethodTransaction())
                 .totalPrice(totalPrice)
                 .totalOrderAmount(totalOrderAmount)
@@ -85,10 +85,6 @@ public class OrderDetailResponse {
                 .productOrderResponses(productOrderResponses)
                 .orderHistoryStatusResponses(orderHistoryStatusResponseList)
                 .build();
-    }
-
-    public String getAddress(Address address) {
-        return address.getDistrict() + " " + address.getCity();
     }
 
 }
