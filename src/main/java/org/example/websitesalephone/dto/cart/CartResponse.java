@@ -27,14 +27,15 @@ public class CartResponse {
                 .map(item -> {
                     ProductVariant variant = item.getProductVariant();
                     Product product = variant.getProduct();
-                    String imageUrl = Optional.ofNullable(product)
-                            .map(Product::getImages)
-                            .filter(list -> !list.isEmpty())
-                            .map(list -> list.get(0))
+
+                    String imageUrl = product.getImages().stream()
+                            .filter(ProductImage::isActive)
+                            .findFirst()
                             .map(ProductImage::getUrl)
-                            .orElse("");
+                            .orElse(null);
 
                     return ProductInCart.builder()
+                            .idCartItem(item.getId())
                             .productId(variant.getId())
                             .productName(Objects.requireNonNull(product).getName())
                             .quantity(item.getQuantity())

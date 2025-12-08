@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 @Builder
 public class ProductInCart {
 
+    private String idCartItem;
+
     private String productId;
 
     private String productName;

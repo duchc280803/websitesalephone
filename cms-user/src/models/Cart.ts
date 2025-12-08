@@ -1,6 +1,7 @@
 // src/models/Cart.ts
 
 export interface ProductInCart {
+    idCartItem: string,
     productId: string;
     productName: string;
     quantity: number;
@@ -18,6 +19,7 @@ export interface CartResponse {
 }
 
 export class ProductInCartModel implements ProductInCart {
+    idCartItem: "";
     productId = "";
     productName = "";
     quantity = 0;

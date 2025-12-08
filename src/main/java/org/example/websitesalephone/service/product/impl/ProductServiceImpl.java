@@ -12,7 +12,6 @@ import org.example.websitesalephone.repository.*;
 import org.example.websitesalephone.service.product.ProductService;
 import org.example.websitesalephone.comon.CommonResponse;
 import org.example.websitesalephone.utils.Utils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
@@ -34,17 +33,9 @@ public class ProductServiceImpl implements ProductService {
 
     private final ScreenRepository screenRepository;
 
-    private final OperatingSystemRepository operatingSystemRepository;
-
     private final CameraRepository cameraRepository;
 
-    private final BatteryRepository batteryRepository;
-
     private final RamRepository ramRepository;
-
-    private final StorageRepository storageRepository;
-
-    private final CpuRepository cpuRepository;
 
     private final ProductImageRepository productImageRepository;
 
@@ -423,7 +414,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResponse updateImage(ProductImageRequest productImageRequest) {
-        ProductImage findByActive = productImageRepository.findByActive(true);
+        ProductImage findByActive = productImageRepository.findByActiveAndId(true, productImageRequest.getProductImageId());
         if (findByActive == null) {
             System.out.println("hiện không có cái ảnh nào đang active");
         } else {

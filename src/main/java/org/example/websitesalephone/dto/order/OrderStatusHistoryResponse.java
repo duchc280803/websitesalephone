@@ -22,7 +22,7 @@ public class OrderStatusHistoryResponse {
         orderStatusHistoryResponse.setStatus(orderStatusHistory.getStatus());
         orderStatusHistoryResponse.setDescription(orderStatusHistory.getDescription());
         orderStatusHistoryResponse.setTime(Constants.FORMATTER.format(orderStatusHistory.getCreatedAt()));
-        orderStatusHistoryResponse.setNameStaff(orderStatusHistory.getOrder().getStaff() == null ? "" : orderStatusHistory.getOrder().getStaff().toString());
+        orderStatusHistoryResponse.setNameStaff(orderStatusHistory.getOrder().getStaff() == null ? "" : orderStatusHistory.getOrder().getStaff().getFullName());
         return orderStatusHistoryResponse;
     }
 }

@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
 import org.example.websitesalephone.entity.Product;
+import org.example.websitesalephone.entity.ProductImage;
 import org.example.websitesalephone.entity.ProductVariant;
 
 import java.math.BigDecimal;
@@ -16,6 +17,8 @@ import java.util.List;
 public class ProductListResponse {
 
     private String id;
+
+    private String url;
 
     private String productName;
 
@@ -42,8 +45,15 @@ public class ProductListResponse {
                     .divide(new BigDecimal(entity.getVariants().size()), 2, RoundingMode.HALF_UP);
         }
 
+        String imageUrl = entity.getImages().stream()
+                .filter(ProductImage::isActive)
+                .findFirst()
+                .map(ProductImage::getUrl)
+                .orElse(null);
+
         return ProductListResponse.builder()
                 .id(entity.getId())
+                .url(imageUrl)
                 .productName(entity.getName())
                 .originName(entity.getVariants().isEmpty() ? null
                         : entity.getVariants().getFirst().getOrigin().getName())

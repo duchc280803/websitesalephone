@@ -67,7 +67,7 @@ onMounted(loadProducts);
 
     <div class="products-grid">
       <article v-for="product in products" :key="product.id" class="product-card">
-        <div class="product-image">📱</div>
+        <div class="product-image"><img :src="product.url" alt="" sizes="" srcset=""></div>
         <div class="product-info">
           <span class="product-category">{{ product.originName }}</span>
           <router-link :to="`detail-product/${product.id}`">
@@ -97,6 +97,9 @@ onMounted(loadProducts);
 </template>
 
 <style scoped>
+img {
+  width: 250px;
+}
 body {
   box-sizing: border-box;
 }
@@ -222,7 +225,6 @@ body {
 
 .product-image {
   height: 250px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -106,19 +106,13 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResponse updateCartItem(CartRequest request) {
+        CartItem item = cartItemRepository.findById(request.getIdCartItem()).orElse(null);
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        UserDetail userDetail = (UserDetail) auth.getPrincipal();
-        User user = userRepository.findByUsernameAndIsDeleted(userDetail.getLoginId(), false)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Cart cart = cartRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
-
-        CartItem item = cart.getCartItems().stream()
-                .filter(i -> i.getProductVariant().getId().equals(request.getProductId()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Product not found in cart"));
+        if (item == null) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_SUCCESS)
+                    .build();
+        }
 
         ProductVariant product = productVariantRepository.findById(item.getProductVariant().getId())
                 .orElse(null);
@@ -129,9 +123,21 @@ public class CartServiceImpl implements CartService {
                     .build();
         }
 
+        if (request.getQuantity() > product.getQuantity()) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_NOT_FOUND)
+                    .message("Số lượng sản phẩm không đủ trong kho")
+                    .build();
+        }
+
         if (request.getQuantity() <= 0) {
-            cart.getCartItems().remove(item);
-            cartRepository.saveAndFlush(cart);
+            item.setDeleted(true);
+            cartItemRepository.saveAndFlush(item);
+
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_SUCCESS)
+                    .message("Xóa sản phẩm khỏi giỏ hàng thành công")
+                    .build();
         } else {
             item.setQuantity(request.getQuantity());
             cartItemRepository.saveAndFlush(item);

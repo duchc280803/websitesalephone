@@ -34,6 +34,7 @@ const timeline = computed(() => {
   return TIMELINE_ORDER.map(step => {
     const match = orderDetail.value.orderHistoryStatusResponses
         ?.find((s: any) => s.status === step.status);
+    console.log("match", match)
     return {
       ...step,
       time: match?.createdAt ?? null,
@@ -80,6 +81,7 @@ const updateOrderStatus = async (newStatus: string) => {
     await orderService.update(requestPayload);
     toast.success("Cập nhật trạng thái thành công");
     await fetchOrderDetail();
+    await fetchHistory();
     shippingFee.value = 0;
     description.value = ""
   } catch (err) {
@@ -99,7 +101,7 @@ const progressPercent = computed(() => {
   const steps = timeline.value.filter(s => s.status !== 'CANCELLED');
   const total = steps.length;
   const completed = steps.filter(s => s.completed).length;
-  return (completed / total) * 100;
+  return ((completed - 1) / total) * 100;
 });
 
 onMounted(() => {

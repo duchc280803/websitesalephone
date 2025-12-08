@@ -47,9 +47,16 @@ const allSelected = computed({
 const increaseQty = async (item: CartItemWithSelect) => {
   item.quantity++;
   try {
-    await cartService.updateCartItem(new CartRequest(item.productId, item.quantity).toPayload());
+    const res = await cartService.updateCartItem(new CartRequest(item.idCartItem, item.productId, item.quantity).toPayload());
+    if (res.data.code === 2) {
+      toast.error(res.data.message)
+    } else {
+      toast.success(res.data.message)
+    }
+
   } catch (err) {
-    console.error("Update cart error", err);
+    toast.error("Update cart error", err);
+    console.log("Update cart error", err);
   }
 };
 
@@ -57,7 +64,12 @@ const decreaseQty = async (item: CartItemWithSelect) => {
   if (item.quantity > 1) {
     item.quantity--;
     try {
-      await cartService.updateCartItem(new CartRequest(item.productId, item.quantity).toPayload());
+      const res = await cartService.updateCartItem(new CartRequest(item.idCartItem, item.productId, item.quantity).toPayload());
+      if (res.data.code === 2) {
+        toast.error(res.data.message)
+      } else {
+        toast.success(res.data.message)
+      }
     } catch (err) {
       console.error("Update cart error", err);
     }
@@ -66,7 +78,12 @@ const decreaseQty = async (item: CartItemWithSelect) => {
 
 const removeItem = async (item: CartItemWithSelect) => {
   try {
-    await cartService.updateCartItem(new CartRequest(item.productId, 0).toPayload());
+    const res = await cartService.updateCartItem(new CartRequest(item.idCartItem, item.productId, 0).toPayload());
+    if (res.data.code === 2) {
+      toast.error(res.data.message)
+    } else {
+      toast.success(res.data.message)
+    }
     cartItems.value = cartItems.value.filter(i => i.productId !== item.productId);
   } catch (err) {
     console.error("Remove cart item error", err);
@@ -100,6 +117,11 @@ function getContrastColor(hex: string): string {
   return brightness > 125 ? "#000" : "#fff";
 }
 
+function isDisable(): boolean{
+  if (cartItems.value.length === 0) return true;
+  return address.value === null || address.value === '' || address.value === undefined;
+
+}
 </script>
 
 <template>
@@ -190,7 +212,7 @@ function getContrastColor(hex: string): string {
           <span class="total-label">Tổng cộng</span>
           <span class="total-value">{{ subtotal.toLocaleString('vi-VN') }}₫</span>
         </div>
-        <button class="btn-checkout" @click="checkout" :disabled="cartItems.length === 0">💳 Đặt hàng ngay</button>
+        <button class="btn-checkout" @click="checkout" :disabled="isDisable()">💳 Đặt hàng ngay</button>
 
         <div class="features">
           <div class="feature">
