@@ -33,6 +33,18 @@ public class UserController {
         }
     }
 
+    @GetMapping("/get/user/{id}")
+    public ResponseEntity<CommonResponse> getUser(@PathVariable String id) {
+        try {
+            return ResponseEntity.ok(userService.getUserById(id));
+        } catch (Exception e) {
+            return ResponseEntity.ok(CommonResponse.builder()
+                    .code(CommonResponse.CODE_INTERNAL_ERROR)
+                    .message(e.getMessage())
+                    .build());
+        }
+    }
+
     @PostMapping("create")
     public CommonResponse createUser(@RequestBody CreateUserDto createUserDto) {
         return userService.createUser(createUserDto);

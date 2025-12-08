@@ -18,4 +18,6 @@ public interface UserService {
     CommonResponse search(UserSearchForm searchForm);
 
     CommonResponse updateProfileUser(ProfileUserRequest profileUserRequest, String id);
+
+    CommonResponse getUserById(String id);
 }

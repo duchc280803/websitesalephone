@@ -6,6 +6,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.ObjectUtils;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -39,6 +43,17 @@ public class Utils {
         int random = (int) (Math.random() * 900) + 100;
 
         return prefix + timePart + random;
+    }
+
+    public static String formatBigDecimal(BigDecimal decimal) {
+        Locale locale = new Locale("vi", "VN"); // Locale cho tiếng Việt
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(locale);
+        symbols.setGroupingSeparator('.');
+
+        DecimalFormat decimalFormat = (DecimalFormat) NumberFormat.getNumberInstance(locale);
+        decimalFormat.setDecimalFormatSymbols(symbols);
+
+        return decimalFormat.format(decimal);
     }
 
 }

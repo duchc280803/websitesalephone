@@ -39,8 +39,6 @@ public class UserServiceImpl implements UserService {
 
     private final CartRepository cartRepository;
 
-    private final OrderRepository orderRepository;
-
     @Override
     public CommonResponse getUserByLoginId(String loginId) {
         User user = userRepository.findByUsernameAndIsDeleted(loginId, false).orElse(null);
@@ -255,6 +253,22 @@ public class UserServiceImpl implements UserService {
         userRepository.saveAndFlush(loginUser);
         return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)
+                .build();
+    }
+
+    @Override
+    public CommonResponse getUserById(String id) {
+        User user = userRepository.findByIdAndIsDeleted(id, false).orElse(null);
+        if (user == null) {
+            return CommonResponse.builder()
+                    .code(CommonResponse.CODE_NOT_FOUND)
+                    .message("User not found")
+                    .build();
+        }
+
+        return CommonResponse.builder()
+                .code(CommonResponse.CODE_SUCCESS)
+                .data(UserDto.fromEntity(user))
                 .build();
     }
 }

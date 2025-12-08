@@ -8,7 +8,7 @@ class UserService {
     private ROOT_API = import.meta.env.VITE_ROOT_API + '/api/user/';
 
     public getUserByLoginId(loginId: string): Promise<AxiosResponse> {
-        return api.post(`${this.ROOT_API}get-user-by-login/${loginId}`);
+        return api.get(`${this.ROOT_API}get/user/${loginId}`);
     }
 
     public createUser(createUserDto: CreateUserDto): Promise<AxiosResponse> {

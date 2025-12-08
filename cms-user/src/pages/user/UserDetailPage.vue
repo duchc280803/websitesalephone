@@ -34,7 +34,7 @@ const loadUserDetail = async () => {
   if (!loginId) return;
 
   try {
-    const res = useUserStore().getUserByLoginId();
+    const res = await userService.getUserByLoginId(loginId);
     const data = res.data.data;
 
     form.value = new CreateUserDto({
@@ -52,6 +52,7 @@ const loadUserDetail = async () => {
       address: data.address
     });
   } catch (e) {
+    console.log(e)
     toast.error("Không tải được thông tin người dùng");
   }
 };
@@ -76,7 +77,6 @@ const submitForm = async () => {
 };
 
 onMounted(() => {
-  console.log("ad")
   loadUserDetail();
 });
 
