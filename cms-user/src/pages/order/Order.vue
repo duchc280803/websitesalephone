@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import {ref, onMounted, computed} from "vue";
+import {ref, onMounted, computed, watch} from "vue";
 import {orderService} from "@/service/OrderService";
 import {Search} from "@/models/Search.ts";
 import {formatCurrency} from "@/utils/Constant.ts";
 
 const orders = ref<any>();
-const searchText = ref("");
 const page = ref<number>(1);
 const size = ref<number>(10);
 const totalPages = ref<number>(1);
+const activeStatus = ref('');
+const searchText = ref('');
 
-const callSearch = async () => {
-  const search = new Search(page.value, size.value, searchText.value);
+const callSearch = async (status: string) => {
+  activeStatus.value = status;
+  const search = new Search(page.value, size.value, searchText.value, status);
   const res = await orderService.search(search);
   orders.value = res.data.data;
   totalPages.value = res.data.total || 0;
@@ -19,7 +21,7 @@ const callSearch = async () => {
 
 const onSearch = () => {
   page.value = 1;
-  callSearch();
+  callSearch('');
 };
 
 const onPageChange = (newPage: number) => {
@@ -37,38 +39,85 @@ const onPageChange = (newPage: number) => {
   }
 
   page.value = newPage;
-  callSearch();
+  callSearch('');
 };
 
 onMounted(() => {
-  console.log(page.value)
-  callSearch();
+  callSearch('');
+});
+
+watch(searchText, () => {
+  page.value = 1;
+  callSearch('');
 });
 </script>
 
 <template>
   <section class="content-card" id="orders">
-    <div class="card-header">
-      <h2 class="card-title">📦 Quản Lý Đơn Hàng</h2>
-      <div class="card-actions">
-        <button class="btn btn-secondary" @click="callSearch">🔍 Tìm kiếm</button>
+    <div class="row">
+      <div class="col-lg-4"><h2 class="card-title">📦 Quản Lý Đơn Hàng</h2></div>
+      <div class="col-lg-6"><input type="text" v-model="searchText" placeholder="Tìm kiếm ... (Mã DH, SDT, Tên Khách)"
+                                   class="input-search"/>
       </div>
     </div>
     <div class="tabs">
-      <button class="tab active">Tất Cả (245)</button>
-      <button class="tab">Chờ Xử Lý (45)</button>
-      <button class="tab">Chờ lấy hàng (45)</button>
-      <button class="tab">Chờ giao hàng (120)</button>
-      <button class="tab">Đã giao (75)</button>
-      <button class="tab">Đã Hủy (5)</button>
+      <button
+          class="tab"
+          :class="{ active: activeStatus === '' }"
+          @click="callSearch('')"
+      >
+        Tất Cả
+      </button>
+      <button
+          class="tab"
+          :class="{ active: activeStatus === 'PENDING' }"
+          @click="callSearch('PENDING')"
+      >
+        Chờ Xử Lý
+      </button>
+      <button
+          class="tab"
+          :class="{ active: activeStatus === 'CONFIRMED' }"
+          @click="callSearch('CONFIRMED')"
+      >
+        Đã xác nhận
+      </button>
+      <button
+          class="tab"
+          :class="{ active: activeStatus === 'SHIPPING' }"
+          @click="callSearch('SHIPPING')"
+      >
+        Đang giao hàng
+      </button>
+      <button
+          class="tab"
+          :class="{ active: activeStatus === 'DELIVERED' }"
+          @click="callSearch('DELIVERED')"
+      >
+        Đã giao
+      </button>
+      <button
+          class="tab"
+          :class="{ active: activeStatus === 'COMPLETED' }"
+          @click="callSearch('COMPLETED')"
+      >
+        Hoàn thành
+      </button>
+      <button
+          class="tab"
+          :class="{ active: activeStatus === 'CANCELLED' }"
+          @click="callSearch('CANCELLED')"
+      >
+        Đã Hủy
+      </button>
     </div>
     <div class="table-wrapper">
       <table>
         <thead>
         <tr>
           <th>Mã ĐH</th>
-          <th>Khách Hàng</th>
-          <th>SĐT KH</th>
+          <th>Tên Khách</th>
+          <th>SĐT Khách</th>
           <th>Mã nhân viên</th>
           <th>Ngày tạo</th>
           <th>Ngày thanh toán</th>
@@ -93,7 +142,9 @@ onMounted(() => {
           <td>{{ formatCurrency(o.totalPrice) }}</td>
           <td>{{ formatCurrency(o.shippingFee) }}</td>
           <td>{{ formatCurrency(o.totalOrderAmount) }}</td>
-          <td><router-link :to="`/admin/orders-detail/${o.order_id}`" class="action-btn btn-edit">✏️</router-link></td>
+          <td>
+            <router-link :to="`/admin/orders-detail/${o.order_id}`" class="action-btn btn-edit">✏️</router-link>
+          </td>
         </tr>
         </tbody>
       </table>
@@ -103,7 +154,7 @@ onMounted(() => {
       <button
           class="page-btn active"
       >
-        {{ page }} / {{ totalPages}}
+        {{ page }} / {{ totalPages + 1 }}
       </button>
       <button class="page-btn" :disabled="page >= totalPages" @click="onPageChange(page + 1)">»</button>
     </div>
@@ -114,7 +165,9 @@ onMounted(() => {
 body {
   box-sizing: border-box;
 }
-
+.row {
+  padding: 20px 5px;
+}
 * {
   margin: 0;
   padding: 0;
@@ -123,6 +176,17 @@ body {
 
 html, body {
   height: 100%;
+}
+
+.input-search {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.25s ease;
+  background-color: #fff;
 }
 
 body {
@@ -341,6 +405,7 @@ tbody tr:hover {
     align-items: flex-start;
   }
 }
+
 /* Pagination */
 .pagination {
   display: flex;
@@ -368,6 +433,7 @@ tbody tr:hover {
   color: white;
   transform: scale(1.1);
 }
+
 .page-btn:disabled {
   background: #ddd !important;
   color: #888 !important;

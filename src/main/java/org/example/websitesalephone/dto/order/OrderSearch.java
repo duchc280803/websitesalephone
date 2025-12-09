@@ -9,4 +9,6 @@ import org.example.websitesalephone.comon.PagingRequest;
 public class OrderSearch extends PagingRequest {
 
     private String searchText;
+
+    private String status;
 }

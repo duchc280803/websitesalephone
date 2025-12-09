@@ -12,7 +12,7 @@ const size = ref<number>(10);
 const totalPages = ref<number>(1);
 
 const fetchProducts = async () => {
-  const search = new Search(page.value, size.value, searchText.value);
+  const search = new Search(page.value, size.value, searchText.value, '');
   try {
     const res = await productService.search(search);
     products.value = res.data.data.content || [];

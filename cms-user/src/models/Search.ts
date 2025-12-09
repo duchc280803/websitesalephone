@@ -22,20 +22,24 @@ export class PagingRequest {
 
 export interface IOrderSearch extends IPagingRequest {
     searchText?: string;
+    status?: string;
 }
 
 export class Search extends PagingRequest {
     public searchText?: string;
+    private status?: string;
 
-    constructor(page: number = 1, size: number = 10, searchText?: string) {
+    constructor(page: number = 1, size: number = 10, searchText?: string, status?: string) {
         super(page, size);
         this.searchText = searchText?.trim();
+        this.status = status?.trim();
     }
 
     toPayload(): IOrderSearch {
         return {
             ...super.toPayload(),
             searchText: this.searchText,
+            status: this.status,
         };
     }
 }

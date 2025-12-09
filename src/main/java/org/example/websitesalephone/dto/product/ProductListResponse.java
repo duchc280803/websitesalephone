@@ -26,6 +26,8 @@ public class ProductListResponse {
 
     private BigDecimal price;
 
+    private int quantityUnitSold;
+
     private int quantity;
 
     private String status;
@@ -36,6 +38,11 @@ public class ProductListResponse {
         int totalQuantity = entity.getVariants().stream()
                 .mapToInt(ProductVariant::getQuantity)
                 .sum();
+
+        int totalQuantitySold = entity.getVariants().stream()
+                .mapToInt(ProductVariant::getQuantityUnitSold)
+                .sum();
+
         BigDecimal averagePrice = BigDecimal.ZERO;
 
         if (!entity.getVariants().isEmpty()) {
@@ -59,6 +66,7 @@ public class ProductListResponse {
                         : entity.getVariants().getFirst().getOrigin().getName())
                 .price(averagePrice)
                 .quantity(totalQuantity)
+                .quantityUnitSold(totalQuantitySold)
                 .status(entity.getStatus().getCode())
                 .build();
     }

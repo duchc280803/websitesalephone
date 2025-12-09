@@ -1,10 +1,11 @@
 import axios from 'axios';
-import {authService} from "../service/AuthService.ts";
+import { authService } from "../service/AuthService.ts";
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_ROOT_API + '/api',
 });
 
+// ADD TOKEN VÀO REQUEST
 api.interceptors.request.use(
     config => {
         const token = authService.getToken();
@@ -14,6 +15,20 @@ api.interceptors.request.use(
         return config;
     },
     error => Promise.reject(error)
+);
+
+api.interceptors.response.use(
+    response => response,
+
+    error => {
+        if (error.response && error.response.status === 401) {
+            authService.removeTokenAndRole();
+
+            window.location.href = '/login';
+        }
+
+        return Promise.reject(error);
+    }
 );
 
 export default api;
