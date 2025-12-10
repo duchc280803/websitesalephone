@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import org.example.websitesalephone.entity.Address;
 import org.example.websitesalephone.entity.Order;
+import org.example.websitesalephone.entity.ProductImage;
 import org.example.websitesalephone.utils.Constants;
 
 import java.math.BigDecimal;
@@ -46,7 +47,18 @@ public class OrderDetailResponse {
 
         List<ProductOrderResponse> productOrderResponses = order.getOrderItems().stream()
                 .map(item -> {
+
+                    String imageUrl = item.getProductVariant().getProduct().getImages().stream()
+                            .filter(ProductImage::isActive)
+                            .findFirst()
+                            .map(ProductImage::getUrl)
+                            .orElse(null);
+
                     ProductOrderResponse productDTO = new ProductOrderResponse();
+                    productDTO.setProductName(item.getProductVariant().getProduct().getName());
+                    productDTO.setImage(imageUrl);
+                    productDTO.setRam(item.getProductVariant().getRam().getName());
+                    productDTO.setColor(item.getProductVariant().getColor().getName());
                     productDTO.setProductName(item.getProductVariant().getProduct().getName());
                     productDTO.setProductPrice(item.getUnitPrice());
                     productDTO.setQuantity(item.getQuantity());

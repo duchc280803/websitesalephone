@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 @Setter
 public class ProductOrderResponse {
 
+    private String image;
+
     private String productName;
 
     private BigDecimal productPrice;
@@ -16,5 +18,9 @@ public class ProductOrderResponse {
     private int quantity;
 
     private BigDecimal intoMoney;
+
+    private String ram;
+
+    private String color;
 
 }

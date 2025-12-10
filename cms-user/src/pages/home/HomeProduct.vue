@@ -1,16 +1,20 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import {ref, onMounted} from "vue";
 import HomeLayout from "../../layout/Header.vue";
 import Footer from "../../layout/Footer.vue";
-import { productService } from "@/service/ProductService";
-import { Search } from "@/models/Search.ts";
+import {productService} from "@/service/ProductService";
+import {Search} from "@/models/Search.ts";
 import {formatCurrency} from "@/utils/Constant.ts";
+import {CartRequest} from "@/models/CartRequest.ts";
+import {cartService} from "@/service/CartService.ts";
+import {toast} from "vue3-toastify";
 
 const products = ref<any[]>([]);
 const searchText = ref("");
 const page = ref(1);
 const size = ref(12);
 const totalPages = ref<number>(1);
+const quantity = ref(1);
 
 const loadProducts = async () => {
   const search = new Search(page.value, size.value, searchText.value, '');
@@ -48,6 +52,21 @@ const onPageChange = (newPage: number) => {
   loadProducts();
 };
 
+const addToCart = async (productVariantId: string) => {
+  const cartRequest: CartRequest = {
+    productId: productVariantId,
+    quantity: quantity.value,
+  };
+
+  try {
+    await cartService.addToCart(cartRequest);
+    toast.success(`Đã thêm 1 sản phẩm vào giỏ hàng`);
+  } catch (err) {
+    console.error(err);
+    toast.error("Thêm vào giỏ hàng thất bại!");
+  }
+};
+
 onMounted(loadProducts);
 </script>
 
@@ -70,15 +89,16 @@ onMounted(loadProducts);
         <div class="product-image"><img :src="product.url" alt="" sizes="" srcset=""></div>
         <div class="product-info">
           <span class="product-category">{{ product.originName }}</span>
-          <router-link :to="`detail-product/${product.id}`">
-            <h3 class="product-name">{{ product.productName }}</h3>
-          </router-link>
+          <h3 class="product-name">{{ product.productName }}</h3>
+
           <div class="product-specs">
             <span class="spec-tag" v-for="spec in product.specs" :key="spec">{{ spec }}</span>
           </div>
           <div class="product-footer">
-            <div class="product-price">{{ formatCurrency(product.price | currency )}}</div>
-            <button class="btn-add-cart">🛒 Thêm</button>
+            <div class="product-price">{{ formatCurrency(product.price | currency) }}</div>
+            <router-link :to="`detail-product/${product.id}`"
+                         class="btn-add-cart">Xem chi tiết
+            </router-link>
           </div>
         </div>
       </article>
@@ -100,6 +120,7 @@ onMounted(loadProducts);
 img {
   width: 250px;
 }
+
 body {
   box-sizing: border-box;
 }
@@ -201,6 +222,7 @@ body {
   color: #667eea;
   font-size: 1.3em;
 }
+
 /* Products Grid */
 .products-grid {
   display: grid;
@@ -271,13 +293,15 @@ body {
 }
 
 .product-footer {
-  display: flex;
   justify-content: space-between;
   align-items: center;
   padding-top: 15px;
   border-top: 2px solid #f0f0f0;
 }
-
+a {
+  text-decoration: none;
+  text-align: center;
+}
 .product-price {
   font-size: 1.6em;
   font-weight: 800;
@@ -299,6 +323,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-left: 85px;
 }
 
 .btn-add-cart:hover {
@@ -333,6 +358,7 @@ body {
   color: white;
   transform: scale(1.1);
 }
+
 .page-btn:disabled {
   background: #ddd !important;
   color: #888 !important;
@@ -344,6 +370,7 @@ body {
   background: #ddd !important;
   transform: none !important;
 }
+
 /* Responsive */
 @media (max-width: 968px) {
   .products-grid {
@@ -373,6 +400,7 @@ body {
   .products-grid {
     grid-template-columns: 1fr;
   }
+
   .pagination {
     gap: 5px;
   }

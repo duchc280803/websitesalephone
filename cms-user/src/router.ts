@@ -75,7 +75,7 @@ const router = createRouter({
                     meta: { requiresAuth: false, title: 'Đơn hàng user' }
                 },
                 {
-                    path: 'order-detail',
+                    path: 'order-detail/:id',
                     name: 'OrderDetailByUser',
                     component: OrderDetailByUser,
                     meta: { requiresAuth: false, title: 'Đơn hàng user' }
@@ -156,7 +156,9 @@ router.beforeEach((to, from, next) => {
     const isAuth = authService.isAuthenticated();
     if (isAuth) {
         const role = authService.getRole();
-        console.log(role)
+        if (to.name === undefined) {
+            return next({ path: '/customer/' });
+        }
         if (to.name === 'LoginPageCustomer' || to.name === 'RegisterPage') {
             if (role === 'CUSTOMER') return next({ path: '/customer/home' });
             else return next({ path: '/admin/dashboard' });

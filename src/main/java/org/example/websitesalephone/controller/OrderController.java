@@ -2,6 +2,7 @@ package org.example.websitesalephone.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.websitesalephone.comon.CommonResponse;
+import org.example.websitesalephone.dto.order.OrderByUserRequest;
 import org.example.websitesalephone.dto.order.OrderRequest;
 import org.example.websitesalephone.dto.order.OrderSearch;
 import org.example.websitesalephone.service.order.impl.OrderServiceImpl;
@@ -34,5 +35,8 @@ public class OrderController {
         return orderService.getListHistory(id);
     }
 
-
+    @PostMapping("/order-by-user")
+    public CommonResponse getListOrderByUser(@RequestBody OrderByUserRequest orderByUserRequest) {
+        return orderService.getListOrderByUser(orderByUserRequest);
+    }
 }

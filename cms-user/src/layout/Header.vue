@@ -74,7 +74,7 @@ onMounted(() => {
 
           <ul v-if="showMenu" class="dropdown">
             <li>
-              <router-link to="/profile">Thông tin cá nhân</router-link>
+              <router-link to="/customer/user-profile">Thông tin cá nhân</router-link>
             </li>
             <li>
               <router-link to="/customer/order-by-user">Đơn hàng của tôi</router-link>

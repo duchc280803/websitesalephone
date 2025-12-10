@@ -327,7 +327,7 @@ onMounted(() => {
             <td>
               <div class="product-cell">
                 <div class="product-image-small">
-                  📱
+                  <img :src="p.image">
                 </div>
                 <div class="product-details">
                   <div class="product-name-table">
@@ -688,8 +688,6 @@ body {
 }
 
 .product-image-small {
-  width: 60px;
-  height: 60px;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   border-radius: 10px;
   display: flex;
@@ -697,6 +695,10 @@ body {
   justify-content: center;
   font-size: 30px;
   flex-shrink: 0;
+}
+
+.product-image-small img {
+  width: 110px;
 }
 
 .product-details {

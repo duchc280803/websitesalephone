@@ -1,7 +1,64 @@
 <script setup lang="ts">
-
 import Footer from "../../layout/Footer.vue";
 import Header from "../../layout/Header.vue";
+import {useRoute} from "vue-router";
+import {computed, onMounted, ref} from "vue";
+import {orderService} from "@/service/OrderService.ts";
+import {formatCurrency, getContrastColor} from "../../utils/Constant.ts";
+
+const route = useRoute();
+const orderDetail = ref<any>(null);
+const orderId = ref(route.params.id as string);
+
+const TIMELINE_ORDER = [
+  {status: 'PENDING', label: 'CHỜ XỬ LÝ', icon: '📝'},
+  {status: 'CONFIRMED', label: 'ĐÃ XÁC NHẬN', icon: '✅'},
+  {status: 'SHIPPING', label: 'ĐANG GIAO', icon: '📦'},
+  {status: 'DELIVERED', label: 'ĐÃ GIAO', icon: '🏠'},
+  {status: 'COMPLETED', label: 'HOÀN THÀNH', icon: '⭐'},
+  {status: 'CANCELLED', label: 'ĐÃ HỦY', icon: '❌'}
+];
+
+/**
+ * Tạo computed timeline CHUNG
+ * – Luôn dựa theo orderDetail hiện tại
+ */
+const timeline = computed(() => {
+  if (!orderDetail.value) return [];
+  return TIMELINE_ORDER.map(step => {
+    const match = orderDetail.value.orderHistoryStatusResponses
+        ?.find((s: any) => s.status === step.status);
+    console.log("match", match)
+    return {
+      ...step,
+      time: match?.createdAt ?? null,
+      completed: !!match
+    };
+  });
+});
+
+const firstIncompleteIndex = computed(() =>
+    timeline.value.findIndex(t => !t.completed)
+);
+
+const progressPercent = computed(() => {
+  const steps = timeline.value.filter(s => s.status !== 'CANCELLED');
+  const total = steps.length;
+  const completed = steps.filter(s => s.completed).length;
+  return ((completed - 1) / total) * 100;
+});
+
+const fetchOrderDetail = async () => {
+  try {
+    const res = await orderService.detail(orderId.value);
+    orderDetail.value = res.data.data;
+  } catch (err: any) {
+    error.value = 'Không lấy được chi tiết đơn hàng';
+  }
+};
+onMounted(() => {
+  fetchOrderDetail();
+});
 </script>
 
 <template>
@@ -12,79 +69,38 @@ import Header from "../../layout/Header.vue";
         <div class="header-left">
           <h1>📋 Chi Tiết Đơn Hàng</h1>
           <div class="order-id">
-            Mã đơn hàng: #DH2024031501
+            Mã đơn hàng: {{ orderDetail?.orderCode }}
           </div>
         </div>
         <button class="back-btn">← Quay lại</button>
       </header><!-- Order Status Timeline -->
       <section class="timeline-card">
         <h2 class="timeline-title">🚚 Trạng Thái Đơn Hàng</h2>
-        <div class="timeline">
-          <div class="timeline-progress"></div>
-          <div class="timeline-step completed">
-            <div class="step-icon">
-              📝
+        <div class="timeline-container">
+          <div class="timeline-line">
+            <div class="timeline-progress"
+                 v-if="orderDetail?.status !== 'CANCELLED'"
+                 :style="{ width: progressPercent + '%' }">
             </div>
-            <div class="step-label">
-              Đặt hàng
-            </div>
-            <div class="step-time">
-              15/03/2024 10:30
+
+            <div class="timeline-progress-cancel"
+                 v-else>
             </div>
           </div>
-          <div class="timeline-step completed">
-            <div class="step-icon">
-              ✅
-            </div>
-            <div class="step-label">
-              Xác nhận
-            </div>
-            <div class="step-time">
-              15/03/2024 11:15
-            </div>
-          </div>
-          <div class="timeline-step completed">
-            <div class="step-icon">
-              📦
-            </div>
-            <div class="step-label">
-              Đóng gói
-            </div>
-            <div class="step-time">
-              15/03/2024 14:20
-            </div>
-          </div>
-          <div class="timeline-step active">
-            <div class="step-icon">
-              🚚
-            </div>
-            <div class="step-label">
-              Đang giao
-            </div>
-            <div class="step-time">
-              16/03/2024 08:00
-            </div>
-          </div>
-          <div class="timeline-step">
-            <div class="step-icon">
-              🎉
-            </div>
-            <div class="step-label">
-              Hoàn thành
-            </div>
-            <div class="step-time">
-              Chưa cập nhật
-            </div>
-          </div>
-          <div class="timeline-step">
-            <div class="step-icon">
-              ❌
-            </div>
-            <div class="step-label">
-              Đã hủy
-            </div>
-            <div class="step-time">
-              -
+          <div
+              class="timeline-step"
+              v-for="(step, idx) in timeline"
+              :key="idx"
+              :class="{
+      completed: step.completed,
+      active: !step.completed && idx === firstIncompleteIndex
+    }"
+          >
+            <div class="step-icon">{{ step.icon }}</div>
+
+            <div>
+              <div class="step-title">{{ step.label }}</div>
+              <div class="step-time">{{ step.time }}</div>
             </div>
           </div>
         </div>
@@ -94,40 +110,38 @@ import Header from "../../layout/Header.vue";
           <article class="info-card">
             <h2 class="card-title">🛒 Thông Tin Đơn Hàng</h2>
             <div class="product-list">
-              <div class="product-item">
+              <div class="product-item" v-for="p in orderDetail?.productOrderResponses" :key="p?.id">
                 <div class="product-image">
-                  📱
+                  <img :src="p.image">
                 </div>
                 <div class="product-details">
                   <div class="product-name">
-                    iPhone 15 Pro Max
+                    {{ p?.productName }}
                   </div>
                   <div class="product-variant">
-                    Phân loại: 256GB - Xanh Titan
+                    Phân loại: {{ p?.ram }} - <span class="spec-badge"
+                                                    :style="{ backgroundColor: p.color, color: getContrastColor(p.color) }">
+              </span>
                   </div>
                   <div class="product-quantity">
-                    Số lượng: x1
+                    Số lượng: x{{ p?.quantity }}
                   </div>
                 </div>
                 <div class="product-price">
-                  29.990.000₫
+                  {{ formatCurrency(p?.intoMoney) }}
                 </div>
               </div>
             </div>
             <div class="price-summary">
               <div class="price-row"><span class="price-label">Tạm tính</span> <span
-                  class="price-value">29.990.000₫</span>
+                  class="price-value">{{ formatCurrency(orderDetail?.totalPrice) }}</span>
               </div>
               <div class="price-row"><span class="price-label">Phí vận chuyển</span> <span
-                  class="price-value">30.000₫</span>
+                  class="price-value">{{ formatCurrency(orderDetail?.shippingFee) }}</span>
               </div>
               <div class="price-row price-total"><span class="price-label">Tổng thanh toán</span> <span
-                  class="price-value">29.520.000₫</span>
+                  class="price-value">{{ formatCurrency(orderDetail?.totalOrderAmount) }}</span>
               </div>
-            </div>
-            <div class="action-buttons">
-              <button class="btn btn-outline">📞 Liên hệ Shop</button>
-              <button class="btn btn-primary">📍 Theo dõi đơn hàng</button>
             </div>
           </article>
         </div><!-- Right Column: Shipping & Payment Info -->
@@ -137,19 +151,21 @@ import Header from "../../layout/Header.vue";
             <div class="info-section">
               <h3 class="section-subtitle">🚚 Thông tin giao hàng</h3>
               <div class="info-row"><span class="info-label">Người nhận:</span> <span
-                  class="info-value">Nguyễn Văn An</span>
+                  class="info-value">{{ orderDetail?.fullName }}</span>
               </div>
               <div class="info-row"><span class="info-label">Số điện thoại:</span> <span
-                  class="info-value">0901234567</span>
+                  class="info-value">{{ orderDetail?.phoneNumber }}</span>
               </div>
-              <div class="info-row"><span class="info-label">Địa chỉ:</span> <span class="info-value">123 Đường Lê Lợi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh</span>
+              <div class="info-row"><span class="info-label">Địa chỉ:</span> <span
+                  class="info-value">{{ orderDetail?.address }}</span>
               </div>
             </div><!-- Delivery Info -->
             <div class="info-section">
               <h3 class="section-subtitle">💳 Thanh toán</h3>
-              <div class="info-row"><span class="info-label">Phương thức:</span> <span class="payment-badge">✓ Đã thanh toán</span>
+              <div class="info-row"><span class="info-label">Phương thức:</span> <span
+                  class="payment-badge">Tiền mặt</span>
               </div>
-              <div class="info-row"><span class="info-label">Hình thức:</span> <span class="info-value">Chuyển khoản ngân hàng</span>
+              <div class="info-row"><span class="info-label">Hình thức:</span> <span class="info-value">Thanh toán khi nhận hàng</span>
               </div>
             </div><!-- Notes -->
             <div class="info-section">
@@ -187,7 +203,12 @@ body {
   color: #1a1a2e;
   line-height: 1.6;
 }
-
+.spec-badge {
+  padding: 5px 12px;
+  background: #f0f0f0;
+  border-radius: 8px;
+  font-size: 0.85em;
+}
 .page-wrapper {
   width: 100%;
   min-height: 100%;
@@ -269,66 +290,78 @@ body {
   gap: 10px;
 }
 
-.timeline {
+
+.timeline-container {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   position: relative;
-  padding: 0 20px;
+  padding: 20px 0;
 }
 
-.timeline::before {
-  content: '';
+.timeline-line {
   position: absolute;
-  top: 30px;
-  left: 20px;
-  right: 20px;
+  top: 55px;
+  left: 10%;
+  right: 10%;
   height: 4px;
   background: #e0e0e0;
-  z-index: 0;
+  z-index: 1;
 }
 
 .timeline-progress {
   position: absolute;
-  top: 30px;
-  left: 20px;
-  height: 4px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  width: 75%;
-  z-index: 1;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.timeline-progress-cancel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: red;
+  border-radius: 2px;
   transition: width 0.5s ease;
 }
 
 .timeline-step {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
   position: relative;
   z-index: 2;
-  flex: 1;
 }
 
 .step-icon {
-  width: 60px;
-  height: 60px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  background: #e0e0e0;
+  background: #f0f0f0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8em;
-  margin-bottom: 12px;
+  font-size: 2.5em;
+  margin-bottom: 15px;
+  border: 4px solid #e0e0e0;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .timeline-step.completed .step-icon {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  transform: scale(1.1);
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  border-color: #43e97b;
 }
 
 .timeline-step.active .step-icon {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
   animation: pulse 2s infinite;
 }
 
@@ -417,8 +450,6 @@ body {
 }
 
 .product-image {
-  width: 90px;
-  height: 90px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 10px;
   display: flex;
@@ -427,6 +458,10 @@ body {
   font-size: 2.5em;
   flex-shrink: 0;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.product-image img {
+  width: 110px;
 }
 
 .product-details {

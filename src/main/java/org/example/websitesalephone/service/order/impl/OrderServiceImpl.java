@@ -1,7 +1,6 @@
 package org.example.websitesalephone.service.order.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.util.Strings;
 import org.example.websitesalephone.auth.UserDetail;
 import org.example.websitesalephone.comon.CommonResponse;
 import org.example.websitesalephone.comon.PageResponse;
@@ -42,12 +41,6 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public CommonResponse search(OrderSearch searchForm) {
-
-        if (Strings.isNotEmpty(searchForm.getSearchText())) {
-            searchForm.setSearchText("%" + searchForm.getSearchText() + "%");
-        } else {
-            searchForm.setSearchText(null);
-        }
 
         PageRequest pageRequest = Utils.getPaging(searchForm);
 
@@ -166,6 +159,17 @@ public class OrderServiceImpl implements OrderService {
         return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)
                 .data(orderStatusHistoryResponses)
+                .build();
+    }
+
+    @Override
+    public CommonResponse getListOrderByUser(OrderByUserRequest orderByUserRequest) {
+        Specification<Order> spec = OrderSpecification.search(orderByUserRequest);
+
+        List<OrderResponse> orderList = orderRepository.findAll(spec).stream().map(OrderResponse::fromOrder).toList();
+        return CommonResponse.builder()
+                .code(CommonResponse.CODE_SUCCESS)
+                .data(orderList.isEmpty() ? new ArrayList<>() : orderList)
                 .build();
     }
 
