@@ -72,7 +72,7 @@ onMounted(() => {
             Mã đơn hàng: {{ orderDetail?.orderCode }}
           </div>
         </div>
-        <button class="back-btn">← Quay lại</button>
+        <router-link to="/customer/order-by-user" class="back-btn">← Quay lại</router-link>
       </header><!-- Order Status Timeline -->
       <section class="timeline-card">
         <h2 class="timeline-title">🚚 Trạng Thái Đơn Hàng</h2>
@@ -119,9 +119,9 @@ onMounted(() => {
                     {{ p?.productName }}
                   </div>
                   <div class="product-variant">
-                    Phân loại: {{ p?.ram }} - <span class="spec-badge"
-                                                    :style="{ backgroundColor: p.color, color: getContrastColor(p.color) }">
-              </span>
+                    Phân loại: {{ p?.ram }} | <span class="spec-badge"
+                                                    :style="{ backgroundColor: p?.color, color: getContrastColor(p.color) }">
+              </span> | {{p?.screen}} | {{p?.camera}}
                   </div>
                   <div class="product-quantity">
                     Số lượng: x{{ p?.quantity }}

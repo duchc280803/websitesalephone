@@ -2,6 +2,7 @@ package org.example.websitesalephone.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.websitesalephone.comon.CommonResponse;
+import org.example.websitesalephone.dto.order.CountOrderRequest;
 import org.example.websitesalephone.dto.order.OrderByUserRequest;
 import org.example.websitesalephone.dto.order.OrderRequest;
 import org.example.websitesalephone.dto.order.OrderSearch;
@@ -38,5 +39,20 @@ public class OrderController {
     @PostMapping("/order-by-user")
     public CommonResponse getListOrderByUser(@RequestBody OrderByUserRequest orderByUserRequest) {
         return orderService.getListOrderByUser(orderByUserRequest);
+    }
+
+    @PostMapping("/count-order-user")
+    public CommonResponse countOrderByUser(@RequestBody CountOrderRequest countOrderRequest) {
+        return orderService.countOrderByUser(countOrderRequest);
+    }
+
+    @PostMapping("/count-order-staff")
+    public CommonResponse countOrderByStaff(@RequestBody CountOrderRequest countOrderRequest) {
+        return orderService.countOrderByStaff(countOrderRequest);
+    }
+
+    @GetMapping("/dashboard/{searchText}")
+    public CommonResponse countDashBoard(@PathVariable String searchText) {
+        return orderService.countDashBoard(searchText);
     }
 }

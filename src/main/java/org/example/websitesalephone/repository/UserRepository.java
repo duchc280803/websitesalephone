@@ -27,4 +27,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     Page<User> findAllByIsDeleted(Boolean isDeleted, Pageable pageable);
 
     Page<User>  findByRoleAndIsDeleted(Role role, boolean b, PageRequest pageRequest);
+
+    int countByIsDeletedFalse();
 }

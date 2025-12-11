@@ -3,6 +3,7 @@ import type {Search} from "../models/Search.ts";
 import type {OrderRequest} from "../models/OrderRequest.ts";
 import api from "../api/api.ts";
 import type {OrderByUserRequest} from "../models/OrderByUserRequest.ts";
+import type {OrderCountRequest} from "../models/OrderCountRequest.ts";
 
 class OrderService {
     private ROOT_API = import.meta.env.VITE_ROOT_API + '/api/order/';
@@ -25,6 +26,18 @@ class OrderService {
 
     public getListOrderByUser(orderByUserRequest: OrderByUserRequest): Promise<AxiosResponse> {
         return api.post(`${this.ROOT_API}order-by-user`, orderByUserRequest);
+    }
+
+    public countOrderByUser(orderCountRequest: OrderCountRequest): Promise<AxiosResponse> {
+        return api.post(`${this.ROOT_API}count-order-user`, orderCountRequest);
+    }
+
+    public countOrderByStaff(orderCountRequest: OrderCountRequest): Promise<AxiosResponse> {
+        return api.post(`${this.ROOT_API}count-order-staff`, orderCountRequest);
+    }
+
+    public getDashboard(searchText: string): Promise<AxiosResponse> {
+        return api.get(`${this.ROOT_API}dashboard/${searchText}`);
     }
 }
 

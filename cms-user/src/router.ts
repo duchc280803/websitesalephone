@@ -21,6 +21,7 @@ import RegisterPage from "./pages/RegisterPage.vue";
 import {authService} from "./service/AuthService.ts";
 import ProductDetailPage from "./pages/product/ProductDetailPage.vue";
 import UserProfile from "./pages/home/UserProfile.vue";
+import PageNodePermission from "./pages/PageNodePermission.vue";
 
 const router = createRouter({
     history: createWebHistory(),
@@ -32,13 +33,13 @@ const router = createRouter({
             path: '/login',
             name: 'LoginPageCustomer',
             component: LoginPageCustomer,
-            meta: { requiresAuth: false, title: 'Login' }
+            meta: { requiresAuth: true, roles: ['CUSTOMER', 'ADMIN', 'STAFF'] }
         },
         {
             path: '/register',
             name: 'RegisterPage',
             component: RegisterPage,
-            meta: { requiresAuth: false, title: 'Register' }
+            meta: { requiresAuth: true, roles: ['CUSTOMER', 'ADMIN', 'STAFF'] }
         },
         {
             path: '/customer',
@@ -48,43 +49,43 @@ const router = createRouter({
                     path: 'home',
                     name: 'home',
                     component: HomePage,
-                    meta: { requiresAuth: false, title: 'Home' }
+                    meta: { requiresAuth: true, roles: ['CUSTOMER'] }
                 },
                 {
                     path: 'detail-product/:id',
                     name: 'DetailProductHome',
                     component: DetailProductHome,
-                    meta: { requiresAuth: false, title: 'Chi tiết sản phẩm' }
+                    meta: { requiresAuth: true, roles: ['CUSTOMER'] }
                 },
                 {
                     path: 'cart',
                     name: 'cart',
                     component: Cart,
-                    meta: { requiresAuth: false, title: 'Giỏ hàng' }
+                    meta: { requiresAuth: true, roles: ['CUSTOMER'] }
                 },
                 {
                     path: 'product-home',
                     name: 'HomeProduct',
                     component: HomeProduct,
-                    meta: { requiresAuth: false, title: 'Sản phẩm' }
+                    meta: { requiresAuth: true, roles: ['CUSTOMER'] }
                 },
                 {
                     path: 'order-by-user',
                     name: 'OrderOfUSer',
                     component: OrderOfUSer,
-                    meta: { requiresAuth: false, title: 'Đơn hàng user' }
+                    meta: { requiresAuth: true, roles: ['CUSTOMER'] }
                 },
                 {
                     path: 'order-detail/:id',
                     name: 'OrderDetailByUser',
                     component: OrderDetailByUser,
-                    meta: { requiresAuth: false, title: 'Đơn hàng user' }
+                    meta: { requiresAuth: true, roles: ['CUSTOMER'] }
                 },
                 {
                     path: 'user-profile',
                     name: 'UserProfile',
                     component: UserProfile,
-                    meta: { requiresAuth: false, title: 'Đơn hàng user' }
+                    meta: { requiresAuth: true, roles: ['CUSTOMER'] }
                 }
             ]
         },
@@ -97,73 +98,89 @@ const router = createRouter({
                     path: 'dashboard',
                     name: 'dashboard',
                     component: AdminPage,
-                    meta: { requiresAuth: true, title: 'Dashboard' }
+                    meta: { requiresAuth: true, roles: ['ADMIN'] }
                 },
                 {
                     path: 'user',
                     name: 'user',
                     component: User,
-                    meta: { requiresAuth: true, title: 'Người dùng' }
+                    meta: { requiresAuth: true, roles: ['STAFF', 'ADMIN'] }
                 },
                 {
                     path: 'user-detail/:id',
                     name: 'UserDetailPage',
                     component: UserDetailPage,
-                    meta: { requiresAuth: true, title: 'Chi tiết người dùng' }
+                    meta: { requiresAuth: true, roles: ['STAFF', 'ADMIN'] }
                 },
                 {
                     path: 'create-user',
                     name: 'CreateUserPage',
                     component: UserDetailPage,
-                    meta: { requiresAuth: true, title: 'Create User' }
+                    meta: { requiresAuth: true, roles: ['STAFF', 'ADMIN'] }
                 },
                 {
                     path: 'product',
                     name: 'product',
                     component: Product,
-                    meta: { requiresAuth: true, title: 'Sản phẩm' }
+                    meta: { requiresAuth: true, roles: ['STAFF', 'ADMIN'] }
                 },
                 {
                     path: 'product-detail/:id',
                     name: 'ProductDetailPage',
                     component: ProductDetailPage,
-                    meta: { requiresAuth: true, title: 'Sản phẩm' }
+                    meta: { requiresAuth: true, roles: ['STAFF', 'ADMIN'] }
                 },
                 {
                     path: 'create-product',
                     name: 'CreateProduct',
                     component: ProductDetailPage,
-                    meta: { requiresAuth: true, title: 'Sản phẩm' }
+                    meta: { requiresAuth: true, roles: ['STAFF', 'ADMIN'] }
                 },
                 {
                     path: 'order',
                     name: 'order',
                     component: Order,
-                    meta: { requiresAuth: true, title: 'Đơn hàng' }
+                    meta: { requiresAuth: true, roles: ['STAFF', 'ADMIN'] }
                 },
                 {
                     path: 'orders-detail/:id',
                     name: 'OrderDetailPage',
                     component: OrderDetailPage,
-                    meta: { requiresAuth: true, title: 'Chi tiết đơn hàng' }
+                    meta: { requiresAuth: true, roles: ['STAFF', 'ADMIN'] }
                 }
             ]
-        }
+        },
+        {
+            path: '/403',
+            name: 'routes.403',
+            component: PageNodePermission,
+            meta: {},
+        },
     ]
 })
 
 router.beforeEach((to, from, next) => {
     const isAuth = authService.isAuthenticated();
+    const role = authService.getRole(); // ADMIN | STAFF | CUSTOMER
+
     if (isAuth) {
-        const role = authService.getRole();
+        // ❗Nếu route không có name → đẩy về trang hợp lệ
         if (to.name === undefined) {
             return next({ path: '/customer/' });
         }
+
+        // ❗Không cho vào login/register nếu đã đăng nhập
         if (to.name === 'LoginPageCustomer' || to.name === 'RegisterPage') {
             if (role === 'CUSTOMER') return next({ path: '/customer/home' });
             else return next({ path: '/admin/dashboard' });
         }
+
+        // ❗Kiểm tra role theo meta
+        if (to.meta.roles && !to.meta.roles.includes(role)) {
+            return next({ path: '/403' });
+        }
     } else {
+        // ❗Chưa login mà vào trang yêu cầu auth
         if (to.meta.requiresAuth) {
             return next({ name: 'LoginPageCustomer' });
         }
@@ -171,6 +188,7 @@ router.beforeEach((to, from, next) => {
 
     next();
 });
+
 
 router.afterEach((to) => {
     document.title = to.meta.title ?? 'App'

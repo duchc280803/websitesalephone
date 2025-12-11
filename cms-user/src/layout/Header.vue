@@ -56,7 +56,6 @@ onMounted(() => {
         <!-- CART -->
         <router-link :to="{ name: 'cart' }" class="icon-btn cart-btn">
           🛒
-          <span class="cart-badge">3</span>
         </router-link>
 
         <!-- LOGIN / USER MENU -->

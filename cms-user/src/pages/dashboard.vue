@@ -1,68 +1,73 @@
 <script setup lang="ts">
+import { ref, onMounted } from "vue";
+import {orderService} from "@/service/OrderService.ts";
 
+const totalOrder = ref(0);
+const totalProduct = ref(0);
+const totalCustomer = ref(0);
+const totalRevenue = ref(0);
+const totalCancelled = ref(0);
+
+async function loadDashboard() {
+  totalOrder.value = (await orderService.getDashboard("ORDER")).data.data;
+  totalProduct.value = (await orderService.getDashboard("PRODUCT")).data.data;
+  totalCustomer.value = (await orderService.getDashboard("CUSTOMER")).data.data;
+  totalRevenue.value = (await orderService.getDashboard("REVENUE")).data.data;
+  totalCancelled.value = (await orderService.getDashboard("CANCELLED")).data.data;
+}
+
+onMounted(() => {
+  loadDashboard();
+});
 </script>
 
+
 <template>
-  <div class="admin-wrapper"><!-- Sidebar -->
-    <main class="main-content"><!-- Header -->
+  <div class="admin-wrapper">
+    <main class="main-content">
       <section class="stats-grid">
+
+        <!-- Tổng Đơn Hàng -->
         <div class="stat-card">
-          <div class="stat-icon">
-            💰
-          </div>
-          <div class="stat-value">
-            1,245
-          </div>
-          <div class="stat-label">
-            Tổng Đơn Hàng
-          </div>
-          <div class="stat-trend trend-up">
-            ↑ 12.5% so với tháng trước
-          </div>
+          <div class="stat-icon">💰</div>
+          <div class="stat-value">{{ totalOrder }}</div>
+          <div class="stat-label">Tổng Đơn Hàng</div>
+          <div class="stat-trend trend-up">↑ 12.5% so với tháng trước</div>
         </div>
+
+        <!-- Tổng Sản Phẩm -->
         <div class="stat-card">
-          <div class="stat-icon">
-            📱
-          </div>
-          <div class="stat-value">
-            856
-          </div>
-          <div class="stat-label">
-            Sản Phẩm
-          </div>
-          <div class="stat-trend trend-up">
-            ↑ 8.3% so với tháng trước
-          </div>
+          <div class="stat-icon">📱</div>
+          <div class="stat-value">{{ totalProduct }}</div>
+          <div class="stat-label">Sản Phẩm</div>
+          <div class="stat-trend trend-up">↑ 8.3% so với tháng trước</div>
         </div>
+
+        <!-- Khách Hàng -->
         <div class="stat-card">
-          <div class="stat-icon">
-            👥
-          </div>
-          <div class="stat-value">
-            3,892
-          </div>
-          <div class="stat-label">
-            Khách Hàng
-          </div>
-          <div class="stat-trend trend-up">
-            ↑ 15.7% so với tháng trước
-          </div>
+          <div class="stat-icon">👥</div>
+          <div class="stat-value">{{ totalCustomer }}</div>
+          <div class="stat-label">Khách Hàng</div>
+          <div class="stat-trend trend-up">↑ 15.7% so với tháng trước</div>
         </div>
+
+        <!-- Doanh Thu -->
         <div class="stat-card">
-          <div class="stat-icon">
-            💵
-          </div>
-          <div class="stat-value">
-            45.2M
-          </div>
-          <div class="stat-label">
-            Doanh Thu (VNĐ)
-          </div>
-          <div class="stat-trend trend-down">
-            ↓ 3.2% so với tháng trước
-          </div>
+          <div class="stat-icon">💵</div>
+          <div class="stat-value">{{ totalRevenue.toLocaleString() }} VNĐ</div>
+          <div class="stat-label">Doanh Thu (VNĐ)</div>
+          <div class="stat-trend trend-down">↓ 3.2% so với tháng trước</div>
         </div>
-      </section><!-- Orders Table -->
+
+        <!-- Đơn Hủy -->
+        <div class="stat-card">
+          <div class="stat-icon">🗑️</div>
+          <div class="stat-value">{{ totalCancelled }}</div>
+          <div class="stat-label">Đơn Hủy</div>
+          <div class="stat-trend trend-down">↓ 4.1% so với tháng trước</div>
+        </div>
+
+      </section>
     </main>
   </div>
 </template>
@@ -94,59 +99,11 @@ body {
   min-height: 100%;
 }
 
-.nav-menu li {
-  margin-bottom: 5px;
-}
-
-.nav-menu a {
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
-  padding: 15px 30px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  font-weight: 600;
-  font-size: 1.05em;
-  transition: all 0.3s ease;
-  border-left: 4px solid transparent;
-}
-
-.nav-menu a:hover,
-.nav-menu a.active {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border-left-color: #fee140;
-}
-
-.nav-icon {
-  font-size: 1.4em;
-  width: 30px;
-  text-align: center;
-}
-
-/* Main Content */
+/* Main */
 .main-content {
   flex: 1;
   padding: 40px;
   overflow-y: auto;
-}
-
-.page-title {
-  font-size: 2.5em;
-  font-weight: 800;
-  color: #1a1a2e;
-  margin-bottom: 10px;
-}
-
-.breadcrumb {
-  color: #666;
-  font-size: 1.05em;
-}
-
-.breadcrumb a {
-  color: #667eea;
-  text-decoration: none;
-  font-weight: 600;
 }
 
 /* Stats Cards */
@@ -187,7 +144,6 @@ body {
 .stat-icon {
   font-size: 3em;
   margin-bottom: 15px;
-  display: inline-block;
 }
 
 .stat-value {
@@ -215,368 +171,5 @@ body {
 
 .trend-down {
   color: #ff6b6b;
-}
-
-/* Content Card */
-.content-card {
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
-  margin-bottom: 30px;
-  overflow: hidden;
-}
-
-.card-header {
-  padding: 25px 30px;
-  border-bottom: 2px solid #f0f0f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-title {
-  font-size: 1.6em;
-  font-weight: 700;
-  color: #1a1a2e;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.card-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.btn {
-  padding: 10px 25px;
-  border-radius: 25px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.95em;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-}
-
-.btn-secondary {
-  background: #f0f0f0;
-  color: #1a1a2e;
-}
-
-.btn-secondary:hover {
-  background: #e0e0e0;
-}
-
-/* Table */
-.table-wrapper {
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-thead {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-}
-
-th {
-  padding: 20px 25px;
-  text-align: left;
-  font-weight: 700;
-  color: #1a1a2e;
-  font-size: 1em;
-  border-bottom: 2px solid #e0e0e0;
-}
-
-td {
-  padding: 20px 25px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 0.98em;
-}
-
-tbody tr {
-  transition: all 0.3s ease;
-}
-
-tbody tr:hover {
-  background: #f9f9f9;
-  transform: scale(1.01);
-}
-
-/* Status Badges */
-.status-badge {
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 0.85em;
-  font-weight: 700;
-  display: inline-block;
-}
-
-.status-pending {
-  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-  color: #d35400;
-}
-
-.status-processing {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: #0c5c7a;
-}
-
-.status-completed {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: #0d6e3e;
-}
-
-.status-cancelled {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  color: #7a0c0c;
-}
-
-.status-active {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: #0d6e3e;
-}
-
-.status-inactive {
-  background: linear-gradient(135deg, #c3cfe2 0%, #a8b8d8 100%);
-  color: #4a5568;
-}
-
-/* Product Image */
-.product-cell {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.product-image {
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8em;
-  flex-shrink: 0;
-}
-
-.product-info {
-  flex: 1;
-}
-
-.product-name {
-  font-weight: 700;
-  color: #1a1a2e;
-  margin-bottom: 3px;
-}
-
-.product-sku {
-  font-size: 0.9em;
-  color: #666;
-}
-
-/* User Avatar */
-.user-cell {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.user-avatar {
-  width: 45px;
-  height: 45px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5em;
-  color: white;
-  flex-shrink: 0;
-}
-
-.user-info {
-  flex: 1;
-}
-
-.user-name {
-  font-weight: 700;
-  color: #1a1a2e;
-  margin-bottom: 3px;
-}
-
-.user-email {
-  font-size: 0.9em;
-  color: #666;
-}
-
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.action-btn {
-  width: 35px;
-  height: 35px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 1.1em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.action-btn:hover {
-  transform: scale(1.15);
-}
-
-.btn-view {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: white;
-}
-
-.btn-edit {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: white;
-}
-
-.btn-delete {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  color: white;
-}
-
-/* Price */
-.price {
-  font-weight: 700;
-  color: #667eea;
-  font-size: 1.05em;
-}
-
-/* Tabs */
-.tabs {
-  display: flex;
-  gap: 10px;
-  padding: 25px 30px 0;
-  border-bottom: 2px solid #f0f0f0;
-}
-
-.tab {
-  padding: 12px 30px;
-  background: transparent;
-  border: none;
-  font-weight: 600;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-  font-size: 1em;
-}
-
-.tab:hover,
-.tab.active {
-  color: #667eea;
-  border-bottom-color: #667eea;
-}
-
-/* Pagination */
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  padding: 30px;
-}
-
-.page-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  border: none;
-  background: #f0f0f0;
-  color: #1a1a2e;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.page-btn:hover,
-.page-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  transform: scale(1.1);
-}
-
-/* Responsive */
-@media (max-width: 1200px) {
-  .sidebar {
-    width: 240px;
-  }
-}
-
-@media (max-width: 968px) {
-  .admin-wrapper {
-    flex-direction: column;
-  }
-
-  .sidebar {
-    width: 100%;
-    position: relative;
-    height: auto;
-  }
-
-  .main-content {
-    padding: 20px;
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
-
-  .page-title {
-    font-size: 2em;
-  }
-
-  .table-wrapper {
-    overflow-x: scroll;
-  }
-
-  table {
-    min-width: 800px;
-  }
-}
-
-@media (max-width: 480px) {
-  .page-title {
-    font-size: 1.6em;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .card-header {
-    flex-direction: column;
-    gap: 15px;
-    align-items: flex-start;
-  }
 }
 </style>

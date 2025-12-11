@@ -11,6 +11,43 @@ const totalPages = ref<number>(1);
 const activeStatus = ref('');
 const searchText = ref('');
 
+const countAll = ref(0);
+const countPending = ref(0);
+const countConfirmed = ref(0);
+const countShipping = ref(0);
+const countDelivered = ref(0);
+const countCompleted = ref(0);
+const countCancelled = ref(0);
+
+const countMap = {
+  ALL: countAll,
+  PENDING: countPending,
+  CONFIRMED: countConfirmed,
+  SHIPPING: countShipping,
+  DELIVERED: countDelivered,
+  COMPLETED: countCompleted,
+  CANCELLED: countCancelled
+};
+
+
+const countOrderByStaff = async (status: string) => {
+  const req = {
+    userId: '',
+    status: status
+  };
+
+  try {
+    const res = await orderService.countOrderByStaff(req);
+
+    if (countMap[status]) {
+      countMap[status].value = res.data.data;
+    }
+
+  } catch (err: any) {
+    console.log(err);
+  }
+};
+
 const callSearch = async (status: string) => {
   activeStatus.value = status;
   const search = new Search(page.value, size.value, searchText.value, status);
@@ -42,8 +79,15 @@ const onPageChange = (newPage: number) => {
   callSearch('');
 };
 
-onMounted(() => {
-  callSearch('');
+onMounted(async () => {
+  await callSearch('');
+  await countOrderByStaff("ALL");
+  await countOrderByStaff("PENDING");
+  await countOrderByStaff("CONFIRMED");
+  await countOrderByStaff("SHIPPING");
+  await countOrderByStaff("DELIVERED");
+  await countOrderByStaff("COMPLETED");
+  await countOrderByStaff("CANCELLED");
 });
 
 watch(searchText, () => {
@@ -66,49 +110,49 @@ watch(searchText, () => {
           :class="{ active: activeStatus === '' }"
           @click="callSearch('')"
       >
-        Tất Cả
+        Tất Cả <span class="tab-badge">{{countAll}}</span>
       </button>
       <button
           class="tab"
           :class="{ active: activeStatus === 'PENDING' }"
           @click="callSearch('PENDING')"
       >
-        Chờ Xử Lý
+        Chờ Xử Lý <span class="tab-badge">{{countPending}}</span>
       </button>
       <button
           class="tab"
           :class="{ active: activeStatus === 'CONFIRMED' }"
           @click="callSearch('CONFIRMED')"
       >
-        Đã xác nhận
+        Đã xác nhận <span class="tab-badge">{{countConfirmed}}</span>
       </button>
       <button
           class="tab"
           :class="{ active: activeStatus === 'SHIPPING' }"
           @click="callSearch('SHIPPING')"
       >
-        Đang giao hàng
+        Đang giao hàng <span class="tab-badge">{{countShipping}}</span>
       </button>
       <button
           class="tab"
           :class="{ active: activeStatus === 'DELIVERED' }"
           @click="callSearch('DELIVERED')"
       >
-        Đã giao
+        Đã giao <span class="tab-badge">{{countDelivered}}</span>
       </button>
       <button
           class="tab"
           :class="{ active: activeStatus === 'COMPLETED' }"
           @click="callSearch('COMPLETED')"
       >
-        Hoàn thành
+        Hoàn thành <span class="tab-badge">{{countCompleted}}</span>
       </button>
       <button
           class="tab"
           :class="{ active: activeStatus === 'CANCELLED' }"
           @click="callSearch('CANCELLED')"
       >
-        Đã Hủy
+        Đã Hủy <span class="tab-badge">{{countCancelled}}</span>
       </button>
     </div>
     <div class="table-wrapper">
@@ -126,7 +170,7 @@ watch(searchText, () => {
           <th>Tổng tiền sản phẩm</th>
           <th>Phí vận chuyển</th>
           <th>Tổng tiền hóa đơn</th>
-          <th>Thao Tác</th>
+          <th class="sticky-col">Thao tác</th>
         </tr>
         </thead>
         <tbody>
@@ -142,7 +186,7 @@ watch(searchText, () => {
           <td>{{ formatCurrency(o.totalPrice) }}</td>
           <td>{{ formatCurrency(o.shippingFee) }}</td>
           <td>{{ formatCurrency(o.totalOrderAmount) }}</td>
-          <td>
+          <td class="sticky-col">
             <router-link :to="`/admin/orders-detail/${o.order_id}`" class="action-btn btn-edit">✏️</router-link>
           </td>
         </tr>
@@ -162,12 +206,7 @@ watch(searchText, () => {
 </template>
 
 <style scoped>
-body {
-  box-sizing: border-box;
-}
-.row {
-  padding: 20px 5px;
-}
+/* Reset */
 * {
   margin: 0;
   padding: 0;
@@ -178,22 +217,17 @@ html, body {
   height: 100%;
 }
 
-.input-search {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid #dcdcdc;
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
-  transition: all 0.25s ease;
-  background-color: #fff;
-}
-
 body {
+  box-sizing: border-box;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #1a1a2e;
   line-height: 1.6;
+}
+
+/* Layout */
+.row {
+  padding: 20px 5px;
 }
 
 .nav-menu li {
@@ -226,132 +260,16 @@ body {
   font-weight: 600;
 }
 
-/* Content Card */
-.content-card {
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
-  margin-bottom: 30px;
-  overflow: hidden;
-}
-
-.card-header {
-  padding: 25px 30px;
-  border-bottom: 2px solid #f0f0f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-title {
-  font-size: 1.6em;
-  font-weight: 700;
-  color: #1a1a2e;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.card-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.btn {
-  padding: 10px 25px;
-  border-radius: 25px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.95em;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.btn-secondary {
-  background: #f0f0f0;
-  color: #1a1a2e;
-}
-
-.btn-secondary:hover {
-  background: #e0e0e0;
-}
-
-/* Table */
-.table-wrapper {
-  overflow-x: auto;
+/* Input */
+.input-search {
   width: 100%;
-}
-
-table {
-  width: 100%;
-  table-layout: auto; /* cho cột tự co giãn */
-}
-
-thead {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-}
-
-th, td {
-  white-space: nowrap; /* không xuống dòng */
-  padding: 15px 20px;
-  text-align: center;
-}
-
-th {
-  padding: 20px 25px;
-  text-align: center;
-  font-weight: 700;
-  color: #1a1a2e;
-  font-size: 1em;
-  border-bottom: 2px solid #e0e0e0;
-}
-
-td {
-  padding: 20px 25px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 0.98em;
-}
-
-tbody tr {
-  transition: all 0.3s ease;
-}
-
-tbody tr:hover {
-  background: #f9f9f9;
-  transform: scale(1.01);
-}
-
-.table-wrapper::-webkit-scrollbar {
-  height: 6px;
-}
-
-.table-wrapper::-webkit-scrollbar-thumb {
-  background: #667eea;
-  border-radius: 10px;
-}
-
-.action-btn {
-  width: 35px;
-  height: 35px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 1.1em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.action-btn:hover {
-  transform: scale(1.15);
-}
-
-.btn-edit {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: white;
+  padding: 10px 14px;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.25s ease;
+  background-color: #fff;
 }
 
 /* Tabs */
@@ -381,29 +299,149 @@ tbody tr:hover {
   border-bottom-color: #667eea;
 }
 
-/* Responsive */
-@media (max-width: 1200px) {
-  .sidebar {
-    width: 240px;
-  }
+.tab-badge {
+  display: inline-block;
+  background: #ff6b6b;
+  color: white;
+  font-size: 0.75em;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 6px;
+  font-weight: 700;
 }
 
-@media (max-width: 968px) {
-  .table-wrapper {
-    overflow-x: scroll;
-  }
-
-  table {
-    min-width: 800px;
-  }
+.tab.active .tab-badge {
+  background: #667eea;
 }
 
-@media (max-width: 480px) {
-  .card-header {
-    flex-direction: column;
-    gap: 15px;
-    align-items: flex-start;
-  }
+/* Card */
+.content-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+  margin-bottom: 30px;
+  overflow: hidden;
+}
+
+.card-title {
+  font-size: 1.6em;
+  font-weight: 700;
+  color: #1a1a2e;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Table Wrapper */
+.table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+  position: relative;
+}
+
+.table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 10px;
+}
+
+/* Sticky Column */
+th.sticky-col,
+td.sticky-col {
+  position: sticky;
+  right: 0;
+  background: white;
+  z-index: 20;
+}
+
+th.sticky-col {
+  background-color: #e2f0ff !important;
+  font-weight: 700;
+  color: #003e7e;
+}
+
+td.sticky-col {
+  background-color: #f5faff;
+  border-left: 2px solid #d0e7ff;
+  text-align: center;
+}
+
+tbody tr:hover td.sticky-col {
+  background-color: #eaf4ff;
+}
+
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  table-layout: auto;
+}
+
+thead {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+th, td {
+  white-space: nowrap;
+  padding: 15px 20px;
+  text-align: center;
+  border-right: 1px solid #e5e7eb;
+}
+
+th {
+  font-weight: 700;
+  color: #1a1a2e;
+  font-size: 1em;
+  border-bottom: 2px solid #e0e0e0;
+  padding: 20px 25px;
+}
+
+td {
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.98em;
+  padding: 20px 25px;
+}
+
+td:last-child,
+th:last-child {
+  border-right: none;
+}
+
+/* Hover row */
+tbody tr {
+  transition: all 0.3s ease;
+}
+
+tbody tr:hover {
+  background: #f9f9f9;
+  transform: scale(1.01);
+}
+
+/* Action Buttons */
+.action-btn {
+  width: 35px;
+  height: 35px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn:hover {
+  transform: scale(1.15);
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: white;
 }
 
 /* Pagination */
@@ -434,15 +472,11 @@ tbody tr:hover {
   transform: scale(1.1);
 }
 
-.page-btn:disabled {
+.page-btn:disabled,
+.page-btn:disabled:hover {
   background: #ddd !important;
   color: #888 !important;
   cursor: not-allowed !important;
-  transform: none !important;
-}
-
-.page-btn:disabled:hover {
-  background: #ddd !important;
   transform: none !important;
 }
 </style>

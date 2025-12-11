@@ -10,7 +10,43 @@ const searchText = ref('');
 const from = ref(null);
 const to = ref(null);
 const order = ref<any>(null);
-const activeStatus = ref('');
+const activeStatus = ref(null);
+const countAll = ref(0);
+const countPending = ref(0);
+const countConfirmed = ref(0);
+const countShipping = ref(0);
+const countDelivered = ref(0);
+const countCompleted = ref(0);
+const countCancelled = ref(0);
+
+const countMap = {
+  ALL: countAll,
+  PENDING: countPending,
+  CONFIRMED: countConfirmed,
+  SHIPPING: countShipping,
+  DELIVERED: countDelivered,
+  COMPLETED: countCompleted,
+  CANCELLED: countCancelled
+};
+
+
+const countOrderByUser = async (status: string) => {
+  const req = {
+    userId: userStore.user.id,
+    status: status
+  };
+
+  try {
+    const res = await orderService.countOrderByUser(req);
+
+    if (countMap[status]) {
+      countMap[status].value = res.data.data;
+    }
+
+  } catch (err: any) {
+    console.log(err);
+  }
+};
 
 const getListOrderByUser = async (status: string) => {
   activeStatus.value = status;
@@ -39,7 +75,14 @@ const user = userStore.user;
 
 onMounted(async () => {
   await userStore.getUserByLoginId();
-  await getListOrderByUser('')
+  await getListOrderByUser(null)
+  await countOrderByUser("ALL");
+  await countOrderByUser("PENDING");
+  await countOrderByUser("CONFIRMED");
+  await countOrderByUser("SHIPPING");
+  await countOrderByUser("DELIVERED");
+  await countOrderByUser("COMPLETED");
+  await countOrderByUser("CANCELLED");
 });
 
 </script>
@@ -59,26 +102,26 @@ onMounted(async () => {
       </div><!-- Tabs -->
       <div class="tabs-container">
         <div class="tabs">
-          <button class="tab" :class="{ active: activeStatus === '' }" data-status="all" @click="getListOrderByUser('')">
-            Tất cả <span class="tab-badge">12</span>
+          <button class="tab" :class="{ active: activeStatus === null }" data-status="all" @click="getListOrderByUser(null)">
+            Tất cả <span class="tab-badge">{{countAll}}</span>
           </button>
-          <button class="tab" :class="{ active: activeStatus === 'PENDING' }" data-status="pending" @click="getListOrderByUser('PENDING')">
-          Chờ xử lý <span class="tab-badge">2</span>
+          <button class="tab" :class="{ active: activeStatus === 'PENDING' }" @click="getListOrderByUser('PENDING')">
+          Chờ xử lý <span class="tab-badge">{{countPending}}</span>
           </button>
-          <button class="tab" :class="{ active: activeStatus === 'CONFIRMED' }" data-status="processing" @click="getListOrderByUser('CONFIRMED')">
-          Đã xác nhận <span class="tab-badge">3</span>
+          <button class="tab" :class="{ active: activeStatus === 'CONFIRMED' }" @click="getListOrderByUser('CONFIRMED')">
+          Đã xác nhận <span class="tab-badge">{{countConfirmed}}</span>
           </button>
-          <button class="tab" :class="{ active: activeStatus === 'SHIPPING' }" data-status="shipping" @click="getListOrderByUser('SHIPPING')">
-          Đang giao <span class="tab-badge">4</span>
+          <button class="tab" :class="{ active: activeStatus === 'SHIPPING' }"  @click="getListOrderByUser('SHIPPING')">
+          Đang giao <span class="tab-badge">{{countShipping}}</span>
           </button>
-          <button class="tab" :class="{ active: activeStatus === 'DELIVERED' }" data-status="delivered" @click="getListOrderByUser('DELIVERED')">
-          Đã giao <span class="tab-badge">2</span>
+          <button class="tab" :class="{ active: activeStatus === 'DELIVERED' }"  @click="getListOrderByUser('DELIVERED')">
+          Đã giao <span class="tab-badge">{{countDelivered}}</span>
           </button>
-          <button class="tab" :class="{ active: activeStatus === 'COMPLETED' }" data-status="cancelled" @click="getListOrderByUser('COMPLETED')">
-          Hoàn thành <span class="tab-badge">1</span>
+          <button class="tab" :class="{ active: activeStatus === 'COMPLETED' }" @click="getListOrderByUser('COMPLETED')">
+          Hoàn thành <span class="tab-badge">{{countCompleted}}</span>
           </button>
-          <button class="tab" :class="{ active: activeStatus === 'CANCELLED' }" data-status="cancelled" @click="getListOrderByUser('CANCELLED')">
-          Đã hủy <span class="tab-badge">1</span>
+          <button class="tab" :class="{ active: activeStatus === 'CANCELLED' }" @click="getListOrderByUser('CANCELLED')">
+          Đã hủy <span class="tab-badge">{{countCancelled}}</span>
           </button>
         </div>
       </div><!-- Orders List -->
@@ -113,7 +156,7 @@ onMounted(async () => {
             </div>
 
             <div class="order-footer">
-              <button class="btn btn-primary">📄 Xem chi tiết</button>
+              <router-link :to="`/customer/order-detail/${p.order_id}`" class="btn btn-primary">📄 Xem chi tiết</router-link>
             </div>
           </div>
         </article><!-- Order Card 2 -->

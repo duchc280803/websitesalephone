@@ -23,4 +23,8 @@ public class ProductOrderResponse {
 
     private String color;
 
+    private String screen;
+
+    private String camera;
+
 }

@@ -8,6 +8,6 @@ public class Constants {
 
     public static final int PASSWORD_EXPIRE_DAYS = 365;
 
-    public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss");
+    public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
 }

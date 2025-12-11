@@ -59,6 +59,8 @@ public class OrderDetailResponse {
                     productDTO.setImage(imageUrl);
                     productDTO.setRam(item.getProductVariant().getRam().getName());
                     productDTO.setColor(item.getProductVariant().getColor().getName());
+                    productDTO.setScreen(item.getProductVariant().getScreen().getName());
+                    productDTO.setCamera(item.getProductVariant().getCamera().getName());
                     productDTO.setProductName(item.getProductVariant().getProduct().getName());
                     productDTO.setProductPrice(item.getUnitPrice());
                     productDTO.setQuantity(item.getQuantity());

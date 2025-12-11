@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue';
-import { productService } from '@/service/ProductService.ts';
-import { Search } from '@/models/Search.ts';
+import {ref, onMounted, computed, watch} from 'vue';
+import {productService} from '@/service/ProductService.ts';
+import {Search} from '@/models/Search.ts';
 import {toast} from "vue3-toastify";
-import { formatCurrency } from "@/utils/Constant.ts";
+import {formatCurrency} from "@/utils/Constant.ts";
 
 const products = ref<any[]>([]);
 const searchText = ref("");
@@ -47,7 +47,7 @@ watch(searchText, () => {
   fetchProducts();
 });
 
-const deleted = async (id: string) =>{
+const deleted = async (id: string) => {
   const res = await productService.deleteProduct(id);
   if (res.data.code === 0) {
     toast.success("Xóa sản phẩm thành công")
@@ -69,7 +69,7 @@ onMounted(async () => {
     <div class="card-header">
       <h2 class="card-title">📱 Quản Lý Sản Phẩm</h2>
       <div class="card-actions">
-        <input type="text" v-model="searchText" placeholder="Tìm kiếm sản phẩm..." class="input-search" />
+        <input type="text" v-model="searchText" placeholder="Tìm kiếm sản phẩm..." class="input-search"/>
         <router-link style="width: 219px;" class="btn btn-primary" to="create-product">+ Thêm mới</router-link>
       </div>
     </div>
@@ -90,12 +90,7 @@ onMounted(async () => {
         <tbody>
         <tr v-for="product in products" :key="product.id">
           <td>
-            <div class="product-cell">
-              <div class="product-image">📱</div>
-              <div class="product-info">
-                <div class="product-name">{{ product.productName }}</div>
-              </div>
-            </div>
+            <div class="product-name">{{ product.productName }}</div>
           </td>
           <td>{{ product.originName }}</td>
           <td><span class="price">{{ formatCurrency(product.price) }}</span></td>
@@ -131,11 +126,12 @@ onMounted(async () => {
 
 
 <style scoped>
-body {
-  box-sizing: border-box;
-}
-
-* {
+/* =========================
+   RESET & BASE
+========================= */
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -143,26 +139,39 @@ body {
 
 html, body {
   height: 100%;
-}
-.page-btn:disabled {
-  background: #ddd !important;
-  color: #888 !important;
-  cursor: not-allowed !important;
-  transform: none !important;
-}
-
-.page-btn:disabled:hover {
-  background: #ddd !important;
-  transform: none !important;
-}
-
-body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #1a1a2e;
   line-height: 1.6;
 }
 
+/* =========================
+   FORM — INPUT
+========================= */
+.input-search {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+  transition: .25s;
+  outline: none;
+}
+
+.input-search::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+.input-search:focus {
+  border-color: #4b8bff;
+  box-shadow: 0 0 0 3px rgba(75, 139, 255, 0.2);
+}
+
+/* =========================
+   NAVIGATION
+========================= */
 .nav-menu li {
   margin-bottom: 5px;
 }
@@ -174,22 +183,24 @@ body {
   display: flex;
   align-items: center;
   gap: 15px;
-  font-weight: 600;
   font-size: 1.05em;
-  transition: all 0.3s ease;
+  font-weight: 600;
   border-left: 4px solid transparent;
+  transition: .3s;
 }
 
 .nav-menu a:hover,
 .nav-menu a.active {
   background: rgba(255, 255, 255, 0.1);
-  color: white;
+  color: #fff;
   border-left-color: #fee140;
 }
 
-/* Content Card */
+/* =========================
+   CARD — CONTAINER
+========================= */
 .content-card {
-  background: white;
+  background: #fff;
   border-radius: 20px;
   box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
   margin-bottom: 30px;
@@ -207,7 +218,6 @@ body {
 .card-title {
   font-size: 1.6em;
   font-weight: 700;
-  color: #1a1a2e;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -218,59 +228,62 @@ body {
   gap: 10px;
 }
 
+/* =========================
+   BUTTONS
+========================= */
 .btn {
   padding: 10px 25px;
   border-radius: 25px;
-  border: none;
   font-weight: 600;
+  border: none;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.95em;
-  text-decoration: none;
-  display: inline-block;
+  font-size: .95em;
+  transition: .3s;
 }
 
 .btn-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: #fff;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, .4);
 }
 
-/* Table */
+/* =========================
+   TABLE
+========================= */
 .table-wrapper {
-  overflow-x: auto;
+  width: 100%;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 14px;
 }
 
 thead {
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-th {
+thead th {
   padding: 20px 25px;
-  text-align: left;
-  font-weight: 700;
-  color: #1a1a2e;
-  font-size: 1em;
   border-bottom: 2px solid #e0e0e0;
+  font-size: 1em;
+  font-weight: 700;
+  text-align: center;
 }
 
-td {
+tbody td {
   padding: 20px 25px;
   border-bottom: 1px solid #f0f0f0;
-  font-size: 0.98em;
+  text-align: center;
 }
 
 tbody tr {
-  transition: all 0.3s ease;
+  transition: .3s;
 }
 
 tbody tr:hover {
@@ -278,16 +291,19 @@ tbody tr:hover {
   transform: scale(1.01);
 }
 
-/* Status Badges */
-.status-badge {
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 0.85em;
-  font-weight: 700;
-  display: inline-block;
+/* Border giữa các cột */
+td, th {
+  border-right: 1px solid #e5e7eb;
 }
 
-/* Product Image */
+td:last-child,
+th:last-child {
+  border-right: none;
+}
+
+/* =========================
+   PRODUCT CELL
+========================= */
 .product-cell {
   display: flex;
   align-items: center;
@@ -303,22 +319,30 @@ tbody tr:hover {
   align-items: center;
   justify-content: center;
   font-size: 1.8em;
-  flex-shrink: 0;
-}
-
-.product-info {
-  flex: 1;
 }
 
 .product-name {
   font-weight: 700;
-  color: #1a1a2e;
   margin-bottom: 3px;
 }
 
-/* Action Buttons */
+/* =========================
+   STATUS BADGE
+========================= */
+.status-badge {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: .85em;
+  font-weight: 700;
+}
+
+/* =========================
+   ACTION BUTTONS
+========================= */
 .action-buttons {
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 8px;
 }
 
@@ -327,12 +351,12 @@ tbody tr:hover {
   height: 35px;
   border-radius: 10px;
   border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
   font-size: 1.1em;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: .3s;
 }
 
 .action-btn:hover {
@@ -341,27 +365,31 @@ tbody tr:hover {
 
 .btn-view {
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: white;
+  color: #fff;
 }
 
 .btn-edit {
   background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: white;
+  color: #fff;
 }
 
 .btn-delete {
   background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  color: white;
+  color: #fff;
 }
 
-/* Price */
+/* =========================
+   PRICE
+========================= */
 .price {
   font-weight: 700;
   color: #667eea;
   font-size: 1.05em;
 }
 
-/* Pagination */
+/* =========================
+   PAGINATION
+========================= */
 .pagination {
   display: flex;
   justify-content: center;
@@ -376,23 +404,31 @@ tbody tr:hover {
   border-radius: 10px;
   border: none;
   background: #f0f0f0;
-  color: #1a1a2e;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: .3s;
 }
 
 .page-btn:hover,
 .page-btn.active {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: #fff;
   transform: scale(1.1);
 }
 
-@media (max-width: 968px) {
+.page-btn:disabled {
+  background: #ddd !important;
+  color: #888 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
 
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 968px) {
   .table-wrapper {
-    overflow-x: scroll;
+    overflow-x: auto;
   }
 
   table {
@@ -401,33 +437,10 @@ tbody tr:hover {
 }
 
 @media (max-width: 480px) {
-
   .card-header {
     flex-direction: column;
-    gap: 15px;
     align-items: flex-start;
+    gap: 15px;
   }
 }
-
-.input-search {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid #dcdcdc;
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
-  transition: all 0.25s ease;
-  background-color: #fff;
-}
-
-.input-search::placeholder {
-  color: #999;
-  font-style: italic;
-}
-
-.input-search:focus {
-  border-color: #4b8bff;
-  box-shadow: 0 0 0 3px rgba(75, 139, 255, 0.2);
-}
-
 </style>
