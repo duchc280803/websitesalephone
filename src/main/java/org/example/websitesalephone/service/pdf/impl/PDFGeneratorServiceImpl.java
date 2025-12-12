@@ -15,7 +15,6 @@ import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-import org.springframework.util.ResourceUtils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -25,8 +24,6 @@ import java.math.BigDecimal;
 public class PDFGeneratorServiceImpl implements PDFGeneratorService {
 
     private final OrderRepository orderRepository;
-
-    private static final String FONT_ARIAL = "D:\\WebsiteSalePhone\\src\\main\\resources";
 
     @Override
     public CommonResponse orderCouter(HttpServletResponse response, String id) throws IOException {
@@ -57,21 +54,21 @@ public class PDFGeneratorServiceImpl implements PDFGeneratorService {
             lineCell.setBorderColor(BaseColor.BLACK); // Màu của đường gạch, có thể thay đổi
             lineTable.addCell(lineCell);
 
-            Paragraph paragraph = new Paragraph("NICE SHOE", fontTitle);
+            Paragraph paragraph = new Paragraph("Website bán hàng", fontTitle);
             paragraph.setAlignment(Element.ALIGN_CENTER);
             document.add(paragraph);
             document.add(new Paragraph("\n"));
             document.add(lineTable);
 
-            Paragraph paragraph2 = new Paragraph("Số điện thoại: 0971066455", fontParagraph);
+            Paragraph paragraph2 = new Paragraph("Số điện thoại: 0987654321", fontParagraph);
             paragraph2.setAlignment(Element.ALIGN_CENTER);
             document.add(paragraph2);
 
-            Paragraph paragraph3 = new Paragraph("Email: niceshoepoly@gmail.com", fontParagraph);
+            Paragraph paragraph3 = new Paragraph("Email: buitkien66@gmail.com", fontParagraph);
             paragraph3.setAlignment(Element.ALIGN_CENTER);
             document.add(paragraph3);
 
-            Paragraph paragraph4 = new Paragraph("Địa chỉ: Cổng số 1, Tòa nhà FPT Polytechnic, 13 phố Trịnh Văn Bô, phường Phương Canh, quận Nam Từ Liêm, TP Hà Nội", fontParagraph);
+            Paragraph paragraph4 = new Paragraph("Địa chỉ: Trịch văn bô, Nam từ liêm Hà nội", fontParagraph);
             paragraph4.setAlignment(Element.ALIGN_CENTER);
             document.add(paragraph4);
 
@@ -115,9 +112,11 @@ public class PDFGeneratorServiceImpl implements PDFGeneratorService {
 
             Font fontTableHeader = new Font(bf, 12, Font.BOLD);
             String[] tableHeaders = {"STT", "Sản phẩm", "Số lượng", "Đơn giá", "Thành tiền"};
+
             PdfPTable table = new PdfPTable(5);
             table.setWidthPercentage(100);
             table.setWidths(new int[]{1, 4, 1, 2, 2});
+
             for (String header : tableHeaders) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, fontTableHeader));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -125,8 +124,25 @@ public class PDFGeneratorServiceImpl implements PDFGeneratorService {
             }
 
             BigDecimal tongTienSanPham = BigDecimal.ZERO;
+            int index = 1;
+
+            for (OrderItem item : order.getOrderItems()) {
+
+                BigDecimal thanhTien = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+
+                table.addCell(new PdfPCell(new Phrase(String.valueOf(index++), fontParagraph)));
+                table.addCell(new PdfPCell(new Phrase(item.getProductVariant().getProduct().getName(), fontParagraph)));
+                table.addCell(new PdfPCell(new Phrase(String.valueOf(item.getQuantity()), fontParagraph)));
+                table.addCell(new PdfPCell(new Phrase(Utils.formatBigDecimal(item.getUnitPrice()) + " VND", fontParagraph)));
+                table.addCell(new PdfPCell(new Phrase(Utils.formatBigDecimal(thanhTien) + " VND", fontParagraph)));
+
+                tongTienSanPham = tongTienSanPham.add(thanhTien);
+            }
+
             Font fontTotal = new Font(bf, 12, Font.BOLDITALIC);
-            PdfPCell cellTotalLabel = new PdfPCell(new Phrase("Tổng tiền sản phẩm: " + Utils.formatBigDecimal(tongTienSanPham) + " VND", fontTotal));
+            PdfPCell cellTotalLabel = new PdfPCell(
+                    new Phrase("Tổng tiền sản phẩm: " + Utils.formatBigDecimal(tongTienSanPham) + " VND", fontTotal)
+            );
             cellTotalLabel.setColspan(5);
             cellTotalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
             table.addCell(cellTotalLabel);
@@ -145,7 +161,7 @@ public class PDFGeneratorServiceImpl implements PDFGeneratorService {
             document.add(paragraph18);
 
             if (tongTienKhachTra != BigDecimal.ZERO) {
-                Paragraph paragraph13 = new Paragraph("Tổng tiền khách trả: " + Utils.formatBigDecimal(tongTienKhachTra) + " VND", fontParagraph);
+                Paragraph paragraph13 = new Paragraph("Tổng tiền khách trả: " + Utils.formatBigDecimal(order.getTotalAmount().add(order.getShippingFee())) + " VND", fontParagraph);
                 paragraph13.setAlignment(Element.ALIGN_LEFT);
                 document.add(paragraph13);
             }

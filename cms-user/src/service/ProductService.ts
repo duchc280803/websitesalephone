@@ -65,6 +65,11 @@ class ProductService {
     public getProductVariantDetail(id: string): Promise<AxiosResponse> {
         return api.get(`${this.ROOT_API}get-product-variant-detail/${id}`);
     }
+
+    public getAllNewProduct(): Promise<AxiosResponse> {
+        return api.post(`${this.ROOT_API}new-product`);
+    }
+
 }
 
 export const productService = new ProductService();

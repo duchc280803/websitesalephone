@@ -5,10 +5,13 @@ import {useRoute} from "vue-router";
 import {computed, onMounted, ref} from "vue";
 import {orderService} from "@/service/OrderService.ts";
 import {formatCurrency, getContrastColor} from "../../utils/Constant.ts";
+import {OrderRequest} from "@/models/OrderRequest.ts";
+import {toast} from "vue3-toastify";
 
 const route = useRoute();
 const orderDetail = ref<any>(null);
 const orderId = ref(route.params.id as string);
+const description = ref('');
 
 const TIMELINE_ORDER = [
   {status: 'PENDING', label: 'CHỜ XỬ LÝ', icon: '📝'},
@@ -56,6 +59,26 @@ const fetchOrderDetail = async () => {
     error.value = 'Không lấy được chi tiết đơn hàng';
   }
 };
+
+const updateOrderStatus = async (newStatus: string) => {
+  if (!orderDetail.value) return;
+
+  const requestPayload = new OrderRequest(
+      newStatus,
+      0,
+      description.value,
+      orderId.value
+  );
+
+  try {
+    await orderService.update(requestPayload);
+    toast.success("Cập nhật trạng thái thành công");
+    await fetchOrderDetail();
+  } catch (err) {
+    toast.error("Cập nhật trạng thái thất bại");
+  }
+}
+
 onMounted(() => {
   fetchOrderDetail();
 });
@@ -74,6 +97,45 @@ onMounted(() => {
         </div>
         <router-link to="/customer/order-by-user" class="back-btn">← Quay lại</router-link>
       </header><!-- Order Status Timeline -->
+      <div
+          class="modal fade"
+          id="exampleModal"
+          data-bs-backdrop="static" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+          <div class="modal-content rounded-4 shadow-lg">
+            <!-- Body -->
+            <div class="modal-body pt-2">
+              <label class="form-label fw-semibold mb-2">Mô tả</label>
+              <textarea
+                  v-model="description"
+                  class="form-control form-control-lg"
+                  rows="5"
+                  placeholder="Nhập ghi chú...">
+         </textarea>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer border-0 pt-3">
+              <button
+                  type="button"
+                  class="btn btn-outline-secondary rounded-3 px-4"
+                  data-bs-dismiss="modal"
+              >
+                Đóng
+              </button>
+              <button
+                  type="button"
+                  class="btn btn-primary rounded-3 px-4 fw-semibold"
+                  @click="updateOrderStatus('CANCELLED')"
+                  data-bs-dismiss="modal"
+              >
+                Lưu
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
       <section class="timeline-card">
         <h2 class="timeline-title">🚚 Trạng Thái Đơn Hàng</h2>
         <div class="timeline-container">
@@ -103,6 +165,16 @@ onMounted(() => {
               <div class="step-time">{{ step.time }}</div>
             </div>
           </div>
+        </div>
+        <div class="col-md-3">
+          <button
+              class="btn btn-danger"
+              data-bs-toggle="modal"
+              data-bs-target="#exampleModal"
+              v-if="['PENDING', 'CONFIRMED'].includes(orderDetail?.status)"
+          >
+            Hủy đơn
+          </button>
         </div>
       </section><!-- Main Content Grid -->
       <div class="content-grid"><!-- Left Column: Order Details -->
@@ -362,7 +434,7 @@ body {
 .timeline-step.active .step-icon {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-color: #667eea;
-  animation: pulse 2s infinite;
+  //animation: pulse 2s infinite;
 }
 
 @keyframes pulse {

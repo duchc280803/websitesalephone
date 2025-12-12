@@ -8,6 +8,8 @@ import org.example.websitesalephone.dto.product.ProductImageRequest;
 import org.example.websitesalephone.dto.product.ProductRequest;
 import org.example.websitesalephone.dto.product.ProductSearch;
 import org.example.websitesalephone.service.product.ProductService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -85,6 +87,11 @@ public class ProductController {
     @GetMapping("/get-product-variant-detail/{id}")
     public CommonResponse getProductVariantDetail(@PathVariable String id) {
         return productService.getProductVariantDetail(id);
+    }
+
+    @PostMapping("/new-product")
+    public CommonResponse getAllNewProduct() {
+        return productService.getAllNewProduct();
     }
 
 }

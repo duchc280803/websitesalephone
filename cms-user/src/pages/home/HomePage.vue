@@ -1,6 +1,22 @@
 <script setup lang="ts">
 import HomeLayout from "../../layout/Header.vue";
 import Footer from "../../layout/Footer.vue";
+import {productService} from "@/service/ProductService.ts";
+import {onMounted, ref} from "vue";
+import {formatCurrency} from "../../utils/Constant.ts";
+const products = ref<any[]>([]);
+
+const loadProducts = async () => {
+  try {
+    const res = await productService.getAllNewProduct();
+    products.value = res.data.data || [];
+    console.log("📄 Fetched page:", page.value, "totalPages:", totalPages.value);
+  } catch (error) {
+    console.error("Lỗi khi load sản phẩm:", error);
+  }
+};
+onMounted(loadProducts);
+
 </script>
 
 <template>
@@ -14,25 +30,29 @@ import Footer from "../../layout/Footer.vue";
   <main id="products">
     <div class="container">
       <div class="section-header">
-        <h2 class="section-title">Sản Phẩm Nổi Bật</h2>
+        <h2 class="section-title">Sản Phẩm Mới Nhất</h2>
         <p class="section-subtitle">Những chiếc điện thoại cao cấp nhất hiện nay</p>
       </div>
       <div class="products-grid"><!-- Product 1 -->
-        <article class="product-card"><span class="product-badge badge-hot">🔥 HOT</span>
+        <article class="product-card" v-for="product in products">
+          <span class="product-badge badge-hot">🔥 NEW</span>
           <div class="product-image">
             <div class="phone-emoji">
-              📱
+              <img :src="product.url" alt="" sizes="" srcset="">
             </div>
           </div>
           <div class="product-info">
-              <h3 class="product-name">iPhone 15 Pro Max</h3>
-            <p class="product-desc">Chip A17 Pro, Camera 48MP, Titanium</p>
+            <span class="product-category">{{ product.originName }}</span>
+            <h3 class="product-name">{{ product.productName }}</h3>
             <div class="product-footer">
               <div class="product-price">
-                29.990.000₫
+                {{ formatCurrency(product.price | currency) }}
               </div>
-              <button class="buy-btn">🛒 Thêm</button>
+
             </div>
+            <router-link :to="`detail-product/${product.id}`"
+                         class="btn-add-cart">Xem chi tiết
+            </router-link>
           </div>
         </article><!-- Product 2 -->
       </div>
@@ -162,7 +182,9 @@ import Footer from "../../layout/Footer.vue";
 body {
   box-sizing: border-box;
 }
-
+img {
+  width: 250px;
+}
 * {
   margin: 0;
   padding: 0;
@@ -179,7 +201,25 @@ body {
   color: #1a1a2e;
   line-height: 1.6;
 }
+.btn-add-cart {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 85px;
+}
 
+.btn-add-cart:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
 /* Hero Section */
 .hero {
   background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
@@ -324,16 +364,6 @@ body {
   color: white;
 }
 
-.badge-new {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: white;
-}
-
-.badge-sale {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: white;
-}
-
 .product-image {
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: 50px;
@@ -404,23 +434,6 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-.buy-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  padding: 12px 28px;
-  border-radius: 25px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 1em;
-}
-
-.buy-btn:hover {
-  transform: scale(1.08);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
 }
 
 /* Features Section */
@@ -607,22 +620,6 @@ body {
   box-shadow: 0 8px 20px rgba(250, 112, 154, 0.4);
 }
 
-/* Footer */
-.footer {
-  background: #1a1a2e;
-  color: white;
-  padding: 60px 30px 30px;
-}
-
-.footer-content {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 50px;
-  margin-bottom: 40px;
-}
-
 .footer-section h3 {
   font-size: 1.4em;
   margin-bottom: 20px;
@@ -647,45 +644,8 @@ body {
   color: white;
   padding-left: 5px;
 }
-
-.footer-bottom {
-  text-align: center;
-  padding-top: 30px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.social-links {
-  display: flex;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.social-btn {
-  width: 45px;
-  height: 45px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3em;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  color: white;
-}
-
-.social-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-5px);
-}
-
 /* Responsive */
 @media (max-width: 968px) {
-  .nav-menu {
-    display: none;
-  }
-
   .hero h1 {
     font-size: 2.5em;
   }
@@ -715,10 +675,6 @@ body {
 
   .products-grid {
     grid-template-columns: 1fr;
-  }
-
-  .logo {
-    font-size: 1.5em;
   }
 }
 </style>

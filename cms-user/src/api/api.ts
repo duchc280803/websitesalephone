@@ -21,10 +21,12 @@ api.interceptors.response.use(
     response => response,
 
     error => {
-        if (error.response && error.response.status === 401) {
+        if (error.response?.status === 401) {
             authService.removeTokenAndRole();
 
-            window.location.href = '/login';
+            if (router.currentRoute.value.path !== '/login') {
+                router.push('/login');
+            }
         }
 
         return Promise.reject(error);

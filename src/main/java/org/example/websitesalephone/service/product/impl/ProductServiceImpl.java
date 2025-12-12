@@ -512,6 +512,17 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public CommonResponse getAllNewProduct() {
+        List<Product> products = productRepository.findTop8ByOrderByCreatedAtDesc();
+
+        List<ProductListResponse> productListResponses = products.stream().map(ProductListResponse::fromEntity).toList();
+        return CommonResponse.builder()
+                .code(CommonResponse.CODE_SUCCESS)
+                .data(productListResponses.isEmpty() ? new ArrayList<>() : productListResponses)
+                .build();
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResponse createdProduct(ProductRequest productRequest) {
         Product product = new Product();

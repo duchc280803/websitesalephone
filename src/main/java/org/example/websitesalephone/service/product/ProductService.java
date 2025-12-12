@@ -36,4 +36,6 @@ public interface ProductService {
     CommonResponse getProductVariantDetail(String productVariantId);
 
     CommonResponse deletedImage(String idImage);
+
+    CommonResponse getAllNewProduct();
 }

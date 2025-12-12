@@ -104,6 +104,26 @@ const progressPercent = computed(() => {
   return ((completed - 1) / total) * 100;
 });
 
+async function handleDownload() {
+  try {
+    const res = await orderService.downloadPdf(orderId.value);
+
+    const blob = new Blob([res.data], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "file.pdf");
+    document.body.appendChild(link);
+    link.click();
+
+    window.URL.revokeObjectURL(url);
+    link.remove();
+  } catch (error) {
+    console.error("Lỗi tải PDF:", error);
+  }
+}
+
 onMounted(() => {
   fetchOrderDetail();
   fetchHistory();
@@ -250,7 +270,7 @@ onMounted(() => {
     </div>
     <div class="header-right">
       <div>
-        <button class="print-btn">🖨️ In đơn hàng</button>
+        <button class="print-btn" @click="handleDownload">🖨️ In đơn hàng</button>
       </div>
     </div>
   </header><!-- Status Timeline -->
@@ -574,7 +594,7 @@ body {
 .timeline-step.active .step-icon {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-color: #667eea;
-  animation: pulse 2s infinite;
+  //animation: pulse 2s infinite;
 }
 
 @keyframes pulse {

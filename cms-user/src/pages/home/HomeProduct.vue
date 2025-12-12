@@ -52,21 +52,6 @@ const onPageChange = (newPage: number) => {
   loadProducts();
 };
 
-const addToCart = async (productVariantId: string) => {
-  const cartRequest: CartRequest = {
-    productId: productVariantId,
-    quantity: quantity.value,
-  };
-
-  try {
-    await cartService.addToCart(cartRequest);
-    toast.success(`Đã thêm 1 sản phẩm vào giỏ hàng`);
-  } catch (err) {
-    console.error(err);
-    toast.error("Thêm vào giỏ hàng thất bại!");
-  }
-};
-
 onMounted(loadProducts);
 </script>
 

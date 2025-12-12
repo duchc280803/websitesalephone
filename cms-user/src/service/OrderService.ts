@@ -39,6 +39,12 @@ class OrderService {
     public getDashboard(searchText: string): Promise<AxiosResponse> {
         return api.get(`${this.ROOT_API}dashboard/${searchText}`);
     }
+
+    public downloadPdf(id: string) {
+        return api.get(`${this.ROOT_API}pdf/generate/${id}`, {
+            responseType: "blob", // nhận file dạng blob
+        });
+    }
 }
 
 export const orderService = new OrderService();

@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { authService } from "./service/AuthService.ts";
 
 // Customer pages
 import DetailProductHome from './pages/home/DetailProductHome.vue'
@@ -18,7 +19,6 @@ import OrderOfUSer from "./pages/home/OrderOfUSer.vue";
 import OrderDetailByUser from "./pages/home/OrderDetailByUser.vue";
 import LoginPageCustomer from "./pages/LoginPage.vue";
 import RegisterPage from "./pages/RegisterPage.vue";
-import {authService} from "./service/AuthService.ts";
 import ProductDetailPage from "./pages/product/ProductDetailPage.vue";
 import UserProfile from "./pages/home/UserProfile.vue";
 import PageNodePermission from "./pages/PageNodePermission.vue";
@@ -30,16 +30,20 @@ const router = createRouter({
     },
     routes: [
         {
+            path: '/',
+            redirect: '/customer/home' // Add a proper redirect for root path
+        },
+        {
             path: '/login',
             name: 'LoginPageCustomer',
             component: LoginPageCustomer,
-            meta: { requiresAuth: true, roles: ['CUSTOMER', 'ADMIN', 'STAFF'] }
+            meta: { requiresAuth: false } // Login should NOT require auth
         },
         {
             path: '/register',
             name: 'RegisterPage',
             component: RegisterPage,
-            meta: { requiresAuth: true, roles: ['CUSTOMER', 'ADMIN', 'STAFF'] }
+            meta: { requiresAuth: false } // Register should NOT require auth
         },
         {
             path: '/customer',
@@ -154,8 +158,12 @@ const router = createRouter({
             path: '/403',
             name: 'routes.403',
             component: PageNodePermission,
-            meta: {},
+            meta: { requiresAuth: false },
         },
+        {
+            path: '/:pathMatch(.*)*',
+            redirect: '/customer/home' // Handle 404
+        }
     ]
 })
 
@@ -163,32 +171,39 @@ router.beforeEach((to, from, next) => {
     const isAuth = authService.isAuthenticated();
     const role = authService.getRole(); // ADMIN | STAFF | CUSTOMER
 
+    // Skip auth check for public routes
+    if (!to.meta.requiresAuth) {
+        return next();
+    }
+
     if (isAuth) {
-        // ❗Nếu route không có name → đẩy về trang hợp lệ
-        if (to.name === undefined) {
-            return next({ path: '/customer/' });
-        }
-
-        // ❗Không cho vào login/register nếu đã đăng nhập
+        // If authenticated but trying to access login/register
         if (to.name === 'LoginPageCustomer' || to.name === 'RegisterPage') {
-            if (role === 'CUSTOMER') return next({ path: '/customer/home' });
-            else return next({ path: '/admin/dashboard' });
+            // Redirect based on role
+            if (role === 'CUSTOMER') {
+                return next({ path: '/customer/home' });
+            } else {
+                return next({ path: '/admin/dashboard' });
+            }
         }
 
-        // ❗Kiểm tra role theo meta
+        // Check role permissions
         if (to.meta.roles && !to.meta.roles.includes(role)) {
             return next({ path: '/403' });
         }
+
+        // All checks passed
+        return next();
     } else {
-        // ❗Chưa login mà vào trang yêu cầu auth
+        // Not authenticated and trying to access protected route
         if (to.meta.requiresAuth) {
             return next({ name: 'LoginPageCustomer' });
         }
+
+        // For non-protected routes, allow access
+        return next();
     }
-
-    next();
 });
-
 
 router.afterEach((to) => {
     document.title = to.meta.title ?? 'App'
