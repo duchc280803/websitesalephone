@@ -21,7 +21,7 @@ public class Origin extends BaseEntity{
     @Column(length = 50)
     private String id;
 
-    @Column(length = 100)
+    @Column(name = "name", columnDefinition = "NVARCHAR(255) COLLATE Vietnamese_CI_AS")
     private String name;
 
     @OneToMany(mappedBy = "origin", cascade = CascadeType.ALL)

@@ -29,10 +29,6 @@ public class Order extends BaseEntity{
     @JoinColumn(name = "staff_id")
     private User staff;
 
-    @ManyToOne
-    @JoinColumn(name = "address_id")
-    private Address address;
-
     @Column(length = 50)
     private String status;
 
@@ -42,6 +38,7 @@ public class Order extends BaseEntity{
 
     private String orderCode;
 
+    @Column(name = "address_detail", columnDefinition = "NVARCHAR(255) COLLATE Vietnamese_CI_AS")
     private String addressDetail;
 
     private OffsetDateTime dateTimeCheckout;

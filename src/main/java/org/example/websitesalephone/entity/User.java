@@ -26,7 +26,7 @@ public class User extends BaseEntity{
     @Column(length = 255, nullable = false)
     private String passwordHash;
 
-    @Column(length = 100)
+    @Column(name = "full_name", columnDefinition = "NVARCHAR(255) COLLATE Vietnamese_CI_AS")
     private String fullName;
 
     @Column(length = 100)
@@ -38,7 +38,7 @@ public class User extends BaseEntity{
     @Column(length = 255)
     private String description;
 
-    @Column(length = 255)
+    @Column(name = "address", columnDefinition = "NVARCHAR(255) COLLATE Vietnamese_CI_AS")
     private String address;
 
     private String gender;

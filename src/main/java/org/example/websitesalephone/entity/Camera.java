@@ -20,7 +20,7 @@ public class Camera extends BaseEntity{
     @Column(length = 50)
     private String id;
 
-    @Column(length = 255)
+    @Column(name = "name", columnDefinition = "NVARCHAR(255) COLLATE Vietnamese_CI_AS")
     private String name;
 
     @OneToMany(mappedBy = "camera", cascade = CascadeType.ALL)

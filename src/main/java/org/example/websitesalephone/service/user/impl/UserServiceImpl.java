@@ -18,6 +18,7 @@ import org.example.websitesalephone.dto.user.CreateUserDto;
 import org.example.websitesalephone.dto.user.UserSearchForm;
 import org.example.websitesalephone.service.user.UserService;
 import org.example.websitesalephone.comon.CommonResponse;
+import org.example.websitesalephone.spe.UserSpecification;
 import org.example.websitesalephone.utils.Utils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -195,10 +196,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public CommonResponse search(UserSearchForm searchForm) {
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetail userDetail = (UserDetail) auth.getPrincipal();
 
-        User loginUser = userRepository.findByUsernameAndIsDeleted(userDetail.getLoginId(), false).orElse(null);
+        User loginUser = userRepository
+                .findByUsernameAndIsDeleted(userDetail.getLoginId(), false)
+                .orElse(null);
+
         if (loginUser == null) {
             return CommonResponse.builder()
                     .code(CommonResponse.CODE_NOT_FOUND)
@@ -206,6 +211,7 @@ public class UserServiceImpl implements UserService {
                     .build();
         }
 
+        // xử lý searchText
         if (Strings.isNotEmpty(searchForm.getSearchText())) {
             searchForm.setSearchText("%" + searchForm.getSearchText() + "%");
         } else {
@@ -214,18 +220,13 @@ public class UserServiceImpl implements UserService {
 
         PageRequest pageRequest = Utils.getPaging(searchForm);
 
-        Page<UserDto> result;
+        Page<UserDto> result = userRepository
+                .findAll(
+                        UserSpecification.search(searchForm, loginUser),
+                        pageRequest
+                )
+                .map(UserDto::fromEntitySearch);
 
-        if (RoleEnums.STAFF.getValue().equalsIgnoreCase(searchForm.getRole())) {
-            result = userRepository
-                    .findByRoleAndIsDeleted(loginUser.getRole(), false, pageRequest)
-                    .map(UserDto::fromEntitySearch);
-
-        } else {
-            result = userRepository
-                    .findAllByIsDeleted(false, pageRequest)
-                    .map(UserDto::fromEntitySearch);
-        }
         return CommonResponse.builder()
                 .code(CommonResponse.CODE_SUCCESS)
                 .data(PageResponse.from(result))

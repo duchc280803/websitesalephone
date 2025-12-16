@@ -20,10 +20,10 @@ public class Product extends BaseEntity{
     @Column(length = 50)
     private String id;
 
-    @Column(length = 255)
+    @Column(name = "name", columnDefinition = "NVARCHAR(255) COLLATE Vietnamese_CI_AS")
     private String name;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "NVARCHAR(255) COLLATE Vietnamese_CI_AS")
     private String description;
 
     @Enumerated(EnumType.STRING)

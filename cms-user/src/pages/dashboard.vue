@@ -32,7 +32,6 @@ onMounted(() => {
           <div class="stat-icon">💰</div>
           <div class="stat-value">{{ totalOrder }}</div>
           <div class="stat-label">Tổng Đơn Hàng</div>
-          <div class="stat-trend trend-up">↑ 12.5% so với tháng trước</div>
         </div>
 
         <!-- Tổng Sản Phẩm -->
@@ -40,7 +39,6 @@ onMounted(() => {
           <div class="stat-icon">📱</div>
           <div class="stat-value">{{ totalProduct }}</div>
           <div class="stat-label">Sản Phẩm</div>
-          <div class="stat-trend trend-up">↑ 8.3% so với tháng trước</div>
         </div>
 
         <!-- Khách Hàng -->
@@ -48,7 +46,6 @@ onMounted(() => {
           <div class="stat-icon">👥</div>
           <div class="stat-value">{{ totalCustomer }}</div>
           <div class="stat-label">Khách Hàng</div>
-          <div class="stat-trend trend-up">↑ 15.7% so với tháng trước</div>
         </div>
 
         <!-- Doanh Thu -->
@@ -56,7 +53,6 @@ onMounted(() => {
           <div class="stat-icon">💵</div>
           <div class="stat-value">{{ totalRevenue.toLocaleString() }} VNĐ</div>
           <div class="stat-label">Doanh Thu (VNĐ)</div>
-          <div class="stat-trend trend-down">↓ 3.2% so với tháng trước</div>
         </div>
 
         <!-- Đơn Hủy -->
@@ -64,7 +60,6 @@ onMounted(() => {
           <div class="stat-icon">🗑️</div>
           <div class="stat-value">{{ totalCancelled }}</div>
           <div class="stat-label">Đơn Hủy</div>
-          <div class="stat-trend trend-down">↓ 4.1% so với tháng trước</div>
         </div>
 
       </section>

@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class OrderSpecification {
 
@@ -37,6 +38,8 @@ public class OrderSpecification {
                         )
                 );
             }
+
+            Objects.requireNonNull(query).orderBy(cb.desc(root.get("createdAt")));
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };

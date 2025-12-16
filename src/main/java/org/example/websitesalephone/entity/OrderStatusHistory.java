@@ -3,8 +3,6 @@ package org.example.websitesalephone.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.OffsetDateTime;
-
 @Entity
 @Table(name = "order_status_history")
 @Getter
@@ -20,6 +18,7 @@ public class OrderStatusHistory extends BaseEntity {
     @JoinColumn(name = "order_id")
     private Order order;
 
+    @Column(name = "description", columnDefinition = "NVARCHAR(255) COLLATE Vietnamese_CI_AS")
     private String description;
 
     private String status;

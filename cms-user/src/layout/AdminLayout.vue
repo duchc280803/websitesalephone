@@ -33,10 +33,6 @@ const logout = () => {
           <span class="nav-icon">👥</span>
           <span id="nav-item-4">User</span>
         </router-link>
-        <router-link href="#" class="nav-item" data-page="settings" to="/admin/dashboard">
-          <span class="nav-icon">⚙️</span>
-          <span id="nav-item-5">Settings</span>
-        </router-link>
       </nav>
     </aside><!-- Main Content -->
     <main><!-- Header -->
@@ -44,10 +40,8 @@ const logout = () => {
         <div class="header-left">
         </div>
         <div class="header-right">
-          <div class="search-box"><span class="search-icon">🔍</span> <input type="text" class="search-input"
-                                                                            placeholder="Tìm kiếm...">
+          <div class="search-box">
           </div>
-          <button class="notification-btn"> 🔔 <span class="notification-badge"></span></button>
           <div class="user-profile">
             <div class="user-avatar" id="user-avatar">
               JD

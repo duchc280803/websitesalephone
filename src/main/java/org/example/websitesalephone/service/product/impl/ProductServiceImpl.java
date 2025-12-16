@@ -18,10 +18,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -59,6 +56,8 @@ public class ProductServiceImpl implements ProductService {
             predicates.add(cb.equal(root.get("isDeleted"), false));
 
             predicates.add(cb.isNotEmpty(root.get("variants")));
+
+            Objects.requireNonNull(query).orderBy(cb.desc(root.get("createdAt")));
 
             return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
